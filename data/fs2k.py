@@ -91,22 +91,39 @@ class FS2KDataset(Dataset):
     def _resolve_paths(self, item: Dict[str, Any]) -> Tuple[str, str]:
         image_name = item.get('image_name', '')
         
-        # Photo path resolution
-        photo_dir = os.path.join(self.fs2k_root, 'photo')
-        photo_base = os.path.join(photo_dir, image_name)
+        # Check roots (prioritizing local NVMe cache if available)
+        roots = [
+            self.fs2k_root,
+            '/content/local_data/FS2K',
+            '/content/local_data/FS2K/FS2K',
+            '/content/drive/MyDrive/GenAI-A1/raw/FS2K/FS2K',
+            'data/raw/FS2K'
+        ]
         
-        photo_path = photo_base + '.jpg'
-        if not os.path.exists(photo_path):
-            photo_path = photo_base + '.png'
+        photo_path = ''
+        sketch_path = ''
+        
+        for r in roots:
+            p_cand = os.path.join(r, 'photo', image_name)
+            s_subpath = image_name.replace('photo', 'sketch').replace('image', 'sketch')
+            s_cand = os.path.join(r, 'sketch', s_subpath)
+            
+            p_final = (p_cand + '.jpg') if os.path.exists(p_cand + '.jpg') else ((p_cand + '.png') if os.path.exists(p_cand + '.png') else '')
+            s_final = (s_cand + '.jpg') if os.path.exists(s_cand + '.jpg') else ((s_cand + '.png') if os.path.exists(s_cand + '.png') else '')
+            
+            if p_final and s_final:
+                return p_final, s_final
+            if p_final:
+                photo_path = p_final
+            if s_final:
+                sketch_path = s_final
 
-        # Sketch path resolution
-        sketch_subpath = image_name.replace('photo', 'sketch').replace('image', 'sketch')
-        sketch_dir = os.path.join(self.fs2k_root, 'sketch')
-        sketch_base = os.path.join(sketch_dir, sketch_subpath)
-        
-        sketch_path = sketch_base + '.jpg'
-        if not os.path.exists(sketch_path):
-            sketch_path = sketch_base + '.png'
+        # Fallback default constructed paths
+        if not photo_path:
+            photo_path = os.path.join(self.fs2k_root, 'photo', image_name + '.jpg')
+        if not sketch_path:
+            sketch_subpath = image_name.replace('photo', 'sketch').replace('image', 'sketch')
+            sketch_path = os.path.join(self.fs2k_root, 'sketch', sketch_subpath + '.jpg')
 
         return photo_path, sketch_path
 

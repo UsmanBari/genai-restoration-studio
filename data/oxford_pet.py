@@ -160,9 +160,11 @@ class OxfordPetDataset(Dataset):
 
         item_path = item.get('path', '')
 
-        # 2. Check exact candidate locations verbatim
+        # 2. Check exact candidate locations verbatim (prioritizing local Colab disk cache)
         candidate_paths = [
             os.path.join(self.images_dir, filename),
+            os.path.join('/content/local_data/OxfordPet/images_128x128', filename),
+            os.path.join('/content/local_data/images_128x128', filename),
             item_path,
             os.path.join('/content/drive/MyDrive/GenAI-A1/raw/OxfordPet/images_128x128', filename),
             os.path.join('/content/drive/MyDrive/GenAI-A1/raw/OxfordPet/raw_extracted/images', filename),
