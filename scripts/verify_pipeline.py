@@ -70,7 +70,7 @@ def test_oxford_pet_splits_and_manifests():
     print("\n=======================================================")
     print("2. VERIFYING OXFORD-IIIT PET MANIFESTS & FIXED TIERS")
     print("=======================================================")
-    manifest_dir = "configs/manifests"
+    manifest_dir = "tmp_test_manifests"
     os.makedirs(manifest_dir, exist_ok=True)
 
     # Generate synthetic mock entries if raw files not yet downloaded locally
@@ -170,7 +170,7 @@ def test_fs2k_splits_and_manifests():
     print("\n=======================================================")
     print("3. VERIFYING FS2K SPLITS & STRATIFICATION")
     print("=======================================================")
-    manifest_dir = "configs/manifests"
+    manifest_dir = "tmp_test_manifests"
     os.makedirs(manifest_dir, exist_ok=True)
 
     # Synthesize official FS2K items matching official anno_train.json (1058) & anno_test.json (1046)

@@ -98,16 +98,29 @@ def prepare_oxford_pet(
     test_items = parse_anno_file(test_txt, 'test')
     entries = trainval_items + test_items
 
-    # If annotations not parsed, list all jpgs directly
+    # If annotations not parsed, list all jpgs directly from raw or processed directory
     if not entries:
-        print("Parsing directly from image directory...")
-        for fname in os.listdir(raw_images_dir):
-            if fname.lower().endswith(('.jpg', '.jpeg', '.png')):
-                entries.append({
-                    'image_id': os.path.splitext(fname)[0],
-                    'filename': fname,
-                    'split_source': 'trainval'
-                })
+        search_dirs = [raw_images_dir, processed_images_dir]
+        for s_dir in search_dirs:
+            if os.path.exists(s_dir):
+                print(f"Scanning images from directory: {s_dir}...")
+                valid_files = [
+                    f for f in sorted(os.listdir(s_dir))
+                    if f.lower().endswith(('.jpg', '.jpeg', '.png')) and not f.startswith(('pet_trainval_', 'pet_test_'))
+                ]
+                if valid_files:
+                    for fname in valid_files:
+                        entries.append({
+                            'image_id': os.path.splitext(fname)[0],
+                            'filename': fname,
+                            'split_source': 'trainval'
+                        })
+                    break
+
+    if not entries:
+        raise FileNotFoundError(
+            f"No valid OxfordPet images found in {raw_images_dir} or {processed_images_dir}."
+        )
 
     print(f"Resizing {len(entries)} images to {target_size} RGB...")
     for entry in tqdm(entries):
