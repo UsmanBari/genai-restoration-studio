@@ -105,21 +105,31 @@ This log records every architectural and design decision made during the project
 
 ---
 
-### Entry 010: Architecture-Aligned Hyperparameter Re-Optimization with Independent Validation Scoring (Optuna Search 2)
-- **Decision:** (1) Correct the Optuna validation evaluation criterion in `objective_universal()` from the circular trial-weighted loss ($\mathcal{L}_{\text{val}} = \alpha \cdot \mathcal{L}_1 + (1 - \alpha)(1 - \text{SSIM})$) to an independent, unweighted joint quality score ($\text{Score}_{\text{val}} = \text{val\_L1} + (1.0 - \text{val\_SSIM})$), (2) execute a comprehensive 30-trial study directly on the Gated Skip Connection architecture (Search 2), and (3) strictly adopt the Optuna-selected $\alpha$ without any post-hoc manual overrides to ensure 100% compliance with the assignment specification: *"the final value [of alpha] must be selected through Optuna rather than being accepted without investigation."*
+### Entry 010: Architecture-Aligned Hyperparameter Re-Optimization with Independent Validation Scoring & Full Search Space (Optuna Search 2)
+- **Decision:** (1) Correct the Optuna validation evaluation criterion in `objective_universal()` from the circular trial-weighted loss ($\mathcal{L}_{\text{val}} = \alpha \cdot \mathcal{L}_1 + (1 - \alpha)(1 - \text{SSIM})$) to an independent, unweighted joint quality score ($\text{Score}_{\text{val}} = \text{val\_L1} + (1.0 - \text{val\_SSIM})$), (2) re-introduce `bottleneck_dim` into the search space constrained to $\{64, 96, 128\}$ to satisfy the assignment requirement that all core parameters (learning rate, batch size, bottleneck dimension, base channels, dropout rate, and $\alpha$) are investigated through Optuna, (3) execute a comprehensive 30-trial study directly on the Gated Skip Connection architecture (Search 2), and (4) strictly adopt the Optuna-selected $\alpha$ and `bottleneck_dim` without any post-hoc manual overrides.
 - **Why alternatives were considered:**
   1. *The Circular Loss Objective Bug:* In Search 1, Optuna was tasked with minimizing `val_loss`, where `val_loss` was computed using the trial's own sampled parameter $\alpha$. Because pixel L1 loss values are naturally much smaller in scale ($\sim 0.01 - 0.03$) than structural distortion terms ($1 - \text{SSIM} \sim 0.30 - 0.50$), trials sampling high $\alpha$ (e.g. $0.95$) artificially reported dramatically lower `val_loss` simply because the larger $(1 - \text{SSIM})$ term was multiplied by $0.05$ instead of $0.50$. Optuna was mathematically incentivized to maximize $\alpha$ purely as a numerical artifact of the loss formula, regardless of whether structural fidelity was preserved.
-  2. *Why Manual Override Was Non-Compliant:* Manually overriding Optuna's selected $\alpha=0.95$ to $\alpha=0.70$ after the fact violated the explicit requirement that $\alpha$ must be selected through Optuna.
-  3. *Independent Metric Formulation:* By setting Optuna's trial ranking and pruning objective to $\text{val\_score} = \text{val\_L1} + (1.0 - \text{val\_SSIM})$, each candidate configuration is evaluated against a fixed, unweighted ground-truth standard that equally penalizes pixel deviation and structural loss. Models that neglect SSIM under high $\alpha$ will suffer high $(1 - \text{SSIM})$ penalties in `val_score`, allowing Optuna to autonomously identify the exact $\alpha$ that yields the best true balance.
+  2. *Bottleneck Dimension Search Range Constraint:* The assignment requires investigating `bottleneck_dim`. In earlier iterations, unconstrained search values like 512 channels at $8\times 8$ ($8\times 8\times 512 = 32,768$ scalars) yielded an ineffective 1.5x compression ratio against the $49,152$-scalar input, violating the genuine bottleneck requirement. Rather than fixing `bottleneck_dim` statically, Search 2 explores the architecturally valid regime $\{64, 96, 128\}$:
+     - `bottleneck_dim = 64`: $8\times 8\times 64 = 4,096$ scalars (**12.0x compression**)
+     - `bottleneck_dim = 96`: $8\times 8\times 96 = 6,144$ scalars (**8.0x compression**)
+     - `bottleneck_dim = 128`: $8\times 8\times 128 = 8,192$ scalars (**6.0x compression**)
+     This enables genuine automated optimization while strictly preserving bottleneck integrity.
+  3. *Independent Metric Formulation:* By setting Optuna's trial ranking and pruning objective to $\text{val\_score} = \text{val\_L1} + (1.0 - \text{val\_SSIM})$, each candidate configuration is evaluated against a fixed, unweighted ground-truth standard that equally penalizes pixel deviation and structural loss.
 - **Chosen approach:**
   - Independent Validation Criterion: `eval_score = val_metrics['l1'] + (1.0 - val_metrics['ssim'])` reported to `trial.report(eval_score, epoch)` and returned by `objective_universal`.
-  - Architecture: `UniversalAutoencoder` with Gated Skip Connection and $8\times 8\times 128$ bottleneck (6.0x compression).
-  - Search Space: `lr` $\in [10^{-4}, 5\times 10^{-3}]$ (log-uniform), `batch_size` $\in \{16, 32, 64\}$, `base_channels` $\in \{32, 48, 64\}$, `dropout_rate` $\in \{0.0, 0.1, 0.2\}$, and `alpha` $\in [0.50, 0.95]$ (step 0.05).
+  - Full Search Space:
+    - `lr` $\in [10^{-4}, 5\times 10^{-3}]$ (log-uniform)
+    - `batch_size` $\in \{16, 32, 64\}$
+    - `base_channels` $\in \{32, 48, 64\}$
+    - `bottleneck_dim` $\in \{64, 96, 128\}$ (12x, 8x, 6x compression)
+    - `dropout_rate` $\in \{0.0, 0.1, 0.2\}$
+    - `alpha` $\in [0.50, 0.95]$ (step 0.05)
   - Search Setup: 30 trials, 4 epochs per trial, `MedianPruner(n_startup_trials=3, n_warmup_steps=1)`.
-  - Adoption: The winning configuration from Search 2 (including its Optuna-selected $\alpha$) is passed directly to 50-epoch training in Step 5 without manual overrides.
-- **Evidence:** Retaining records for Search 1 (which identified the circular loss phenomenon) and Search 2 (which corrected the objective) provides clear research justification in the project report.
+  - Adoption: The winning configuration from Search 2 is passed directly to 50-epoch training in Step 5 without manual overrides.
+- **Evidence:** Complete audit trail comparing Search 1 (non-gated, circular loss) vs. Search 2 (gated skip, independent metric, full parameter exploration) documents rigorous scientific methodology.
 - **Experiment:** Execute `run_optuna_study(..., n_trials=30, trial_epochs=4)` in Step 4 of `notebooks/02_task1_universal_autoencoder.ipynb`.
 - **Result:** [Pending Colab 30-trial execution: Winning parameters will be logged and transferred directly to Step 5].
+
 
 
 
