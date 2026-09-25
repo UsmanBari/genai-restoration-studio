@@ -43,3 +43,37 @@ def test_onnx_runner_preprocessing():
     reconstructed_img = runner.postprocess_array(tensor_np)
     assert reconstructed_img.size == (128, 128)
     assert reconstructed_img.mode == 'RGB'
+
+
+def test_universal_autoencoder_architecture_shapes():
+    """Sanity test verifying UniversalAutoencoder encoder, bottleneck, decoder, and output shapes."""
+    try:
+        import torch
+        from models.autoencoders import UniversalAutoencoder
+    except ImportError:
+        pytest.skip("PyTorch not installed in this environment")
+
+    model = UniversalAutoencoder(
+        in_channels=3,
+        out_channels=3,
+        base_channels=64,
+        bottleneck_dim=128,
+        dropout_rate=0.1
+    )
+    model.eval()
+
+    dummy_input = torch.randn(2, 3, 128, 128)
+    with torch.no_grad():
+        # Test encode
+        latent = model.encode(dummy_input)
+        assert latent.shape == (2, 128, 8, 8), f"Expected (2, 128, 8, 8), got {latent.shape}"
+
+        # Test decode
+        recon_from_latent = model.decode(latent)
+        assert recon_from_latent.shape == (2, 3, 128, 128)
+
+        # Test end-to-end forward
+        output = model(dummy_input)
+        assert output.shape == (2, 3, 128, 128)
+        assert output.min() >= 0.0 and output.max() <= 1.0
+
