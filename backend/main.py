@@ -3,6 +3,7 @@ FastAPI Backend for Generative AI Restoration Studio.
 Serves ONNX runtime inference endpoints for image restoration and sketch synthesis.
 """
 
+import os
 import time
 import base64
 import io
@@ -14,6 +15,7 @@ from PIL import Image
 import numpy as np
 
 from backend.schemas import HealthResponse, RestorationResponse, SketchResponse
+from models.onnx_runner import UniversalRestorationONNXRunner
 
 app = FastAPI(
     title="Generative AI Restoration & Synthesis Studio API",
@@ -30,6 +32,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Model paths and runners
+TASK1_ONNX_PATH = os.path.join("models", "task1_universal.onnx")
+universal_runner: Optional[UniversalRestorationONNXRunner] = None
+
+
+def get_universal_runner() -> Optional[UniversalRestorationONNXRunner]:
+    global universal_runner
+    if universal_runner is None and os.path.exists(TASK1_ONNX_PATH):
+        try:
+            universal_runner = UniversalRestorationONNXRunner(TASK1_ONNX_PATH)
+            print(f"Loaded Universal Autoencoder ONNX model from {TASK1_ONNX_PATH}")
+        except Exception as e:
+            print(f"Error loading ONNX model from {TASK1_ONNX_PATH}: {e}")
+            universal_runner = None
+    return universal_runner
+
 
 def image_to_base64(img: Image.Image, format: str = "PNG") -> str:
     buffered = io.BytesIO()
@@ -40,12 +58,13 @@ def image_to_base64(img: Image.Image, format: str = "PNG") -> str:
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
     """Health check endpoint providing system status and model readiness."""
+    runner = get_universal_runner()
     return HealthResponse(
         status="ok",
         version="1.0.0",
         device="cpu",
         models_loaded={
-            "universal_autoencoder": False,
+            "universal_autoencoder": runner is not None,
             "hard_routing_classifier": False,
             "hard_routing_experts": False,
             "soft_moe": False,
@@ -59,22 +78,34 @@ async def universal_restoration(
     file: UploadFile = File(...)
 ):
     """
-    Task 1: Universal Autoencoder Restoration stub.
-    Restores image using single end-to-end autoencoder.
+    Task 1: Universal Autoencoder Restoration endpoint.
+    Restores corrupted image using the trained universal autoencoder (ONNX Runtime).
     """
     t0 = time.time()
     try:
         contents = await file.read()
         image = Image.open(io.BytesIO(contents)).convert("RGB").resize((128, 128))
-        # Stub: returns received image resized as base64 until trained ONNX is plugged in
-        b64_output = image_to_base64(image)
-        latency = (time.time() - t0) * 1000.0
-        return RestorationResponse(
-            task="universal-restoration",
-            status="stub_ready",
-            output_image_base64=b64_output,
-            latency_ms=round(latency, 2)
-        )
+        runner = get_universal_runner()
+
+        if runner is not None:
+            restored_img, latency = runner.restore(image)
+            b64_output = image_to_base64(restored_img)
+            return RestorationResponse(
+                task="universal-restoration",
+                status="restored",
+                output_image_base64=b64_output,
+                latency_ms=round(latency, 2)
+            )
+        else:
+            # Fallback stub until ONNX model is copied back from Colab/Drive
+            b64_output = image_to_base64(image)
+            latency = (time.time() - t0) * 1000.0
+            return RestorationResponse(
+                task="universal-restoration",
+                status="stub_ready (copy models/task1_universal.onnx from Drive to activate)",
+                output_image_base64=b64_output,
+                latency_ms=round(latency, 2)
+            )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 

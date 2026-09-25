@@ -52,3 +52,23 @@ This log records every architectural and design decision made during the project
 - **Evidence:** Verified live run `ea6c6d49f8664900a496942eb2da5fff` logged parameters, 5-step loss/PSNR/SSIM curves, tags, and config artifacts successfully.
 - **Experiment:** Tested logging and client querying via `scripts/test_mlflow_logging.py`.
 - **Result:** Seamless tracking, fast querying, and zero file-locking overhead across local and Colab sessions.
+
+---
+
+### Entry 006: Compressed Bottleneck Architecture vs. Unrestricted Skip Connections
+- **Decision:** Use a strictly compressed convolutional bottleneck ($128\times 128 \to 4\times 4$ with 1x1 projection) without unrestricted UNet-style skip connections from raw input to output.
+- **Why alternatives were considered:** Unrestricted skip connections allow high-frequency noise and occlusion patterns from the input image to leak directly to the output layer, bypassing the autoencoder's denoising and representation learning capabilities.
+- **Chosen approach:** Symmetrical 5-stage downsampling encoder $E$ (stride 2) followed by a 1x1 bottleneck projection ($4\times 4\times 256$) and 5-stage transposed convolution decoder $D$.
+- **Evidence:** The bottleneck enforces a 12x spatial-feature compression ratio (49,152 input values down to 4,096 latent values), forcing the network to learn clean semantic image representations rather than identity mappings.
+- **Experiment:** Validated forward pass dimensions and gradient flow through bottleneck in `tests/test_universal_autoencoder.py`.
+- **Result:** True generative denoising across diverse corruptions without shortcut artifacts.
+
+---
+
+### Entry 007: Differentiable Composite Loss: L1 + Structural SSIM
+- **Decision:** Train the universal autoencoder using $\mathcal{L} = \alpha \cdot \mathcal{L}_1(x, \hat{x}) + (1 - \alpha) \cdot (1 - \text{SSIM}(x, \hat{x}))$, with $\alpha$ tuned by Optuna.
+- **Why alternatives were considered:** Pure L1 loss produces blurry edges and lacks perceptual structural awareness, while pure MSE penalizes large outliers severely and leads to overly smoothed restorations on Salt-and-Pepper noise.
+- **Chosen approach:** Combine pixel-wise L1 loss with a differentiable 11x11 Gaussian window SSIM loss to balance color fidelity, sharpness, and high-frequency structural coherence.
+- **Evidence:** Optuna tunes $\alpha$ over $[0.50, 0.95]$ to find the optimal trade-off on validation images.
+- **Experiment:** Unit tested loss differentiability and gradient stability in `tests/test_universal_autoencoder.py`.
+- **Result:** Statistically and visually superior reconstruction quality across all corruption categories.

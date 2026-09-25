@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Sparkles, 
   Cpu, 
@@ -10,7 +10,9 @@ import {
   AlertCircle, 
   RefreshCw,
   Sliders,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Zap,
+  Info
 } from 'lucide-react';
 
 const TABS = [
@@ -30,6 +32,8 @@ export default function App() {
   const [processing, setProcessing] = useState(false);
   const [resultMeta, setResultMeta] = useState(null);
   const [selectedStyle, setSelectedStyle] = useState(0);
+  const [simulatedCorruption, setSimulatedCorruption] = useState('none');
+  const canvasRef = useRef(null);
 
   useEffect(() => {
     fetchHealth();
@@ -59,6 +63,7 @@ export default function App() {
       setPreviewUrl(URL.createObjectURL(file));
       setOutputImage(null);
       setResultMeta(null);
+      setSimulatedCorruption('none');
     }
   };
 
@@ -215,6 +220,19 @@ export default function App() {
                 </div>
               )}
 
+              {/* Model Status Note */}
+              {activeTab === 'universal' && (
+                <div className="mb-5 p-3 rounded-lg bg-slate-800/40 border border-slate-700/50 text-[11px] text-slate-400 flex items-start space-x-2">
+                  <Info className="w-4 h-4 text-cyan-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <span>Universal Model: </span>
+                    <strong className={health?.models_loaded?.universal_autoencoder ? 'text-emerald-400' : 'text-amber-400'}>
+                      {health?.models_loaded?.universal_autoencoder ? 'Active (ONNX CPU)' : 'Awaiting ONNX file (models/task1_universal.onnx)'}
+                    </strong>
+                  </div>
+                </div>
+              )}
+
               {/* Run Button */}
               <button
                 disabled={!selectedFile || processing}
@@ -251,7 +269,7 @@ export default function App() {
                     <span className="text-emerald-400 font-medium">{resultMeta.status}</span>
                   </div>
                   <div className="flex justify-between py-1 border-b border-slate-800">
-                    <span className="text-slate-400">Latency</span>
+                    <span className="text-slate-400">Inference Latency</span>
                     <span className="text-slate-200 font-mono">{resultMeta.latency_ms} ms</span>
                   </div>
                   {resultMeta.detected_corruption && (
