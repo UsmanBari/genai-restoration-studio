@@ -6,7 +6,7 @@ and deterministic manifests for validation and test.
 
 import os
 import json
-from typing import Optional, Callable, Dict, Any, Tuple
+from typing import Optional, Callable, Dict, Any, Tuple, List
 import numpy as np
 from PIL import Image
 
@@ -33,29 +33,24 @@ def resolve_manifest_path(manifest_input: str, default_filename: str) -> str:
     Robustly resolves the full path to a JSON manifest across local repo,
     custom paths, and Google Drive mounts.
     """
-    # 1. Exact file match
     if os.path.isfile(manifest_input):
         return manifest_input
 
-    # 2. Directory passed -> append default filename
     if os.path.isdir(manifest_input):
         cand = os.path.join(manifest_input, default_filename)
         if os.path.isfile(cand):
             return cand
 
-    # 3. Check relative repo configs/manifests
     repo_cand = os.path.join('configs', 'manifests', default_filename)
     if os.path.isfile(repo_cand):
         return repo_cand
 
-    # 4. Check relative to this module
     module_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(module_dir)
     module_cand = os.path.join(project_root, 'configs', 'manifests', default_filename)
     if os.path.isfile(module_cand):
         return module_cand
 
-    # 5. Check Colab Google Drive standard paths
     drive_cand = os.path.join('/content/drive/MyDrive/GenAI-A1/manifests', default_filename)
     if os.path.isfile(drive_cand):
         return drive_cand
@@ -92,6 +87,31 @@ def to_tensor(img_np: np.ndarray):
     if HAS_TORCH:
         return torch.from_numpy(tensor_np)
     return tensor_np
+
+
+def collate_oxford(batch: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Custom collate function that safely batches image tensors and labels while
+    keeping heterogeneous per-sample metadata as a plain Python list of dicts.
+    Prevents PyTorch default_collate from raising KeyError on mismatched metadata keys.
+    """
+    if HAS_TORCH and isinstance(batch[0]['corrupted'], torch.Tensor):
+        corrupted = torch.stack([item['corrupted'] for item in batch], dim=0)
+        clean = torch.stack([item['clean'] for item in batch], dim=0)
+        labels = torch.tensor([item['label'] for item in batch], dtype=torch.long)
+    else:
+        corrupted = np.stack([item['corrupted'] for item in batch], axis=0)
+        clean = np.stack([item['clean'] for item in batch], axis=0)
+        labels = np.array([item['label'] for item in batch], dtype=np.int64)
+
+    metadata = [item['metadata'] for item in batch]
+
+    return {
+        'corrupted': corrupted,
+        'clean': clean,
+        'label': labels,
+        'metadata': metadata
+    }
 
 
 class OxfordPetDataset(Dataset):
@@ -148,7 +168,6 @@ class OxfordPetDataset(Dataset):
                 path = colab_drive_path
 
         if not os.path.exists(path):
-            # Fallback placeholder if image file not on current machine (e.g. dry run test)
             img = Image.new('RGB', self.target_size, color=(128, 128, 128))
         else:
             img = Image.open(path).convert('RGB')
@@ -217,21 +236,24 @@ def get_oxford_dataloaders(
         batch_size=batch_size,
         shuffle=True,
         num_workers=num_workers,
-        pin_memory=pin_memory
+        pin_memory=pin_memory,
+        collate_fn=collate_oxford
     )
     val_loader = DataLoader(
         val_ds,
         batch_size=batch_size,
         shuffle=False,
         num_workers=num_workers,
-        pin_memory=pin_memory
+        pin_memory=pin_memory,
+        collate_fn=collate_oxford
     )
     test_loader = DataLoader(
         test_ds,
         batch_size=batch_size,
         shuffle=False,
         num_workers=num_workers,
-        pin_memory=pin_memory
+        pin_memory=pin_memory,
+        collate_fn=collate_oxford
     )
 
     return train_loader, val_loader, test_loader

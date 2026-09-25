@@ -17,7 +17,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from evaluation.metrics import evaluate_image_pair, compute_psnr, compute_ssim, compute_l1
-from data.oxford_pet import OxfordPetDataset
+from data.oxford_pet import OxfordPetDataset, collate_oxford
 
 
 def run_universal_benchmark(
@@ -53,7 +53,13 @@ def run_universal_benchmark(
         images_dir=images_dir,
         split='test'
     )
-    dataloader = DataLoader(dataset, batch_size=16, shuffle=False, num_workers=2)
+    dataloader = DataLoader(
+        dataset,
+        batch_size=16,
+        shuffle=False,
+        num_workers=2,
+        collate_fn=collate_oxford
+    )
 
     model.to(device)
     model.eval()
@@ -77,7 +83,7 @@ def run_universal_benchmark(
         for batch in dataloader:
             corrupted = batch['corrupted'].to(device)
             clean = batch['clean'].to(device)
-            metadata = batch['metadata']
+            metadata = batch['metadata']  # Plain Python list of dicts
 
             recon = model(corrupted)
             recon = torch.clamp(recon, 0.0, 1.0)
@@ -89,7 +95,7 @@ def run_universal_benchmark(
 
             batch_size = len(recon_np)
             for i in range(batch_size):
-                meta_item = {k: v[i] if isinstance(v, list) else v for k, v in metadata.items()}
+                meta_item = metadata[i]
                 c_type = meta_item.get('corruption_type', 'clean')
                 tier = meta_item.get('severity_tier', 0)
                 bucket_key = f"{c_type}_tier_{tier}"
