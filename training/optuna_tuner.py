@@ -14,12 +14,19 @@ from typing import Dict, Any, Optional
 import os
 import optuna
 from optuna.pruners import MedianPruner
-import torch
 import mlflow
 
+try:
+    import torch
+    from torch.utils.data import DataLoader
+    HAS_TORCH = True
+except ImportError:
+    HAS_TORCH = False
+    torch = None
+    DataLoader = None
+
 from models.autoencoders import UniversalAutoencoder
-from data.oxford_pet import OxfordPetDataset
-from torch.utils.data import DataLoader
+from data.oxford_pet import get_oxford_dataloaders, OxfordPetDataset
 from training.losses import RestorationLoss
 from training.trainer_universal import train_one_epoch, evaluate
 
@@ -29,9 +36,12 @@ def objective_universal(
     manifest_dir: str,
     images_dir: str,
     trial_epochs: int = 4,
-    device: str = "cuda" if torch.cuda.is_available() else "cpu"
+    device: str = "cuda" if (HAS_TORCH and torch.cuda.is_available()) else "cpu"
 ) -> float:
     """Optuna objective function for a single trial."""
+    if not HAS_TORCH:
+        raise RuntimeError("PyTorch is required to execute Optuna tuning trials.")
+
     # 1. Sample hyperparameters
     lr = trial.suggest_float("lr", 1e-4, 5e-3, log=True)
     batch_size = trial.suggest_categorical("batch_size", [16, 32, 64])
@@ -40,20 +50,15 @@ def objective_universal(
     dropout_rate = trial.suggest_categorical("dropout_rate", [0.0, 0.1, 0.2])
     alpha = trial.suggest_float("alpha", 0.50, 0.95, step=0.05)
 
-    # 2. Build Datasets & Loaders
-    train_ds = OxfordPetDataset(
-        manifest_path=os.path.join(manifest_dir, 'oxford_train_manifest.json'),
+    # 2. Build DataLoaders using the unified get_oxford_dataloaders
+    pin_mem = device.startswith('cuda')
+    train_loader, val_loader, _ = get_oxford_dataloaders(
+        manifest_dir=manifest_dir,
         images_dir=images_dir,
-        split='train'
+        batch_size=batch_size,
+        num_workers=2,
+        pin_memory=pin_mem
     )
-    val_ds = OxfordPetDataset(
-        manifest_path=os.path.join(manifest_dir, 'oxford_val_manifest.json'),
-        images_dir=images_dir,
-        split='val'
-    )
-
-    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=2, pin_memory=True)
-    val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False, num_workers=2, pin_memory=True)
 
     # 3. Build Model & Optimizer
     model = UniversalAutoencoder(
@@ -105,7 +110,7 @@ def run_optuna_study(
     n_trials: int = 15,
     trial_epochs: int = 4,
     study_name: str = "task1_universal_tuning",
-    device: str = "cuda" if torch.cuda.is_available() else "cpu"
+    device: str = "cuda" if (HAS_TORCH and torch.cuda.is_available()) else "cpu"
 ) -> optuna.Study:
     """
     Executes Optuna study with MedianPruner and returns best trial configuration.
