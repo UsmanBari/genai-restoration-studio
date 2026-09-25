@@ -72,8 +72,13 @@ def objective_universal(
     criterion = RestorationLoss(alpha=alpha)
     scaler = torch.cuda.amp.GradScaler() if device.startswith('cuda') else None
 
-    # 4. Short Training Loop with Pruning
-    best_val_loss = float('inf')
+    # 4. Training Loop with Independent Validation Scoring
+    # CRITICAL: We evaluate trial quality using an independent unweighted objective:
+    #   eval_score = val_L1 + (1.0 - val_SSIM)
+    # This decouples trial evaluation from the trial's own alpha parameter, preventing
+    # the circular optimization bug where high alpha is chosen merely because it downweights
+    # the numerically larger (1 - SSIM) term in the loss formula.
+    best_eval_score = float('inf')
 
     # Log trial as nested run in MLflow if active
     with mlflow.start_run(run_name=f"trial_{trial.number}", nested=True):
@@ -83,24 +88,29 @@ def objective_universal(
             train_metrics = train_one_epoch(model, train_loader, optimizer, criterion, scaler, device)
             val_metrics = evaluate(model, val_loader, criterion, device)
 
-            val_loss = val_metrics['loss']
-            if val_loss < best_val_loss:
-                best_val_loss = val_loss
+            # Independent evaluation metric: equally penalizes pixel error and structural distortion
+            eval_score = val_metrics['l1'] + (1.0 - val_metrics['ssim'])
+
+            if eval_score < best_eval_score:
+                best_eval_score = eval_score
 
             mlflow.log_metric("trial_train_loss", train_metrics['loss'], step=epoch)
-            mlflow.log_metric("trial_val_loss", val_loss, step=epoch)
+            mlflow.log_metric("trial_eval_score", eval_score, step=epoch)
+            mlflow.log_metric("trial_val_l1", val_metrics['l1'], step=epoch)
+            mlflow.log_metric("trial_val_ssim", val_metrics['ssim'], step=epoch)
             mlflow.log_metric("trial_val_psnr", val_metrics['psnr'], step=epoch)
 
-            # Report to Optuna for pruning
-            trial.report(val_loss, epoch)
+            # Report independent eval_score to Optuna for MedianPruner decisions
+            trial.report(eval_score, epoch)
             if trial.should_prune():
                 mlflow.set_tag("pruned", "true")
                 raise optuna.exceptions.TrialPruned()
 
-        mlflow.log_metric("final_val_loss", best_val_loss)
+        mlflow.log_metric("final_eval_score", best_eval_score)
         mlflow.set_tag("pruned", "false")
 
-    return best_val_loss
+    return best_eval_score
+
 
 
 def run_optuna_study(
@@ -136,7 +146,7 @@ def run_optuna_study(
     print("\n=== Optuna Study Completed ===")
     print(f"Number of finished trials: {len(study.trials)}")
     print(f"Best Trial #{study.best_trial.number}:")
-    print(f"  Best Val Loss: {study.best_value:.4f}")
+    print(f"  Best Validation Score [L1 + (1-SSIM)]: {study.best_value:.4f}")
     print("  Best Parameters:")
     for k, v in study.best_params.items():
         print(f"    {k}: {v}")
