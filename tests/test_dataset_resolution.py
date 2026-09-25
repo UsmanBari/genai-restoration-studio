@@ -45,3 +45,56 @@ def test_fs2k_dataset_instantiation():
 def test_invalid_manifest_path_raises():
     with pytest.raises(FileNotFoundError):
         resolve_manifest_path("non_existent_folder_xyz_123", "dummy_manifest.json")
+
+
+def test_capitalized_breed_name_resolution(tmp_path):
+    """Verifies that _load_image looks for exact capitalized filenames (e.g. Bengal_96.jpg)."""
+    from PIL import Image
+    import json
+    from data.oxford_pet import OxfordPetDataset
+
+    img_dir = tmp_path / "images"
+    img_dir.mkdir()
+    manifest_dir = tmp_path / "manifests"
+    manifest_dir.mkdir()
+
+    # Create real image with capitalized name (Bengal_96.jpg)
+    img_file = img_dir / "Bengal_96.jpg"
+    Image.new('RGB', (128, 128), color=(200, 100, 50)).save(str(img_file))
+
+    # Manifest with exact capitalized name
+    manifest_data = [{
+        'image_id': 'Bengal_96',
+        'filename': 'Bengal_96.jpg',
+        'class_id': 6,
+        'species': 1,
+        'breed_id': 6,
+        'split_source': 'trainval',
+        'split': 'train'
+    }]
+    m_path = manifest_dir / "oxford_train_manifest.json"
+    with open(str(m_path), 'w') as f:
+        json.dump(manifest_data, f)
+
+    ds = OxfordPetDataset(manifest_path=str(manifest_dir), images_dir=str(img_dir), split='train')
+    assert len(ds) == 1
+    sample = ds[0]
+    assert sample['clean'].shape == (3, 128, 128)
+
+    # Test case-variant resilience (if manifest had lowercased 'bengal_96.jpg', it resolves 'Bengal_96.jpg' on disk)
+    lower_manifest = [{
+        'image_id': 'bengal_96',
+        'filename': 'bengal_96.jpg',
+        'class_id': 6,
+        'species': 1,
+        'breed_id': 6,
+        'split_source': 'trainval',
+        'split': 'train'
+    }]
+    with open(str(m_path), 'w') as f:
+        json.dump(lower_manifest, f)
+
+    ds_lower = OxfordPetDataset(manifest_path=str(manifest_dir), images_dir=str(img_dir), split='train')
+    sample_lower = ds_lower[0]
+    assert sample_lower['clean'].shape == (3, 128, 128)
+

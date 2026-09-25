@@ -153,13 +153,14 @@ class OxfordPetDataset(Dataset):
         return len(self.items)
 
     def _load_image(self, item: Dict[str, Any]) -> np.ndarray:
+        # 1. Use stored filename verbatim from manifest
         filename = item.get('filename') or item.get('image_name') or os.path.basename(item.get('path', ''))
         if not filename.lower().endswith(('.jpg', '.jpeg', '.png')):
             filename = filename + '.jpg'
 
         item_path = item.get('path', '')
 
-        # Check candidate locations
+        # 2. Check exact candidate locations verbatim
         candidate_paths = [
             os.path.join(self.images_dir, filename),
             item_path,
@@ -173,6 +174,28 @@ class OxfordPetDataset(Dataset):
             if p and os.path.isfile(p):
                 found_path = p
                 break
+
+        # 3. Case-insensitive fallback check for Linux/FUSE environments if casing differed
+        if found_path is None:
+            cased_variants = [
+                filename[0].upper() + filename[1:] if len(filename) > 0 else filename,
+                filename[0].lower() + filename[1:] if len(filename) > 0 else filename,
+                filename.lower()
+            ]
+            for variant in cased_variants:
+                if variant != filename:
+                    v_paths = [
+                        os.path.join(self.images_dir, variant),
+                        os.path.join('/content/drive/MyDrive/GenAI-A1/raw/OxfordPet/images_128x128', variant),
+                        os.path.join('/content/drive/MyDrive/GenAI-A1/raw/OxfordPet/raw_extracted/images', variant),
+                        os.path.join('data/raw/OxfordPet/images_128x128', variant)
+                    ]
+                    for vp in v_paths:
+                        if os.path.isfile(vp):
+                            found_path = vp
+                            break
+                if found_path is not None:
+                    break
 
         if found_path is None:
             # Allow synthetic fallback when running in local offline tests without full raw images
