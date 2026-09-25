@@ -42,3 +42,13 @@ This log records every architectural and design decision made during the project
 - **Evidence:** `onnxruntime` is lightweight and cross-platform for web service deployment.
 - **Experiment:** Verified FastAPI endpoint stubs and ONNX session initialization structure.
 - **Result:** Fast, lightweight local web application paired with scalable cloud GPU training.
+
+---
+
+### Entry 005: SQLite Backend for Unified MLflow Tracking
+- **Decision:** Use SQLite database backend (`sqlite:///mlruns/mlflow.db` locally and `sqlite:////content/drive/MyDrive/GenAI-A1/mlruns/mlflow.db` on Google Colab) instead of filesystem tracking.
+- **Why alternatives were considered:** MLflow 3.x puts purely filesystem-based storage (`file:///...`) in maintenance mode and enforces database backends. Direct filesystem logging also incurs race conditions and file-locking issues across Google Drive mounts.
+- **Chosen approach:** Unified SQLite tracking URI backed by persistent storage.
+- **Evidence:** Verified live run `ea6c6d49f8664900a496942eb2da5fff` logged parameters, 5-step loss/PSNR/SSIM curves, tags, and config artifacts successfully.
+- **Experiment:** Tested logging and client querying via `scripts/test_mlflow_logging.py`.
+- **Result:** Seamless tracking, fast querying, and zero file-locking overhead across local and Colab sessions.

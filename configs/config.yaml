@@ -78,7 +78,8 @@ corruptions:
 
 # MLflow Experiment Tracking
 mlflow:
-  tracking_uri: "/content/drive/MyDrive/GenAI-A1/mlruns"
+  tracking_uri: "sqlite:///mlruns/mlflow.db"
+  colab_tracking_uri: "sqlite:////content/drive/MyDrive/GenAI-A1/mlruns/mlflow.db"
   experiment_names:
     task1: "Task1-Universal-Restoration"
     task2: "Task2-Hard-Routing"
