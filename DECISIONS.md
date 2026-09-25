@@ -103,4 +103,21 @@ This log records every architectural and design decision made during the project
 - **Experiment:** Retrain Universal Autoencoder on Oxford-IIIT Pet for 50 epochs with $\alpha=0.70$ and gated skip connection, evaluating across all benchmark tiers (Clean, S&P, Blur, Occlusion).
 - **Result:** [Pending user benchmark report: Targeting PSNR $\ge 22+\text{ dB}$ and SSIM $\ge 0.75+$ across evaluation tiers].
 
+---
+
+### Entry 010: Architecture-Aligned Hyperparameter Re-Optimization (Optuna Search 2 vs Search 1)
+- **Decision:** Execute a comprehensive 30-trial Optuna hyperparameter tuning study directly on the new Gated Skip Connection architecture (Search 2), replacing the initial 12-trial study (Search 1) that was executed on the previous non-gated model.
+- **Why alternatives were considered:** 
+  1. Search 1 (12 trials) explored the hyperparameter space for the standard $8\times 8\times 128$ bottleneck without skip connections, converging to `lr=0.000334`, `batch_size=32`, `base_channels=48`, `dropout_rate=0.20`, and `alpha=0.95`.
+  2. Introducing the learned gated skip connection fundamentally altered the network's gradient flow, parameter count, and loss dynamics. Hyperparameters optimized for a non-gated model cannot be assumed optimal for a gated skip architecture.
+  3. Re-running a constrained 12-trial search risks missing the global optimum in this modified loss surface. An expanded 30-trial search with `MedianPruner` provides a thorough, statistically sound exploration across learning rates, capacity scaling, regularization, and loss balances.
+- **Chosen approach:**
+  - Search Space: `lr` $\in [10^{-4}, 5\times 10^{-3}]$ (log-uniform), `batch_size` $\in \{16, 32, 64\}$, `base_channels` $\in \{32, 48, 64\}$, `dropout_rate` $\in \{0.0, 0.1, 0.2\}$, and `alpha` $\in [0.50, 0.95]$ (step 0.05).
+  - Study Setup: 30 trials, 4 epochs per trial, with `MedianPruner(n_startup_trials=3, n_warmup_steps=1)` and MLflow trial logging.
+  - Evaluation Policy: Following the study, if Optuna selects an extreme $\alpha \ge 0.90$ due to L1 scale dominance over SSIM in combined loss minimization, a documented manual override (e.g. $\alpha=0.70$) will be evaluated to ensure structural fidelity is not penalized.
+- **Evidence:** Maintaining distinct, un-erased records for both Search 1 and Search 2 serves as strong research documentation illustrating the empirical necessity of re-tuning when network topology changes.
+- **Experiment:** Execute `run_optuna_study(..., n_trials=30, trial_epochs=4)` in Step 4 of `notebooks/02_task1_universal_autoencoder.ipynb`.
+- **Result:** [Pending Colab 30-trial execution: Winning parameters will be logged and transferred to Step 5].
+
+
 

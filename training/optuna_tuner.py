@@ -106,9 +106,9 @@ def objective_universal(
 def run_optuna_study(
     manifest_dir: str,
     images_dir: str,
-    n_trials: int = 15,
+    n_trials: int = 30,
     trial_epochs: int = 4,
-    study_name: str = "task1_universal_tuning",
+    study_name: str = "task1_universal_gated_tuning",
     device: str = "cuda" if (HAS_TORCH and torch.cuda.is_available()) else "cpu"
 ) -> optuna.Study:
     """
