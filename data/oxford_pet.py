@@ -223,7 +223,7 @@ def get_oxford_dataloaders(
     manifest_dir: str,
     images_dir: str,
     batch_size: int = 32,
-    num_workers: int = 2,
+    num_workers: int = 0,
     pin_memory: bool = True
 ):
     """Constructs train, val, and test DataLoaders for Oxford-IIIT Pet."""

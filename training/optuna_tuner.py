@@ -55,7 +55,7 @@ def objective_universal(
         manifest_dir=manifest_dir,
         images_dir=images_dir,
         batch_size=batch_size,
-        num_workers=2,
+        num_workers=0,
         pin_memory=pin_mem
     )
 

@@ -57,7 +57,7 @@ def run_universal_benchmark(
         dataset,
         batch_size=16,
         shuffle=False,
-        num_workers=2,
+        num_workers=0,
         collate_fn=collate_oxford
     )
 

@@ -143,7 +143,7 @@ def get_fs2k_dataloaders(
     manifest_dir: str,
     fs2k_root: str,
     batch_size: int = 16,
-    num_workers: int = 2,
+    num_workers: int = 0,
     pin_memory: bool = True
 ):
     """Constructs train, val, and test DataLoaders for FS2K."""
