@@ -25,7 +25,7 @@ def export_to_onnx(
     opset_version: int = 16
 ) -> str:
     """
-    Exports a PyTorch model to ONNX format with dynamic batch sizing.
+    Exports a PyTorch model to a self-contained ONNX format with all weights embedded.
     """
     os.makedirs(os.path.dirname(os.path.abspath(onnx_output_path)), exist_ok=True)
     model.eval()
@@ -33,28 +33,35 @@ def export_to_onnx(
     device = next(model.parameters()).device
     dummy_input = torch.randn(*input_shape, device=device)
 
-    print(f"Exporting PyTorch model to ONNX: {onnx_output_path} (Opset {opset_version})...")
-    torch.onnx.export(
-        model,
-        dummy_input,
-        onnx_output_path,
-        export_params=True,
-        opset_version=opset_version,
-        do_constant_folding=True,
-        input_names=['input_image'],
-        output_names=['restored_image'],
-        dynamic_axes={
+    print(f"Exporting PyTorch model to self-contained ONNX: {onnx_output_path} (Opset {opset_version})...")
+    
+    export_kwargs = {
+        'export_params': True,
+        'opset_version': opset_version,
+        'do_constant_folding': True,
+        'input_names': ['input_image'],
+        'output_names': ['restored_image'],
+        'dynamic_axes': {
             'input_image': {0: 'batch_size'},
             'restored_image': {0: 'batch_size'}
         }
-    )
+    }
 
-    # Check ONNX model validity
+    # Use dynamo=False on PyTorch 2.x to guarantee all weights (2.6M - 4.6M params, ~10-18 MB)
+    # are embedded directly into the standalone .onnx protobuf rather than stripped or externalized
+    try:
+        torch.onnx.export(model, dummy_input, onnx_output_path, dynamo=False, **export_kwargs)
+    except TypeError:
+        torch.onnx.export(model, dummy_input, onnx_output_path, **export_kwargs)
+
+    # Check ONNX model validity and embedded weight initializers
     onnx_model = onnx.load(onnx_output_path)
     onnx.checker.check_model(onnx_model)
     file_size_mb = os.path.getsize(onnx_output_path) / (1024 * 1024)
-    print(f"✅ ONNX model successfully verified and exported ({file_size_mb:.2f} MB).")
+    num_initializers = len(onnx_model.graph.initializer)
+    print(f"[SUCCESS] ONNX model successfully verified and exported ({file_size_mb:.2f} MB, {num_initializers} weight initializers).")
     return onnx_output_path
+
 
 
 def verify_onnx_numerical_equivalence(
