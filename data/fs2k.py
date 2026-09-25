@@ -20,6 +20,8 @@ except ImportError:
     class DataLoader:
         pass
 
+from data.oxford_pet import resolve_manifest_path
+
 
 def to_tensor(img_np: np.ndarray, normalize_minus1_1: bool = True):
     """
@@ -51,7 +53,7 @@ class FS2KDataset(Dataset):
     FS2K Paired Facial Sketch Dataset.
     
     Args:
-        manifest_path: Path to JSON manifest (train, val, or test)
+        manifest_path: Path to JSON manifest file or manifests directory
         fs2k_root: Root directory of extracted FS2K dataset containing 'photo' and 'sketch'
         target_size: tuple (256, 256)
         normalize_gan: normalize images to [-1, 1] for pix2pix GAN
@@ -62,33 +64,36 @@ class FS2KDataset(Dataset):
         self,
         manifest_path: str,
         fs2k_root: str,
+        split: str = 'train',
         target_size: Tuple[int, int] = (256, 256),
         normalize_gan: bool = True,
         transform: Optional[Callable] = None
     ):
-        self.manifest_path = manifest_path
         self.fs2k_root = fs2k_root
+        self.split = split
         self.target_size = target_size
         self.normalize_gan = normalize_gan
         self.transform = transform
 
-        if os.path.exists(manifest_path):
-            with open(manifest_path, 'r', encoding='utf-8') as f:
-                self.items = json.load(f)
-        else:
-            self.items = []
+        default_filename = f"fs2k_{split}_manifest.json"
+        resolved_path = resolve_manifest_path(manifest_path, default_filename)
+        self.manifest_path = resolved_path
+
+        with open(resolved_path, 'r', encoding='utf-8') as f:
+            self.items = json.load(f)
+
+        if len(self.items) == 0:
+            raise ValueError(f"FS2K Manifest '{resolved_path}' contains 0 items.")
 
     def __len__(self) -> int:
         return len(self.items)
 
     def _resolve_paths(self, item: Dict[str, Any]) -> Tuple[str, str]:
-        # Item contains 'image_name', e.g. "photo1/image0001" or similar
         image_name = item.get('image_name', '')
         
         # Photo path resolution
-        photo_subpath = image_name
         photo_dir = os.path.join(self.fs2k_root, 'photo')
-        photo_base = os.path.join(photo_dir, photo_subpath)
+        photo_base = os.path.join(photo_dir, image_name)
         
         photo_path = photo_base + '.jpg'
         if not os.path.exists(photo_path):
@@ -146,18 +151,21 @@ def get_fs2k_dataloaders(
         raise RuntimeError("PyTorch is required to build DataLoaders.")
 
     train_ds = FS2KDataset(
-        manifest_path=os.path.join(manifest_dir, 'fs2k_train_manifest.json'),
+        manifest_path=manifest_dir,
         fs2k_root=fs2k_root,
+        split='train',
         normalize_gan=True
     )
     val_ds = FS2KDataset(
-        manifest_path=os.path.join(manifest_dir, 'fs2k_val_manifest.json'),
+        manifest_path=manifest_dir,
         fs2k_root=fs2k_root,
+        split='val',
         normalize_gan=True
     )
     test_ds = FS2KDataset(
-        manifest_path=os.path.join(manifest_dir, 'fs2k_test_manifest.json'),
+        manifest_path=manifest_dir,
         fs2k_root=fs2k_root,
+        split='test',
         normalize_gan=True
     )
 
