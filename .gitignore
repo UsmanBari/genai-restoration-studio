@@ -1,0 +1,55 @@
+# Environments
+.venv/
+env/
+venv/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Datasets and raw files
+data/raw/
+data/images/
+data/images_128x128/
+data/FS2K/
+raw/
+*.zip
+*.tar.gz
+*.tgz
+OxfordPet/
+FS2K/
+*.parquet
+
+# Checkpoints and models
+models/*.pth
+models/*.pt
+models/*.onnx
+models/*.bin
+checkpoints/
+*.pth
+*.pt
+*.onnx
+
+# Experiment logs and local runs
+mlruns/
+.mlflow/
+runs/
+*.log
+
+# Frontend & Node
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+.npm/
+
+# OS and IDE files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

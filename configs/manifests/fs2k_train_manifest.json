@@ -1,0 +1,6295 @@
+[
+  {
+    "image_name": "photo1/image0240",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0138",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image1029",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0231",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0978",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0966",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0612",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0855",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0954",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0540",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0939",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0936",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0144",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0360",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0678",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0675",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0594",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0519",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0186",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0318",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0510",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0882",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0033",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0417",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0720",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0738",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0297",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0210",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0639",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0027",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0288",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0315",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0726",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0717",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0849",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0825",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0438",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0636",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0597",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0339",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0354",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0999",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0129",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0312",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0477",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0021",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0618",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0852",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0831",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0432",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0018",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0279",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0177",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image1041",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0381",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0591",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0165",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0399",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0366",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0711",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0072",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0948",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0309",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0369",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0300",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0093",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0723",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0630",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image1005",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0453",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0669",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0531",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0951",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0207",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0471",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0507",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0768",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0180",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0393",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0468",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0252",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0024",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0504",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0867",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image1017",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0054",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0003",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0729",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0174",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0828",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0015",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0258",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0681",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image1053",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0915",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0090",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0345",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0396",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0990",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0561",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0735",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0957",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0873",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0900",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0162",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0741",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0762",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0603",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0600",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0126",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image1047",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0363",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0816",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0096",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image1026",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0051",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0372",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0063",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0060",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0435",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0525",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0042",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0183",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0234",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0732",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0624",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0012",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0834",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0246",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0459",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0609",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0666",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0918",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0123",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0285",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0777",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0150",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0465",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0633",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0489",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0228",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0699",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0081",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0387",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0135",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0585",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0384",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0753",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0693",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0651",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0000",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0897",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0864",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image1011",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0225",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0921",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0840",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0492",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0588",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0204",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0576",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0756",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0654",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0087",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0552",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0690",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0006",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0423",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0192",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0771",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0876",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0684",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0291",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0894",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0807",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0456",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0786",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0963",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0780",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0879",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0480",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0117",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0813",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0660",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image1050",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0912",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0888",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0783",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0390",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0891",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0168",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0276",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0306",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0747",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image1056",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0327",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0447",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0573",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0201",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0798",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0429",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0570",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0378",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image1038",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0930",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0219",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0702",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0606",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0765",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0792",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0804",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0324",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0099",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0411",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0615",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0483",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image1020",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0351",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0084",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0498",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0984",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0414",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0870",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0708",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0858",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image1044",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0819",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0261",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0108",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0408",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0321",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0543",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0567",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0249",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0558",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0696",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0960",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0942",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0153",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image1008",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0909",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0444",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0348",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0069",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0105",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0294",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0885",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0555",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0450",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0846",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0120",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0579",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0189",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0822",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0705",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0066",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0405",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0927",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0528",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0549",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0147",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0582",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image1014",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image1035",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0516",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0330",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0237",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0975",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0522",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image1023",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0243",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0009",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0426",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0903",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0687",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0336",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0642",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image1032",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0303",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0861",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0039",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0924",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0774",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0357",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0333",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0141",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0045",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0048",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0648",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0906",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0132",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0837",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0156",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0213",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0342",
+    "style": 0,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0375",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0420",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0036",
+    "style": 0,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0171",
+    "style": 0,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo1/image0981",
+    "style": 0,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0892",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0487",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0760",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0010",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0184",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0316",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0223",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0451",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0475",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0931",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0025",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0757",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0979",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0613",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0640",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0784",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0907",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0031",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0208",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0361",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0127",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0103",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0502",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0109",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0688",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0517",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0577",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0091",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0571",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0556",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0481",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image1021",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0793",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0373",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0100",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0808",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0601",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0868",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0430",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0211",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0772",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0193",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0277",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0235",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0169",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image1018",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0121",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0658",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0619",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0676",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0814",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0367",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0943",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0583",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0754",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0046",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0325",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0598",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0781",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0499",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0973",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0685",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0718",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0985",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0919",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0085",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image1000",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0298",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0040",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0574",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0397",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0484",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0289",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0343",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0916",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0532",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0415",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0709",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0379",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0637",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0607",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0319",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0349",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0874",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0667",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0187",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0829",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0748",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image1042",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0724",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0937",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0562",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0181",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0070",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0256",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0394",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0217",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0856",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0130",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0823",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0643",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0970",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0766",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image1033",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0358",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0904",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image1054",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0901",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0787",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0982",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0220",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0745",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0616",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0421",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0541",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0232",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image1012",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0853",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0133",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0292",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0844",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0841",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0742",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0097",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0922",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image1048",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image1024",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0310",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0820",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0946",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0580",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image1039",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0388",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0880",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0895",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0094",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0508",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0652",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0478",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0697",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0805",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0727",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0331",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0280",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0151",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0514",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0565",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0871",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0553",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0949",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0700",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0400",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0001",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0925",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0832",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0034",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0859",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0145",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0442",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0295",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0691",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0712",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0466",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0730",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image1009",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0604",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0967",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0265",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0334",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0457",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0082",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0028",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image1027",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0445",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0136",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0910",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image1006",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0088",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0022",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0736",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0412",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0646",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0520",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0739",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0391",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0493",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0268",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0733",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0592",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0052",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0664",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0214",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0253",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0997",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0148",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0505",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0019",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0886",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0175",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0670",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0610",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0802",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0469",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0538",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0706",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0307",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0340",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0721",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0058",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0586",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0166",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0244",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0409",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0877",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0631",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0913",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0274",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0037",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0634",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0271",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0250",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0364",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0964",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0625",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0544",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0157",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0382",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0952",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0550",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0061",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0559",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0472",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0064",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0196",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0661",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0226",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0898",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image1015",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0055",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0838",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0229",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0115",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0172",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0991",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0862",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0655",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0847",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0679",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0247",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0403",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0199",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0511",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0004",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0067",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0424",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0649",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0142",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0079",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0385",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0751",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0775",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0976",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0313",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0526",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0322",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0928",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0433",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0418",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0238",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0988",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0163",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0178",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image1030",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0205",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0160",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0460",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0850",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image1057",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0811",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0940",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0463",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0835",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0673",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0241",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0436",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0568",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0376",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0106",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0535",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0202",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0406",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0778",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0328",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0826",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0112",
+    "style": 1,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0154",
+    "style": 1,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0865",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0955",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0703",
+    "style": 1,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo2/image0013",
+    "style": 1,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0476",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0383",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0083",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0695",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0848",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0053",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0503",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0776",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0536",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0674",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0686",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0068",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0704",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0317",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0008",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0419",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0542",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0806",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0617",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image1046",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image1043",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0770",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image1004",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0968",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0449",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0296",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0527",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0689",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0155",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0461",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0644",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0623",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0710",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0470",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0512",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0488",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0119",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0593",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0023",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0980",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0473",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0104",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0386",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0248",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0086",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0653",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0851",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0620",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0551",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0941",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0908",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0626",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0632",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0929",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0302",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0101",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0356",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0797",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image1040",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0605",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0332",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0269",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0353",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0662",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0110",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0485",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0719",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0113",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0182",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0857",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0677",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0437",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0917",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0002",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0974",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0059",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0824",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0842",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0122",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image1016",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0203",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0872",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0161",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0935",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image1013",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0650",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0329",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0230",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0341",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0347",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0767",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0401",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0173",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0320",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0791",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0629",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0191",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0764",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0560",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0434",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0914",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0926",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0494",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0443",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0056",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0887",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image1007",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0050",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0089",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0506",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0878",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0896",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0614",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0263",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0338",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0995",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0362",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0581",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0440",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0596",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image1034",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0989",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0491",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0731",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0224",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0683",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0944",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0035",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0599",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0098",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0410",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0785",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0011",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0233",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0137",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0278",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0959",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0812",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0962",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0077",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0218",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0458",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0404",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0746",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0452",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0983",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0212",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0371",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0893",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0950",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0635",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0143",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0740",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0587",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0833",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0836",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0641",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0242",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0149",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0758",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0092",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0179",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0992",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0698",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0209",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0350",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image1031",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0854",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0254",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0422",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0572",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0788",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0266",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0407",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0773",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0737",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0284",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0446",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0509",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0860",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0188",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0902",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0311",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0170",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0227",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0071",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0014",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0608",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image1028",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0875",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0548",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image1037",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0365",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0530",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0800",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0809",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0821",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0845",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0314",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0554",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0923",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0905",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0293",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0017",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0425",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0431",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0938",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0398",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0545",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0326",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0749",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0281",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0500",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0761",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0044",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0518",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0584",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0713",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0920",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0692",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image1055",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0134",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0377",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0497",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0413",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0671",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0977",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0743",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0827",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0416",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0803",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0272",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0668",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image1025",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0707",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0557",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0665",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0164",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0752",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image1052",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0020",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0524",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0779",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image1022",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0569",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0659",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0818",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0533",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0065",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0869",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0185",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0464",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0158",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0374",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0911",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0116",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0305",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0611",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0578",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0884",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0953",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0041",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0890",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0167",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0479",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0251",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0986",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0965",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0932",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0257",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0566",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0395",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0716",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0335",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0866",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0176",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0728",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0194",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0368",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0236",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0956",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0032",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0308",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0380",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0047",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0062",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image1001",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0107",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0998",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0344",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0539",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0080",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0830",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0029",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0722",
+    "style": 2,
+    "gender": 0,
+    "hair": 2,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0125",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0389",
+    "style": 2,
+    "gender": 1,
+    "hair": 3,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0647",
+    "style": 2,
+    "gender": 1,
+    "hair": 1,
+    "split": "train"
+  },
+  {
+    "image_name": "photo3/image0428",
+    "style": 2,
+    "gender": 0,
+    "hair": 0,
+    "split": "train"
+  }
+]
