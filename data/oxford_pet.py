@@ -157,22 +157,37 @@ class OxfordPetDataset(Dataset):
         if not filename.lower().endswith(('.jpg', '.jpeg', '.png')):
             filename = filename + '.jpg'
 
-        path = os.path.join(self.images_dir, filename)
-        if not os.path.exists(path) and 'path' in item:
-            path = item['path']
+        item_path = item.get('path', '')
 
-        # Check Colab Drive standard fallback path
-        if not os.path.exists(path):
-            colab_drive_path = os.path.join('/content/drive/MyDrive/GenAI-A1/raw/OxfordPet/images_128x128', filename)
-            if os.path.exists(colab_drive_path):
-                path = colab_drive_path
+        # Check candidate locations
+        candidate_paths = [
+            os.path.join(self.images_dir, filename),
+            item_path,
+            os.path.join('/content/drive/MyDrive/GenAI-A1/raw/OxfordPet/images_128x128', filename),
+            os.path.join('/content/drive/MyDrive/GenAI-A1/raw/OxfordPet/raw_extracted/images', filename),
+            os.path.join('data/raw/OxfordPet/images_128x128', filename)
+        ]
 
-        if not os.path.exists(path):
-            img = Image.new('RGB', self.target_size, color=(128, 128, 128))
-        else:
-            img = Image.open(path).convert('RGB')
-            if img.size != self.target_size:
-                img = img.resize(self.target_size, Image.Resampling.BILINEAR)
+        found_path = None
+        for p in candidate_paths:
+            if p and os.path.isfile(p):
+                found_path = p
+                break
+
+        if found_path is None:
+            # Allow synthetic fallback when running in local offline tests without full raw images
+            if os.environ.get("ALLOW_DUMMY_DATASET_IMAGES", "0") == "1" or not os.path.exists('/content/drive'):
+                img = Image.new('RGB', self.target_size, color=(128, 128, 128))
+                return np.array(img, dtype=np.uint8)
+            raise FileNotFoundError(
+                f"Oxford-IIIT Pet image '{filename}' not found on Google Drive. Searched paths:\n" +
+                "\n".join(f"  - {p}" for p in candidate_paths if p) +
+                "\nEnsure colab_bootstrap.ipynb Step 4 has been executed to populate Drive storage."
+            )
+
+        img = Image.open(found_path).convert('RGB')
+        if img.size != self.target_size:
+            img = img.resize(self.target_size, Image.Resampling.BILINEAR)
 
         return np.array(img, dtype=np.uint8)
 
