@@ -46,34 +46,48 @@ def test_onnx_runner_preprocessing():
 
 
 def test_universal_autoencoder_architecture_shapes():
-    """Sanity test verifying UniversalAutoencoder encoder, bottleneck, decoder, and output shapes."""
+    """Sanity test verifying UniversalAutoencoder encoder, bottleneck, gated skip, decoder, and output shapes."""
     try:
         import torch
         from models.autoencoders import UniversalAutoencoder
     except ImportError:
         pytest.skip("PyTorch not installed in this environment")
 
+    base_channels = 48
+    bottleneck_dim = 128
     model = UniversalAutoencoder(
         in_channels=3,
         out_channels=3,
-        base_channels=64,
-        bottleneck_dim=128,
-        dropout_rate=0.1
+        base_channels=base_channels,
+        bottleneck_dim=bottleneck_dim,
+        dropout_rate=0.2
     )
     model.eval()
 
     dummy_input = torch.randn(2, 3, 128, 128)
     with torch.no_grad():
         # Test encode
-        latent = model.encode(dummy_input)
-        assert latent.shape == (2, 128, 8, 8), f"Expected (2, 128, 8, 8), got {latent.shape}"
+        z, e_init = model.encode(dummy_input)
+        assert z.shape == (2, bottleneck_dim, 8, 8), f"Expected (2, {bottleneck_dim}, 8, 8), got {z.shape}"
+        assert e_init.shape == (2, base_channels, 128, 128), f"Expected (2, {base_channels}, 128, 128), got {e_init.shape}"
 
-        # Test decode
-        recon_from_latent = model.decode(latent)
-        assert recon_from_latent.shape == (2, 3, 128, 128)
+        # Test decode with gated skip
+        recon_gated = model.decode(z, e_init)
+        assert recon_gated.shape == (2, 3, 128, 128)
+
+        # Test decode without skip (fallback)
+        recon_standalone = model.decode(z)
+        assert recon_standalone.shape == (2, 3, 128, 128)
 
         # Test end-to-end forward
         output = model(dummy_input)
         assert output.shape == (2, 3, 128, 128)
         assert output.min() >= 0.0 and output.max() <= 1.0
+
+        # Test learned gate computation and range [0.0, 1.0]
+        gate = model.get_gate(dummy_input)
+        assert gate.shape == (2, base_channels, 128, 128)
+        assert gate.min() >= 0.0, f"Gate min below 0: {gate.min()}"
+        assert gate.max() <= 1.0, f"Gate max above 1: {gate.max()}"
+
 

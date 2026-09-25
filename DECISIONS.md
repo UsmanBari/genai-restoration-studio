@@ -87,3 +87,20 @@ This log records every architectural and design decision made during the project
 - **Experiment:** Verified architecture tensor shapes in `tests/test_universal_autoencoder.py` and updated training notebook for 30 epochs with winning hyperparams.
 - **Result:** Retains rigorous compliance with the compressed bottleneck requirement while restoring sufficient structural capacity for sharp image reconstruction.
 
+---
+
+### Entry 009: Gated High-Resolution Skip Connection & SSIM Loss Alpha Manual Override
+- **Decision:** (1) Implement a single learned **Gated Skip Connection** between the encoder's highest-resolution feature map ($128\times 128$) and the decoder's final pre-output stage ($128\times 128$), and (2) manually override Optuna's loss weighting parameter from $\alpha = 0.95$ to $\alpha = 0.70$ ($L = 0.70 \cdot L_1 + 0.30 \cdot (1 - \text{SSIM})$) for a 50-epoch retraining push.
+- **Why alternatives were considered:**
+  1. *Unrestricted Skips vs. Gated Skips:* The assignment specifies: *"If limited skip connections are used, their purpose and effect must be investigated and justified in the report."* Standard U-Net connections unconditionally concatenate raw input features directly into the decoder. For corrupted inputs (e.g., severe rectangular occlusion or heavy salt-and-pepper noise), unrestricted skips bypass the bottleneck and leak raw corrupted artifacts directly to the output. By contrast, a **learned gate** computed from the decoder's bottleneck-reconstructed features ($\text{Gate} = \sigma(\text{Conv}_{1\times 1}(\text{Dec}_1)) \in [0.0, 1.0]$) allows the network to dynamically modulate information flow: on occluded/noisy regions, the gate closes ($\text{Gate} \to 0$), forcing pure generative synthesis from the bottleneck; on clean/mild regions, the gate opens ($\text{Gate} \to 1$), preserving high-frequency textures (fur grain, whiskers, fine contours).
+  2. *Optuna Loss Weighting ($\alpha = 0.95$) Limitation:* Optuna was tasked with minimizing combined validation loss. Because raw pixel L1 loss dominates numerically and is easier to minimize than structural SSIM loss, the automated search converged to $\alpha = 0.95$ (95% L1, 5% SSIM). This heavily biased the optimization toward mean pixel convergence, allowing the model to reach ~19.3–19.8 dB PSNR while capping SSIM at ~0.61. Overriding $\alpha = 0.70$ assigns a meaningful 30% penalty weight to structural degradation, directly aligning model gradients with high structural fidelity.
+- **Chosen approach:**
+  - Architecture: Initial $128\times 128$ encoder stage $\to$ 4-stage downsampling $\to$ $8\times 8\times 128$ bottleneck (6.0x compression) $\to$ 4-stage upsampling $\to$ Gated skip fusion ($\text{Dec}_1 + \text{Gate} \odot \text{Enc}_{\text{init}}$) $\to$ Refinement block $\to$ RGB Output.
+  - Hyperparameters: $\text{lr} = 0.000334$, $\text{batch\_size} = 32$, $\text{base\_channels} = 48$, $\text{dropout\_rate} = 0.20$, $\text{bottleneck\_dim} = 128$, $\alpha = 0.70$, trained for **50 epochs** with Cosine Annealing.
+- **Evidence:** 
+  - Unit test in `tests/test_universal_autoencoder.py` confirms exact tensor shapes and that gate weights are strictly bounded in $[0.0, 1.0]$.
+  - The 6.0x compression at the bottleneck is preserved ($8\times 8\times 128 = 8,192$ scalars vs $49,152$ input scalars), fulfilling the assignment's architectural constraints.
+- **Experiment:** Retrain Universal Autoencoder on Oxford-IIIT Pet for 50 epochs with $\alpha=0.70$ and gated skip connection, evaluating across all benchmark tiers (Clean, S&P, Blur, Occlusion).
+- **Result:** [Pending user benchmark report: Targeting PSNR $\ge 22+\text{ dB}$ and SSIM $\ge 0.75+$ across evaluation tiers].
+
+
