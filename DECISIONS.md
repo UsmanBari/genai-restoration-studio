@@ -138,6 +138,41 @@ This log records every architectural and design decision made during the project
     - **Rectangular Occlusion (All Tiers):** 14.98 dB PSNR | 0.6974 SSIM
   - **ONNX Export:** 17.36 MB standalone model on disk, 40 weight initializers embedded, numerical parity verified with $\Delta_{\text{max}} = 4.77\times 10^{-7}$. Generated 12 representative panel visualizations in `evaluation_task1/figures/`.
 
+---
+
+## Decision 9: Task 2 Architecture — Corruption Classifier, Specialist Autoencoders, Anti-Contamination Assertions & Hard Routing
+
+- **Context:** Task 2 requires replacing the single Universal Autoencoder with a divide-and-conquer hard-routing restoration system composed of:
+  1. A 4-way convolutional classifier (`0: Clean`, `1: Salt & Pepper`, `2: Gaussian Blur`, `3: Rectangular Occlusion`).
+  2. 3 specialist autoencoders trained exclusively on single-corruption streams.
+  3. A hard router that dispatches inputs to the predicted specialist or activates an exact **Identity Bypass** for clean images.
+  4. A 3-way benchmark comparing Universal vs. Oracle Hard-Route (ceiling) vs. Predicted Hard-Route.
+- **Alternatives considered:**
+  1. *Soft MoE / Mixture-of-Experts for Task 2:* Soft gating computes a weighted sum of all specialist outputs. While powerful, Task 2 explicitly specifies *Hard Routing* (discrete routing to one model per sample), reserving soft routing for Task 3.
+  2. *Allowing Clean images through an autoencoder:* Passing clean images through an autoencoder inevitably introduces slight reconstruction blur and reduces PSNR/SSIM. Implementing an explicit **Identity Bypass** on clean classifications guarantees mathematical perfection ($\text{PSNR}=\infty, \text{SSIM}=1.0, \text{L1}=0.0$).
+  3. *Specialist Corruption Filtering Quality:* If any clean or mismatched corruption samples leak into specialist training streams, specialist specialization degrades.
+- **Chosen approach:**
+  1. **Corruption Classifier (`models/classifiers.py`):**
+     - 4-stage convolutional backbone ($128\to 64\to 32\to 16\to 8 \to \text{GlobalAvgPool} \to \text{Linear} \to 4\text{ logits}$).
+     - Optuna Hyperparameter Study (15 trials, 3 epochs/trial, `MedianPruner`):
+       - `lr` $\in [10^{-4}, 5\times 10^{-3}]$ (log-uniform)
+       - `batch_size` $\in \{16, 32, 64\}$
+       - `base_channels` $\in \{16, 24, 32, 48\}$
+       - `dropout_rate` $\in \{0.1, 0.2, 0.3, 0.5\}$
+     - Evaluated on Top-1 accuracy, per-class precision/recall, macro F1, and confusion matrix.
+  2. **Specialist Autoencoders (`training/trainer_specialist.py`):**
+     - Reuse the winning gated skip + $8\times 8\times 96$ bottleneck architecture.
+     - Trained on 100% targeted single-corruption streams (`corruption_mode` parameter in `OxfordPetDataset`).
+     - **Strict Anti-Contamination Assertion:** `train_one_epoch_specialist` enforces `assert torch.all(labels == expected_label)` on every batch, raising an immediate exception if any cross-corruption or clean sample leaks into training.
+  3. **Hard-Routing Pipeline (`models/hard_router.py`):**
+     - `route_predicted(x)`: Classifier predicts class $\hat{c}$. If $\hat{c}=0$, returns $x$ (Identity Bypass). Else, runs designated specialist.
+     - `route_oracle(x, y)`: Ground-truth routing establishing theoretical ceiling.
+  4. **3-Way Benchmark (`evaluation/benchmark_hard_routing.py`):**
+     - Evaluates Universal vs. Oracle vs. Predicted Hard-Route across all 3,669 test images by corruption type and severity tier.
+- **Evidence:** Verified with 22 passing local unit tests covering classifier shape normalization, gradient backprop, dataset single-corruption filtering, anti-contamination assertions, and mixed-batch routing.
+- **Result:** Task 2 implementation complete and ready for Colab GPU execution in `notebooks/03_task2_hard_routing.ipynb`.
+
+
 
 
 

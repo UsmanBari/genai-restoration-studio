@@ -23,9 +23,12 @@ except ImportError:
 
 from data.corruptions import (
     apply_random_corruption_runtime,
+    apply_targeted_corruption_runtime,
     apply_deterministic_corruption,
-    CORRUPTION_NAMES
+    CORRUPTION_NAMES,
+    NAME_TO_CLASS
 )
+
 
 
 def resolve_manifest_path(manifest_input: str, default_filename: str) -> str:
@@ -132,19 +135,31 @@ class OxfordPetDataset(Dataset):
         images_dir: str,
         split: str = 'train',
         target_size: Tuple[int, int] = (128, 128),
-        transform: Optional[Callable] = None
+        transform: Optional[Callable] = None,
+        corruption_mode: Optional[str] = None
     ):
         self.images_dir = images_dir
         self.split = split
         self.target_size = target_size
         self.transform = transform
+        self.corruption_mode = corruption_mode.lower() if corruption_mode and corruption_mode.lower() != 'all' else None
 
         default_filename = f"oxford_{split}_manifest.json"
         resolved_path = resolve_manifest_path(manifest_path, default_filename)
         self.manifest_path = resolved_path
 
         with open(resolved_path, 'r', encoding='utf-8') as f:
-            self.items = json.load(f)
+            all_items = json.load(f)
+
+        # For validation / test splits with a specific corruption filter (e.g. S&P specialist test)
+        if self.corruption_mode and self.split in ('val', 'test'):
+            filtered = [
+                it for it in all_items
+                if it.get('corruption_type') == self.corruption_mode or it.get('type') == self.corruption_mode
+            ]
+            self.items = filtered if len(filtered) > 0 else all_items
+        else:
+            self.items = all_items
 
         if len(self.items) == 0:
             raise ValueError(f"Manifest '{resolved_path}' contains 0 items.")
@@ -221,8 +236,12 @@ class OxfordPetDataset(Dataset):
         clean_np = self._load_image(item)
 
         if self.split == 'train':
-            # Training runtime corruption: 25% clean, 25% s&p, 25% blur, 25% occlusion
-            corrupted_np, label, params = apply_random_corruption_runtime(clean_np)
+            if self.corruption_mode:
+                # 100% targeted single-corruption stream for specialist training
+                corrupted_np, label, params = apply_targeted_corruption_runtime(clean_np, self.corruption_mode)
+            else:
+                # Balanced runtime corruption: 25% clean, 25% s&p, 25% blur, 25% occlusion
+                corrupted_np, label, params = apply_random_corruption_runtime(clean_np)
         else:
             # Deterministic corruption from manifest
             corrupted_np = apply_deterministic_corruption(clean_np, item)
@@ -249,7 +268,8 @@ def get_oxford_dataloaders(
     images_dir: str,
     batch_size: int = 32,
     num_workers: int = 0,
-    pin_memory: bool = True
+    pin_memory: bool = True,
+    corruption_mode: Optional[str] = None
 ):
     """Constructs train, val, and test DataLoaders for Oxford-IIIT Pet."""
     if not HAS_TORCH:
@@ -258,17 +278,20 @@ def get_oxford_dataloaders(
     train_ds = OxfordPetDataset(
         manifest_path=manifest_dir,
         images_dir=images_dir,
-        split='train'
+        split='train',
+        corruption_mode=corruption_mode
     )
     val_ds = OxfordPetDataset(
         manifest_path=manifest_dir,
         images_dir=images_dir,
-        split='val'
+        split='val',
+        corruption_mode=corruption_mode
     )
     test_ds = OxfordPetDataset(
         manifest_path=manifest_dir,
         images_dir=images_dir,
-        split='test'
+        split='test',
+        corruption_mode=corruption_mode
     )
 
     train_loader = DataLoader(
@@ -297,3 +320,4 @@ def get_oxford_dataloaders(
     )
 
     return train_loader, val_loader, test_loader
+

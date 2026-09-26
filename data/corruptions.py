@@ -145,16 +145,37 @@ def apply_random_corruption_runtime(img_np: np.ndarray, rng=None):
         rng = np.random.default_rng()
 
     label = int(rng.integers(0, 4))
+    return apply_targeted_corruption_runtime(img_np, label, rng=rng)
+
+
+def apply_targeted_corruption_runtime(img_np: np.ndarray, corruption_target, rng=None):
+    """
+    Applies a specific corruption type at runtime with randomized severity.
+    corruption_target: int (0, 1, 2, 3) or str ('clean', 'salt_and_pepper', 'gaussian_blur', 'rectangular_occlusion')
+    
+    Returns:
+      corrupted_img_np: np.ndarray
+      label: int (0, 1, 2, 3)
+      params: dict
+    """
+    if rng is None:
+        rng = np.random.default_rng()
+
+    if isinstance(corruption_target, str):
+        label = NAME_TO_CLASS.get(corruption_target.lower(), 0)
+    else:
+        label = int(corruption_target)
+
     params = {'type': CORRUPTION_NAMES[label]}
 
     if label == 0:  # Clean
-        return img_np.copy(), label, params
+        return img_np.copy(), 0, params
 
     elif label == 1:  # Salt and Pepper
         prob = float(rng.uniform(0.02, 0.15))
         params['prob'] = prob
         corrupted = apply_salt_and_pepper(img_np, prob, rng=rng)
-        return corrupted, label, params
+        return corrupted, 1, params
 
     elif label == 2:  # Gaussian blur
         k_options = [3, 5, 7]
@@ -163,7 +184,7 @@ def apply_random_corruption_runtime(img_np: np.ndarray, rng=None):
         params['kernel_size'] = kernel_size
         params['sigma'] = sigma
         corrupted = apply_gaussian_blur(img_np, kernel_size, sigma)
-        return corrupted, label, params
+        return corrupted, 2, params
 
     elif label == 3:  # Rectangular occlusion
         num_rects = int(rng.integers(1, 4))  # 1, 2, or 3
@@ -174,9 +195,10 @@ def apply_random_corruption_runtime(img_np: np.ndarray, rng=None):
         params['coverage'] = coverage
         params['rectangles'] = rects
         corrupted = apply_rectangular_occlusion(img_np, rects)
-        return corrupted, label, params
+        return corrupted, 3, params
 
     return img_np.copy(), 0, params
+
 
 
 def apply_deterministic_corruption(img_np: np.ndarray, meta: dict) -> np.ndarray:
