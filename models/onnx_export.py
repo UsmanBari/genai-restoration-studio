@@ -1,25 +1,35 @@
 """
-ONNX Export and Numerical Equivalence Verification for Universal Autoencoder (Task 1).
+ONNX Export and Numerical Equivalence Verification for Universal Autoencoder & Specialists.
 """
 
-from typing import Tuple, Dict, Any
+from typing import Tuple, Dict, Any, Optional
 import os
 import numpy as np
 
 try:
     import torch
-    import onnx
-    import onnxruntime as ort
     HAS_TORCH = True
 except ImportError:
-    HAS_TORCH = False
     torch = None
+    HAS_TORCH = False
+
+try:
+    import onnx
+    HAS_ONNX = True
+except ImportError:
     onnx = None
+    HAS_ONNX = False
+
+try:
+    import onnxruntime as ort
+    HAS_ORT = True
+except ImportError:
     ort = None
+    HAS_ORT = False
 
 
 def export_to_onnx(
-    model: torch.nn.Module,
+    model: Any,
     onnx_output_path: str,
     input_shape: Tuple[int, int, int, int] = (1, 3, 128, 128),
     opset_version: int = 16
@@ -27,6 +37,11 @@ def export_to_onnx(
     """
     Exports a PyTorch model to a self-contained ONNX format with all weights embedded.
     """
+    if not HAS_TORCH or torch is None:
+        raise RuntimeError("PyTorch is required to export models to ONNX.")
+    if not HAS_ONNX or onnx is None:
+        raise RuntimeError("The 'onnx' package is required to verify exported ONNX models.")
+
     os.makedirs(os.path.dirname(os.path.abspath(onnx_output_path)), exist_ok=True)
     model.eval()
 
@@ -63,20 +78,27 @@ def export_to_onnx(
     return onnx_output_path
 
 
-
 def verify_onnx_numerical_equivalence(
-    model: torch.nn.Module,
+    model: Any,
     onnx_path: str,
-    sample_batch: torch.Tensor,
+    sample_batch: Optional[Any] = None,
     atol: float = 1e-4,
     rtol: float = 1e-3
 ) -> Dict[str, Any]:
     """
-    Compares PyTorch vs. ONNX Runtime outputs on real test samples.
+    Compares PyTorch vs. ONNX Runtime outputs on test samples.
     Computes max absolute error, mean squared error, and verifies numerical parity.
     """
+    if not HAS_TORCH or torch is None:
+        raise RuntimeError("PyTorch is required for numerical equivalence checks.")
+    if not HAS_ORT or ort is None:
+        raise RuntimeError("onnxruntime is required for numerical equivalence checks.")
+
     model.eval()
     device = next(model.parameters()).device
+
+    if sample_batch is None:
+        sample_batch = torch.rand(2, 3, 128, 128)
 
     with torch.no_grad():
         pt_out = model(sample_batch.to(device)).cpu().numpy()
@@ -101,5 +123,7 @@ def verify_onnx_numerical_equivalence(
     return {
         'max_abs_diff': max_abs_diff,
         'mean_sq_diff': mean_sq_diff,
-        'is_close': is_close
+        'is_close': is_close,
+        'onnx_size_mb': os.path.getsize(onnx_path) / (1024 * 1024),
+        'equivalent': is_close
     }
