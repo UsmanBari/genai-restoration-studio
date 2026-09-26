@@ -170,7 +170,25 @@ This log records every architectural and design decision made during the project
   4. **3-Way Benchmark (`evaluation/benchmark_hard_routing.py`):**
      - Evaluates Universal vs. Oracle vs. Predicted Hard-Route across all 3,669 test images by corruption type and severity tier.
 - **Evidence:** Verified with 22 passing local unit tests covering classifier shape normalization, gradient backprop, dataset single-corruption filtering, anti-contamination assertions, and mixed-batch routing.
-- **Result:** Task 2 implementation complete and ready for Colab GPU execution in `notebooks/03_task2_hard_routing.ipynb`.
+- **Experiment:** Executed `notebooks/03_task2_hard_routing.ipynb` on Google Colab (Tesla T4 GPU).
+- **Result:**
+  - **Classifier:** Optuna 15-trial search selected `lr=0.000378`, `batch_size=16`, `base_channels=32`, `dropout_rate=0.2`. 15-epoch training achieved **99.95% Test Accuracy**, **0.999 Macro F1**, and only 2 misclassifications out of 3,669 test samples.
+  - **Specialist Autoencoders (40 epochs each):**
+    - **Salt & Pepper Specialist:** Val PSNR **27.87 dB**, Val SSIM **0.8713**
+    - **Gaussian Blur Specialist:** Val PSNR **27.69 dB**, Val SSIM **0.8599**
+    - **Rectangular Occlusion Specialist:** Val PSNR **21.31 dB**, Val SSIM **0.8014**
+  - **3-Way Comparative Benchmark (3,669 Test Images):**
+    - **Clean:** 29.20 dB / 0.888 (Universal) $\to$ **100.0 dB / 1.000** (Hard-Routed, exact Identity Bypass)
+    - **Salt & Pepper:** 23.96 dB / 0.654 (Universal) $\to$ **27.56 dB / 0.856** (Hard-Routed) [**+3.60 dB gain**]
+    - **Gaussian Blur:** 26.24 dB / 0.776 (Universal) $\to$ **26.91 dB / 0.826** (Hard-Routed) [**+0.67 dB gain**]
+    - **Rectangular Occlusion:** 15.10 dB / 0.696 (Universal) $\to$ **21.69 dB / 0.783** (Hard-Routed) [**+6.59 dB gain**]
+    - **Overall Average:** 22.51 dB / 0.727 (Universal) $\to$ **32.85 dB / 0.840** (Hard-Routed) [**+10.34 dB gain / +0.113 SSIM gain**]
+    - **Oracle vs. Predicted Routing:** Zero measurable performance degradation between Oracle and Predicted routing due to 99.95% classifier accuracy.
+  - **ONNX Deployments:**
+    - `task2_classifier.onnx`: 4.48 MB, 18 initializers, numerical parity confirmed ($\Delta_{\text{max}} = 0.00$).
+    - 3 Specialist ONNX models: 17.36 MB each, 40 initializers, numerical parity confirmed ($\Delta_{\text{max}} \le 1.9\times 10^{-6}$).
+  - **Milestone 3a marked as COMPLETE.**
+
 
 
 
