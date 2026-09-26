@@ -24,6 +24,11 @@ except ImportError:
     verify_onnx_numerical_equivalence = None
 
 try:
+    from models.moe import SoftMoERestorationNetwork
+except ImportError:
+    SoftMoERestorationNetwork = None
+
+try:
     from models.onnx_runner import UniversalRestorationONNXRunner
 except ImportError:
     UniversalRestorationONNXRunner = None
@@ -32,6 +37,7 @@ __all__ = [
     'UniversalAutoencoder',
     'CorruptionClassifier',
     'HardRoutingRestorationPipeline',
+    'SoftMoERestorationNetwork',
     'export_to_onnx',
     'verify_onnx_numerical_equivalence',
     'UniversalRestorationONNXRunner'

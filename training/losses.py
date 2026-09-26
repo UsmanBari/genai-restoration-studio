@@ -112,3 +112,99 @@ class RestorationLoss(nn.Module):
             'ssim_loss': ssim_loss_val.item()
         }
         return total_loss, breakdown
+
+
+class SoftMoECompositeLoss(nn.Module):
+    """
+    Composite loss function for Soft Mixture-of-Experts Joint Training:
+      L_total = lambda_recon * L_recon + lambda_class * L_class + lambda_balance * L_balance + lambda_entropy * L_entropy
+      
+    Components:
+      1. L_recon = alpha * L1(pred, target) + (1 - alpha) * (1 - SSIM(pred, target))
+      2. L_class = CrossEntropy(logits, labels)
+      3. L_balance = sum_k ((1/B * sum_i w_ik) - 0.25)^2  (Batch load balance)
+      4. L_entropy = (1/B) * sum_i H(w_i) = - (1/B) * sum_i sum_k (w_ik * log(w_ik + eps)) (Per-sample entropy)
+      
+    Args:
+      lambda_recon: Weight for blended reconstruction loss (default: 0.8)
+      lambda_class: Weight for corruption classification loss on gate logits (default: 0.2)
+      lambda_balance: Weight for batch load balancing regularizer (default: 0.1)
+      lambda_entropy: Weight for per-sample routing entropy regularizer (default: 0.01)
+      alpha: Trade-off between L1 and SSIM in reconstruction (default: 0.90)
+    """
+
+    def __init__(
+        self,
+        lambda_recon: float = 0.8,
+        lambda_class: float = 0.2,
+        lambda_balance: float = 0.1,
+        lambda_entropy: float = 0.01,
+        alpha: float = 0.90,
+        window_size: int = 11,
+        eps: float = 1e-8
+    ):
+        super().__init__()
+        self.lambda_recon = lambda_recon
+        self.lambda_class = lambda_class
+        self.lambda_balance = lambda_balance
+        self.lambda_entropy = lambda_entropy
+        self.alpha = alpha
+        self.eps = eps
+
+        self.l1_loss = nn.L1Loss()
+        self.ssim_loss = SSIMLoss(window_size=window_size)
+        self.ce_loss = nn.CrossEntropyLoss()
+
+    def forward(
+        self,
+        pred: torch.Tensor,
+        target: torch.Tensor,
+        logits: torch.Tensor,
+        weights: torch.Tensor,
+        labels: torch.Tensor
+    ) -> Tuple[torch.Tensor, Dict[str, float]]:
+        """
+        Args:
+          pred: Blended reconstructed batch [B, C, H, W]
+          target: Clean ground-truth batch [B, C, H, W]
+          logits: Raw gate logits before softmax [B, 4]
+          weights: Softmax-normalized gating weights [B, 4]
+          labels: Ground-truth corruption class indices [B] in {0, 1, 2, 3}
+        """
+        # 1. Reconstruction loss
+        l1_val = self.l1_loss(pred, target)
+        ssim_val = ssim_tensor(pred, target)
+        ssim_loss_val = 1.0 - ssim_val
+        l_recon = self.alpha * l1_val + (1.0 - self.alpha) * ssim_loss_val
+
+        # 2. Corruption classification loss (on raw logits)
+        l_class = self.ce_loss(logits, labels)
+
+        # 3. Batch load balance regularizer: sum_k (mean_w_k - 0.25)^2
+        mean_weights_per_expert = weights.mean(dim=0)  # Shape [4]
+        target_mean = 1.0 / weights.shape[1]  # 0.25 for 4 experts
+        l_balance = torch.sum((mean_weights_per_expert - target_mean) ** 2)
+
+        # 4. Per-sample routing entropy: (1/B) sum_i [- sum_k w_ik * log(w_ik + eps)]
+        sample_entropy = -torch.sum(weights * torch.log(weights + self.eps), dim=1)  # Shape [B]
+        l_entropy = sample_entropy.mean()
+
+        # Composite total loss
+        total_loss = (
+            self.lambda_recon * l_recon
+            + self.lambda_class * l_class
+            + self.lambda_balance * l_balance
+            + self.lambda_entropy * l_entropy
+        )
+
+        breakdown = {
+            'loss': total_loss.item(),
+            'l_recon': l_recon.item(),
+            'l_class': l_class.item(),
+            'l_balance': l_balance.item(),
+            'l_entropy': l_entropy.item(),
+            'l1': l1_val.item(),
+            'ssim': ssim_val.item(),
+            'ssim_loss': ssim_loss_val.item()
+        }
+        return total_loss, breakdown

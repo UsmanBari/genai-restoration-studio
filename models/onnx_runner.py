@@ -66,3 +66,58 @@ class UniversalRestorationONNXRunner:
         restored_img = self.postprocess_array(output_tensor)
         latency_ms = (time.time() - t0) * 1000.0
         return restored_img, latency_ms
+
+
+class SoftMoEONNXRunner:
+    """
+    Inference Runner for Soft Mixture-of-Experts (Task 3) using ONNX Runtime.
+    Returns: (restored_pil_image, routing_weights_list, latency_ms)
+    """
+
+    def __init__(self, onnx_model_path: str):
+        self.onnx_model_path = onnx_model_path
+        self.session = None
+        self.input_name = None
+        self.output_names = None
+        self._load_session()
+
+    def _load_session(self):
+        if not os.path.exists(self.onnx_model_path):
+            raise FileNotFoundError(f"Soft MoE ONNX model not found at {self.onnx_model_path}")
+
+        providers = ['CPUExecutionProvider']
+        self.session = ort.InferenceSession(self.onnx_model_path, providers=providers)
+        self.input_name = self.session.get_inputs()[0].name
+        self.output_names = [out.name for out in self.session.get_outputs()]
+
+    def preprocess_image(self, image: Image.Image, target_size: Tuple[int, int] = (128, 128)) -> np.ndarray:
+        if image.mode != 'RGB':
+            image = image.convert('RGB')
+        if image.size != target_size:
+            image = image.resize(target_size, Image.Resampling.BILINEAR)
+
+        arr = np.array(image, dtype=np.float32) / 255.0
+        arr = np.transpose(arr, (2, 0, 1))
+        arr = np.expand_dims(arr, axis=0)
+        return arr
+
+    def postprocess_array(self, tensor_np: np.ndarray) -> Image.Image:
+        arr = tensor_np[0]
+        arr = np.clip(arr, 0.0, 1.0)
+        arr = np.transpose(arr, (1, 2, 0))
+        arr = (arr * 255.0).astype(np.uint8)
+        return Image.fromarray(arr)
+
+    def restore(self, image: Image.Image) -> Tuple[Image.Image, List[float], float]:
+        """
+        Runs Soft MoE inference on input PIL image.
+        Returns:
+          (restored_image, routing_weights [4], latency_ms)
+        """
+        t0 = time.time()
+        input_tensor = self.preprocess_image(image)
+        outputs = self.session.run(None, {self.input_name: input_tensor})
+        restored_img = self.postprocess_array(outputs[0])
+        routing_weights = outputs[1][0].tolist() if len(outputs) > 1 else [0.25, 0.25, 0.25, 0.25]
+        latency_ms = (time.time() - t0) * 1000.0
+        return restored_img, routing_weights, latency_ms

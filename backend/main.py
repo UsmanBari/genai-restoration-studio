@@ -15,7 +15,7 @@ from PIL import Image
 import numpy as np
 
 from backend.schemas import HealthResponse, RestorationResponse, SketchResponse
-from models.onnx_runner import UniversalRestorationONNXRunner
+from models.onnx_runner import UniversalRestorationONNXRunner, SoftMoEONNXRunner
 
 app = FastAPI(
     title="Generative AI Restoration & Synthesis Studio API",
@@ -34,7 +34,9 @@ app.add_middleware(
 
 # Model paths and runners
 TASK1_ONNX_PATH = os.path.join("models", "task1_universal.onnx")
+TASK3_ONNX_PATH = os.path.join("models", "task3_soft_moe.onnx")
 universal_runner: Optional[UniversalRestorationONNXRunner] = None
+moe_runner: Optional[SoftMoEONNXRunner] = None
 
 
 def get_universal_runner() -> Optional[UniversalRestorationONNXRunner]:
@@ -49,6 +51,18 @@ def get_universal_runner() -> Optional[UniversalRestorationONNXRunner]:
     return universal_runner
 
 
+def get_moe_runner() -> Optional[SoftMoEONNXRunner]:
+    global moe_runner
+    if moe_runner is None and os.path.exists(TASK3_ONNX_PATH):
+        try:
+            moe_runner = SoftMoEONNXRunner(TASK3_ONNX_PATH)
+            print(f"Loaded Soft MoE ONNX model from {TASK3_ONNX_PATH}")
+        except Exception as e:
+            print(f"Error loading Soft MoE ONNX model from {TASK3_ONNX_PATH}: {e}")
+            moe_runner = None
+    return moe_runner
+
+
 def image_to_base64(img: Image.Image, format: str = "PNG") -> str:
     buffered = io.BytesIO()
     img.save(buffered, format=format)
@@ -58,16 +72,17 @@ def image_to_base64(img: Image.Image, format: str = "PNG") -> str:
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
     """Health check endpoint providing system status and model readiness."""
-    runner = get_universal_runner()
+    u_runner = get_universal_runner()
+    m_runner = get_moe_runner()
     return HealthResponse(
         status="ok",
         version="1.0.0",
         device="cpu",
         models_loaded={
-            "universal_autoencoder": runner is not None,
+            "universal_autoencoder": u_runner is not None,
             "hard_routing_classifier": False,
             "hard_routing_experts": False,
-            "soft_moe": False,
+            "soft_moe": m_runner is not None,
             "fs2k_pix2pix": False
         }
     )
@@ -141,27 +156,45 @@ async def soft_mixture_restoration(
     file: UploadFile = File(...)
 ):
     """
-    Task 3: Soft Mixture-of-Experts Restoration stub.
-    Computes soft gating weights and blends expert outputs.
+    Task 3: Soft Mixture-of-Experts Restoration endpoint.
+    Computes soft gating weights and blends expert outputs using ONNX Runtime.
     """
     t0 = time.time()
     try:
         contents = await file.read()
         image = Image.open(io.BytesIO(contents)).convert("RGB").resize((128, 128))
-        b64_output = image_to_base64(image)
-        latency = (time.time() - t0) * 1000.0
-        return RestorationResponse(
-            task="soft-mixture",
-            status="stub_ready",
-            output_image_base64=b64_output,
-            expert_weights={
-                "clean_expert": 0.05,
-                "sp_expert": 0.10,
-                "blur_expert": 0.75,
-                "occlusion_expert": 0.10
-            },
-            latency_ms=round(latency, 2)
-        )
+        runner = get_moe_runner()
+
+        if runner is not None:
+            restored_img, weights, latency = runner.restore(image)
+            b64_output = image_to_base64(restored_img)
+            return RestorationResponse(
+                task="soft-mixture",
+                status="restored",
+                output_image_base64=b64_output,
+                expert_weights={
+                    "clean_expert": round(weights[0], 4),
+                    "sp_expert": round(weights[1], 4),
+                    "blur_expert": round(weights[2], 4),
+                    "occlusion_expert": round(weights[3], 4)
+                },
+                latency_ms=round(latency, 2)
+            )
+        else:
+            b64_output = image_to_base64(image)
+            latency = (time.time() - t0) * 1000.0
+            return RestorationResponse(
+                task="soft-mixture",
+                status="stub_ready",
+                output_image_base64=b64_output,
+                expert_weights={
+                    "clean_expert": 0.05,
+                    "sp_expert": 0.10,
+                    "blur_expert": 0.75,
+                    "occlusion_expert": 0.10
+                },
+                latency_ms=round(latency, 2)
+            )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 

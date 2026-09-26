@@ -189,6 +189,32 @@ This log records every architectural and design decision made during the project
     - 3 Specialist ONNX models: 17.36 MB each, 40 initializers, numerical parity confirmed ($\Delta_{\text{max}} \le 1.9\times 10^{-6}$).
   - **Milestone 3a marked as COMPLETE.**
 
+---
+
+## 5. Milestone 3b — Soft Mixture-of-Experts Restoration (Task 3)
+
+- **Context:**
+  Hard routing sends an image strictly to a single specialist. This fails when images exhibit compound corruptions, near-boundary artifacts, or slight classifier uncertainty. Task 3 transforms the hard-routing pipeline into a differentiable, continuous soft mixture-of-experts model (`SoftMoERestorationNetwork`).
+- **Composite Loss Formulation & Formalization:**
+  - **Exact 4-Term Objective:**
+    $$\mathcal{L}_{\text{total}} = \lambda_1 \mathcal{L}_{\text{recon}} + \lambda_2 \mathcal{L}_{\text{class}} + \lambda_3 \mathcal{L}_{\text{balance}} + \lambda_4 \mathcal{L}_{\text{entropy}}$$
+    where initial baseline weights are $\lambda_1 = 0.8, \lambda_2 = 0.2, \lambda_3 = 0.1, \lambda_4 = 0.01$.
+  - **Term 1 (Reconstruction):** $\mathcal{L}_{\text{recon}} = \alpha \text{L1}(\hat{y}, y) + (1-\alpha)(1 - \text{SSIM}(\hat{y}, y))$ with $\alpha=0.90$.
+  - **Term 2 (Classification):** $\mathcal{L}_{\text{class}} = \text{CrossEntropy}(\mathbf{z}, y_{\text{true}})$ computed on raw unnormalized logits $\mathbf{z}$ to avoid double-softmax, anchoring gate features to ground-truth corruption semantics.
+  - **Term 3 (Batch Load Balance):** $\mathcal{L}_{\text{balance}} = \sum_{k=0}^3 (\bar{w}_k - 0.25)^2$ where $\bar{w}_k = \frac{1}{B}\sum_{i=1}^B w_{i, k}$ operates across batch columns to prevent global expert starvation/collapse.
+  - **Term 4 (Per-Sample Routing Entropy):** $\mathcal{L}_{\text{entropy}} = \frac{1}{B}\sum_{i=1}^B H(\mathbf{w}_i) = -\frac{1}{B}\sum_{i=1}^B \sum_{k=0}^3 w_{i,k} \log(w_{i,k} + \epsilon)$ operates across rows to penalize indecisive routing and encourage sharp per-sample specialization.
+- **Architecture & Two-Phase Training Strategy:**
+  1. **Architecture (`models/moe.py`):**
+     - 4 Expert branches: Branch 0 is Identity Bypass ($f_0(x) = x$), Branches 1–3 are `UniversalAutoencoder` specialists (S&P, Blur, Occlusion).
+     - Gate Network: `CorruptionClassifier` with temperature scaling $\mathbf{w} = \text{softmax}(\mathbf{z}/\tau)$.
+     - Differentiable Blended Output: $\hat{y} = \sum_{k=0}^3 w_k f_k(x)$.
+  2. **Warm-Start Initialization:** Preloaded weights from Task 2 classifier and 3 specialists.
+  3. **Phase 1 (Gate Warm-Up):** Experts frozen (`freeze_experts()`), train ONLY gate for 5 epochs with $\eta_{\text{warmup}} = 5\times 10^{-4}$.
+  4. **Phase 2 (Joint End-to-End Fine-Tuning):** Unfreeze all experts (`unfreeze_experts()`), jointly train with $\eta_{\text{joint}} \in [5\times 10^{-5}, 5\times 10^{-4}]$ and `CosineAnnealingLR` for 30 epochs.
+- **Optuna Search (`training/optuna_moe.py`):** 15 trials with `MedianPruner` searching $\eta_{\text{joint}}, \tau, \lambda_2, \lambda_3, \lambda_4, \alpha$.
+- **4-Way Benchmark (`evaluation/benchmark_moe.py`):** Universal (Task 1) vs. Oracle Hard vs. Predicted Hard (Task 2) vs. Soft MoE (Task 3) across 3,669 test images, logging weight distribution matrices and routing heatmaps.
+- **Evidence:** Verified with 27 passing local unit tests covering forward shapes, temperature scaling, freeze/unfreeze mechanisms, 4-term composite loss backprop, and multi-output ONNX export parity.
+
 
 
 

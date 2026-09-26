@@ -53,18 +53,17 @@ def export_to_onnx(
     in_names = input_names or ['input_image']
     out_names = output_names or ['restored_image']
 
-    print(f"Exporting PyTorch model to self-contained ONNX: {onnx_output_path} (Opset {opset_version})...")
-    
+    dynamic_axes = {in_names[0]: {0: 'batch_size'}}
+    for out_name in out_names:
+        dynamic_axes[out_name] = {0: 'batch_size'}
+
     export_kwargs = {
         'export_params': True,
         'opset_version': opset_version,
         'do_constant_folding': True,
         'input_names': in_names,
         'output_names': out_names,
-        'dynamic_axes': {
-            in_names[0]: {0: 'batch_size'},
-            out_names[0]: {0: 'batch_size'}
-        }
+        'dynamic_axes': dynamic_axes
     }
 
     # Use dynamo=False on PyTorch 2.x to guarantee all weights are embedded directly
@@ -92,7 +91,7 @@ def verify_onnx_numerical_equivalence(
 ) -> Dict[str, Any]:
     """
     Compares PyTorch vs. ONNX Runtime outputs on test samples.
-    Computes max absolute error, mean squared error, and verifies numerical parity.
+    Supports single-tensor outputs or tuple/multi-tensor outputs (e.g. Soft MoE).
     """
     if not HAS_TORCH or torch is None:
         raise RuntimeError("PyTorch is required for numerical equivalence checks.")
@@ -106,21 +105,26 @@ def verify_onnx_numerical_equivalence(
         sample_batch = torch.rand(2, 3, 128, 128)
 
     with torch.no_grad():
-        pt_out = model(sample_batch.to(device)).cpu().numpy()
+        pt_res = model(sample_batch.to(device))
+        if isinstance(pt_res, tuple):
+            pt_outs = [t.cpu().numpy() for t in pt_res if isinstance(t, torch.Tensor)]
+        else:
+            pt_outs = [pt_res.cpu().numpy()]
 
     # ONNX Runtime inference
     session = ort.InferenceSession(onnx_path, providers=['CPUExecutionProvider'])
     input_name = session.get_inputs()[0].name
     ort_inputs = {input_name: sample_batch.cpu().numpy().astype(np.float32)}
-    onnx_out = session.run(None, ort_inputs)[0]
+    onnx_outs = session.run(None, ort_inputs)
 
-    max_abs_diff = float(np.max(np.abs(pt_out - onnx_out)))
-    mean_sq_diff = float(np.mean((pt_out - onnx_out) ** 2))
-    is_close = bool(np.allclose(pt_out, onnx_out, rtol=rtol, atol=atol))
+    max_abs_diff = float(max(np.max(np.abs(p - o)) for p, o in zip(pt_outs, onnx_outs)))
+    mean_sq_diff = float(np.mean([np.mean((p - o) ** 2) for p, o in zip(pt_outs, onnx_outs)]))
+    is_close = bool(all(np.allclose(p, o, rtol=rtol, atol=atol) for p, o in zip(pt_outs, onnx_outs)))
 
     print("\n=== ONNX Numerical Parity Verification ===")
-    print(f"  PyTorch Output Shape: {pt_out.shape} | Range: [{pt_out.min():.4f}, {pt_out.max():.4f}]")
-    print(f"  ONNX Output Shape:    {onnx_out.shape} | Range: [{onnx_out.min():.4f}, {onnx_out.max():.4f}]")
+    print(f"  Outputs Verified:     {len(pt_outs)} output tensors")
+    print(f"  PyTorch Primary Out:  {pt_outs[0].shape} | Range: [{pt_outs[0].min():.4f}, {pt_outs[0].max():.4f}]")
+    print(f"  ONNX Primary Out:     {onnx_outs[0].shape} | Range: [{onnx_outs[0].min():.4f}, {onnx_outs[0].max():.4f}]")
     print(f"  Max Absolute Diff:    {max_abs_diff:.6e} (Tolerance atol={atol})")
     print(f"  Mean Squared Diff:    {mean_sq_diff:.6e}")
     print(f"  Parity Status:        {'PASS (Equivalence Confirmed)' if is_close else 'FAIL (Deviation Detected)'}")
