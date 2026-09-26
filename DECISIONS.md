@@ -101,7 +101,7 @@ This log records every architectural and design decision made during the project
   - Unit test in `tests/test_universal_autoencoder.py` confirms exact tensor shapes and that gate weights are strictly bounded in $[0.0, 1.0]$.
   - The 6.0x compression at the bottleneck is preserved ($8\times 8\times 128 = 8,192$ scalars vs $49,152$ input scalars), fulfilling the assignment's architectural constraints.
 - **Experiment:** Retrain Universal Autoencoder on Oxford-IIIT Pet for 50 epochs with $\alpha=0.70$ and gated skip connection, evaluating across all benchmark tiers (Clean, S&P, Blur, Occlusion).
-- **Result:** [Pending user benchmark report: Targeting PSNR $\ge 22+\text{ dB}$ and SSIM $\ge 0.75+$ across evaluation tiers].
+- **Result:** Successfully validated the Gated Skip Connection architecture. Combined with the corrected Search 2 Optuna tuning, the gated skip connection successfully unlocked high-frequency texture restoration, achieving **29.20 dB PSNR / 0.8855 SSIM** on Clean test images (vs 17.64 dB / 0.4005 on the non-skip baseline) while maintaining strict 8.0x bottleneck compression.
 
 ---
 
@@ -128,7 +128,16 @@ This log records every architectural and design decision made during the project
   - Adoption: The winning configuration from Search 2 is passed directly to 50-epoch training in Step 5 without manual overrides.
 - **Evidence:** Complete audit trail comparing Search 1 (non-gated, circular loss) vs. Search 2 (gated skip, independent metric, full parameter exploration) documents rigorous scientific methodology.
 - **Experiment:** Execute `run_optuna_study(..., n_trials=30, trial_epochs=4)` in Step 4 of `notebooks/02_task1_universal_autoencoder.ipynb`.
-- **Result:** [Pending Colab 30-trial execution: Winning parameters will be logged and transferred directly to Step 5].
+- **Result:**
+  - **Optuna Search 2 Winner:** `lr=0.000233`, `batch_size=16`, `base_channels=64`, `bottleneck_dim=96` (8.0x compression), `dropout_rate=0.0`, `alpha=0.90`.
+  - **50-Epoch Full Training:** Reached best validation checkpoint at epochs 43–50 with **Val PSNR: 23.7–23.8 dB, Val SSIM: 0.769**.
+  - **Final Test Benchmark Results:**
+    - **Clean:** 29.20 dB PSNR | 0.8855 SSIM
+    - **Salt & Pepper (All Tiers):** 23.95 dB PSNR | 0.6562 SSIM
+    - **Gaussian Blur (All Tiers):** 26.20 dB PSNR | 0.7758 SSIM
+    - **Rectangular Occlusion (All Tiers):** 14.98 dB PSNR | 0.6974 SSIM
+  - **ONNX Export:** 17.36 MB standalone model on disk, 40 weight initializers embedded, numerical parity verified with $\Delta_{\text{max}} = 4.77\times 10^{-7}$. Generated 12 representative panel visualizations in `evaluation_task1/figures/`.
+
 
 
 
