@@ -4,7 +4,7 @@ Operates on PyTorch tensors or NumPy arrays in range [0.0, 1.0].
 """
 
 import math
-from typing import Dict, Tuple, Union
+from typing import Dict, Tuple, Union, Any, Optional
 import numpy as np
 from skimage.metrics import structural_similarity as skimage_ssim
 from skimage.metrics import peak_signal_noise_ratio as skimage_psnr
@@ -62,3 +62,23 @@ def evaluate_image_pair(pred_np: np.ndarray, target_np: np.ndarray) -> Dict[str,
         'ssim': round(ssim_val, 4),
         'l1': round(l1_val, 6)
     }
+
+
+def calculate_psnr(pred: Union[np.ndarray, Any], target: Union[np.ndarray, Any]) -> float:
+    """Computes PSNR from NumPy array or PyTorch Tensor."""
+    if hasattr(pred, "detach"):
+        import torch
+        mse = float(torch.mean((pred.detach().float() - target.detach().float()) ** 2).item())
+        if mse <= 0:
+            return 100.0
+        return 10.0 * math.log10(1.0 / mse)
+    return compute_psnr(pred, target)
+
+
+def calculate_ssim(pred: Union[np.ndarray, Any], target: Union[np.ndarray, Any]) -> float:
+    """Computes SSIM from NumPy array or PyTorch Tensor batch."""
+    if hasattr(pred, "permute"):
+        p_np = pred.detach().permute(0, 2, 3, 1).cpu().numpy()
+        t_np = target.detach().permute(0, 2, 3, 1).cpu().numpy()
+        return float(np.mean([compute_ssim(p_np[i], t_np[i]) for i in range(len(p_np))]))
+    return compute_ssim(pred, target)

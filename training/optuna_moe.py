@@ -13,9 +13,16 @@ Optimizes:
 from typing import Dict, Any, Optional
 import os
 import torch
-import optuna
-from optuna.pruners import MedianPruner
 from torch.utils.data import DataLoader
+
+try:
+    import optuna
+    from optuna.pruners import MedianPruner
+    HAS_OPTUNA = True
+except ImportError:
+    optuna = None
+    MedianPruner = None
+    HAS_OPTUNA = False
 
 from models.moe import SoftMoERestorationNetwork
 from training.losses import SoftMoECompositeLoss
