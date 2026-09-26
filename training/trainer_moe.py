@@ -24,7 +24,7 @@ from torch.utils.data import DataLoader
 
 from models.moe import SoftMoERestorationNetwork
 from training.losses import SoftMoECompositeLoss
-from evaluation.metrics import calculate_psnr, calculate_ssim
+from evaluation.metrics import compute_psnr, compute_ssim, compute_l1
 
 
 def train_one_epoch_moe(
@@ -62,7 +62,8 @@ def train_one_epoch_moe(
 
         # Metrics
         with torch.no_grad():
-            psnr_val = calculate_psnr(reconstructed, clean)
+            mse = torch.mean((reconstructed.detach() - clean.detach()) ** 2).item()
+            psnr_val = 100.0 if mse <= 0 else 10.0 * math.log10(1.0 / mse)
             ssim_val = breakdown['ssim']
 
         running_loss += breakdown['loss'] * batch_size
@@ -123,7 +124,8 @@ def evaluate_moe(
         reconstructed, weights, logits = model(corrupted)
         loss, breakdown = criterion(reconstructed, clean, logits, weights, labels)
 
-        psnr_val = calculate_psnr(reconstructed, clean)
+        mse = torch.mean((reconstructed.detach() - clean.detach()) ** 2).item()
+        psnr_val = 100.0 if mse <= 0 else 10.0 * math.log10(1.0 / mse)
         ssim_val = breakdown['ssim']
 
         running_loss += breakdown['loss'] * batch_size
