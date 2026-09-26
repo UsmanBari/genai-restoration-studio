@@ -1,8 +1,8 @@
 """
-ONNX Export and Numerical Equivalence Verification for Universal Autoencoder & Specialists.
+ONNX Export and Numerical Equivalence Verification for Universal Autoencoder, Classifier & Specialists.
 """
 
-from typing import Tuple, Dict, Any, Optional
+from typing import Tuple, Dict, Any, Optional, List
 import os
 import numpy as np
 
@@ -32,7 +32,9 @@ def export_to_onnx(
     model: Any,
     onnx_output_path: str,
     input_shape: Tuple[int, int, int, int] = (1, 3, 128, 128),
-    opset_version: int = 16
+    opset_version: int = 18,
+    input_names: Optional[List[str]] = None,
+    output_names: Optional[List[str]] = None
 ) -> str:
     """
     Exports a PyTorch model to a self-contained ONNX format with all weights embedded.
@@ -48,22 +50,25 @@ def export_to_onnx(
     device = next(model.parameters()).device
     dummy_input = torch.randn(*input_shape, device=device)
 
+    in_names = input_names or ['input_image']
+    out_names = output_names or ['restored_image']
+
     print(f"Exporting PyTorch model to self-contained ONNX: {onnx_output_path} (Opset {opset_version})...")
     
     export_kwargs = {
         'export_params': True,
         'opset_version': opset_version,
         'do_constant_folding': True,
-        'input_names': ['input_image'],
-        'output_names': ['restored_image'],
+        'input_names': in_names,
+        'output_names': out_names,
         'dynamic_axes': {
-            'input_image': {0: 'batch_size'},
-            'restored_image': {0: 'batch_size'}
+            in_names[0]: {0: 'batch_size'},
+            out_names[0]: {0: 'batch_size'}
         }
     }
 
-    # Use dynamo=False on PyTorch 2.x to guarantee all weights (2.6M - 4.6M params, ~10-18 MB)
-    # are embedded directly into the standalone .onnx protobuf rather than stripped or externalized
+    # Use dynamo=False on PyTorch 2.x to guarantee all weights are embedded directly
+    # into the standalone .onnx protobuf rather than stripped or externalized
     try:
         torch.onnx.export(model, dummy_input, onnx_output_path, dynamo=False, **export_kwargs)
     except TypeError:
