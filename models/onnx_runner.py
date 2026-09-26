@@ -3,7 +3,7 @@ Unified ONNX Runtime Inference Runner for serving models locally.
 Provides clean APIs for Universal Restoration, Hard-Routing, MoE, and Face-to-Sketch.
 """
 
-from typing import Optional, Union, Tuple
+from typing import Optional, Union, Tuple, List, Dict, Any
 import os
 import time
 import numpy as np
