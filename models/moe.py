@@ -177,7 +177,10 @@ class SoftMoERestorationNetwork(nn.Module):
             if not path or not os.path.exists(path):
                 return False
             try:
-                ckpt = torch.load(path, map_location=device)
+                try:
+                    ckpt = torch.load(path, map_location=device, weights_only=False)
+                except TypeError:
+                    ckpt = torch.load(path, map_location=device)
                 state_dict = ckpt.get("model_state_dict", ckpt.get("state_dict", ckpt))
                 model.load_state_dict(state_dict, strict=True)
                 return True

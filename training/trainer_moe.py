@@ -43,16 +43,14 @@ def train_one_epoch_moe(
     running_l_entropy = 0.0
     running_l1 = 0.0
     running_ssim = 0.0
-    running_psnr = 0.0
-    total_samples = 0
+    num_batches = len(dataloader)
 
     for batch in dataloader:
         corrupted = batch['corrupted'].to(device, non_blocking=True)
         clean = batch['clean'].to(device, non_blocking=True)
         labels = batch['label'].to(device, non_blocking=True)
-        batch_size = corrupted.size(0)
 
-        optimizer.zero_grad()
+        optimizer.zero_grad(set_to_none=True)
         reconstructed, weights, logits = model(corrupted)
         loss, breakdown = criterion(reconstructed, clean, logits, weights, labels)
 
@@ -60,23 +58,15 @@ def train_one_epoch_moe(
         nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
         optimizer.step()
 
-        # Metrics
-        with torch.no_grad():
-            mse = torch.mean((reconstructed.detach() - clean.detach()) ** 2).item()
-            psnr_val = 100.0 if mse <= 0 else 10.0 * math.log10(1.0 / mse)
-            ssim_val = breakdown['ssim']
+        running_loss += breakdown['loss']
+        running_l_recon += breakdown['l_recon']
+        running_l_class += breakdown['l_class']
+        running_l_balance += breakdown['l_balance']
+        running_l_entropy += breakdown['l_entropy']
+        running_l1 += breakdown['l1']
+        running_ssim += breakdown['ssim']
 
-        running_loss += breakdown['loss'] * batch_size
-        running_l_recon += breakdown['l_recon'] * batch_size
-        running_l_class += breakdown['l_class'] * batch_size
-        running_l_balance += breakdown['l_balance'] * batch_size
-        running_l_entropy += breakdown['l_entropy'] * batch_size
-        running_l1 += breakdown['l1'] * batch_size
-        running_ssim += ssim_val * batch_size
-        running_psnr += psnr_val * batch_size
-        total_samples += batch_size
-
-    n = max(total_samples, 1)
+    n = max(1, num_batches)
     return {
         'loss': running_loss / n,
         'l_recon': running_l_recon / n,
@@ -84,8 +74,7 @@ def train_one_epoch_moe(
         'l_balance': running_l_balance / n,
         'l_entropy': running_l_entropy / n,
         'l1': running_l1 / n,
-        'ssim': running_ssim / n,
-        'psnr': running_psnr / n
+        'ssim': running_ssim / n
     }
 
 
@@ -102,15 +91,15 @@ def evaluate_moe(
       (metrics_dict, average_weights_per_class [4, 4])
     """
     model.eval()
-    running_loss = 0.0
-    running_l_recon = 0.0
-    running_l_class = 0.0
-    running_l_balance = 0.0
-    running_l_entropy = 0.0
-    running_l1 = 0.0
-    running_ssim = 0.0
-    running_psnr = 0.0
-    total_samples = 0
+    total_loss = 0.0
+    total_l_recon = 0.0
+    total_l_class = 0.0
+    total_l_balance = 0.0
+    total_l_entropy = 0.0
+    total_l1 = 0.0
+    total_ssim = 0.0
+    total_psnr = 0.0
+    count = 0
 
     class_weights_sum = np.zeros((4, 4), dtype=np.float64)
     class_counts = np.zeros(4, dtype=np.int64)
@@ -119,44 +108,47 @@ def evaluate_moe(
         corrupted = batch['corrupted'].to(device, non_blocking=True)
         clean = batch['clean'].to(device, non_blocking=True)
         labels = batch['label'].to(device, non_blocking=True)
-        batch_size = corrupted.size(0)
+        bs = corrupted.size(0)
 
         reconstructed, weights, logits = model(corrupted)
+        reconstructed = torch.clamp(reconstructed, 0.0, 1.0)
         loss, breakdown = criterion(reconstructed, clean, logits, weights, labels)
 
-        mse = torch.mean((reconstructed.detach() - clean.detach()) ** 2).item()
-        psnr_val = 100.0 if mse <= 0 else 10.0 * math.log10(1.0 / mse)
-        ssim_val = breakdown['ssim']
+        total_loss += breakdown['loss'] * bs
+        total_l_recon += breakdown['l_recon'] * bs
+        total_l_class += breakdown['l_class'] * bs
+        total_l_balance += breakdown['l_balance'] * bs
+        total_l_entropy += breakdown['l_entropy'] * bs
+        total_l1 += breakdown['l1'] * bs
+        total_ssim += breakdown['ssim'] * bs
 
-        running_loss += breakdown['loss'] * batch_size
-        running_l_recon += breakdown['l_recon'] * batch_size
-        running_l_class += breakdown['l_class'] * batch_size
-        running_l_balance += breakdown['l_balance'] * batch_size
-        running_l_entropy += breakdown['l_entropy'] * batch_size
-        running_l1 += breakdown['l1'] * batch_size
-        running_ssim += ssim_val * batch_size
-        running_psnr += psnr_val * batch_size
-        total_samples += batch_size
+        # Standard NumPy-based PSNR computation per image (matching Task 1 & 2)
+        pred_np = reconstructed.permute(0, 2, 3, 1).cpu().numpy()
+        clean_np = clean.permute(0, 2, 3, 1).cpu().numpy()
+        for i in range(bs):
+            total_psnr += compute_psnr(pred_np[i], clean_np[i])
+
+        count += bs
 
         # Track expert weight distribution per true corruption class
         weights_np = weights.cpu().numpy()
         labels_np = labels.cpu().numpy()
-        for i in range(batch_size):
-            c = labels_np[i]
+        for i in range(bs):
+            c = int(labels_np[i])
             if 0 <= c < 4:
                 class_weights_sum[c] += weights_np[i]
                 class_counts[c] += 1
 
-    n = max(total_samples, 1)
+    n = max(1, count)
     metrics = {
-        'loss': running_loss / n,
-        'l_recon': running_l_recon / n,
-        'l_class': running_l_class / n,
-        'l_balance': running_l_balance / n,
-        'l_entropy': running_l_entropy / n,
-        'l1': running_l1 / n,
-        'ssim': running_ssim / n,
-        'psnr': running_psnr / n
+        'loss': total_loss / n,
+        'l_recon': total_l_recon / n,
+        'l_class': total_l_class / n,
+        'l_balance': total_l_balance / n,
+        'l_entropy': total_l_entropy / n,
+        'l1': total_l1 / n,
+        'ssim': total_ssim / n,
+        'psnr': total_psnr / n
     }
 
     avg_weights_per_class = np.zeros((4, 4), dtype=np.float64)
@@ -203,8 +195,7 @@ def train_soft_moe(
 
     history: Dict[str, List[float]] = {
         'train_loss': [], 'val_loss': [],
-        'train_psnr': [], 'val_psnr': [],
-        'train_ssim': [], 'val_ssim': [],
+        'val_psnr': [], 'val_ssim': [],
         'val_l_balance': [], 'val_l_entropy': []
     }
 
@@ -263,9 +254,7 @@ def train_soft_moe(
 
         history['train_loss'].append(train_m['loss'])
         history['val_loss'].append(val_m['loss'])
-        history['train_psnr'].append(train_m['psnr'])
         history['val_psnr'].append(val_m['psnr'])
-        history['train_ssim'].append(train_m['ssim'])
         history['val_ssim'].append(val_m['ssim'])
         history['val_l_balance'].append(val_m['l_balance'])
         history['val_l_entropy'].append(val_m['l_entropy'])
@@ -281,10 +270,10 @@ def train_soft_moe(
                 'val_ssim': val_m['ssim'],
                 'val_loss': val_m['loss'],
                 'temperature': temperature,
-                'avg_weights_per_class': avg_weights
+                'avg_weights_per_class': avg_weights.tolist()
             }, best_checkpoint_path)
 
-        star = " ★ BEST" if is_best else ""
+        star = " [BEST]" if is_best else ""
         print(f"[Phase 2: Joint {epoch:02d}/{joint_epochs:02d}] "
               f"Train Loss: {train_m['loss']:.4f} | Val Loss: {val_m['loss']:.4f} | "
               f"Val PSNR: {val_m['psnr']:.2f} dB | Val SSIM: {val_m['ssim']:.4f}{star} | Time: {elapsed:.1f}s")
@@ -296,7 +285,10 @@ def train_soft_moe(
 
     # Load best weights before returning
     if os.path.exists(best_checkpoint_path):
-        ckpt = torch.load(best_checkpoint_path, map_location=device)
+        try:
+            ckpt = torch.load(best_checkpoint_path, map_location=device, weights_only=False)
+        except TypeError:
+            ckpt = torch.load(best_checkpoint_path, map_location=device)
         model.load_state_dict(ckpt['model_state_dict'])
 
     return {
