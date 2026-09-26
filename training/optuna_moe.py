@@ -28,18 +28,32 @@ def objective_moe(
     val_loader: DataLoader,
     device: torch.device,
     warmstart_paths: Dict[str, Optional[str]],
-    epochs_per_trial: int = 4
+    epochs_per_trial: int = 5
 ) -> float:
     """
     Optuna objective function for Soft MoE. Evaluates validation PSNR.
+    Loss weights are strictly fixed per assignment spec:
+      lambda_recon=0.8, lambda_class=0.2, lambda_balance=0.1, lambda_entropy=0.01, alpha=0.90
+    Searches:
+      - lr_joint in [5e-5, 5e-4]
+      - lr_warmup in [1e-4, 1e-3]
+      - temperature in [0.5, 2.0]
+      - warmup_epochs in [1, 2, 3]
+      - weight_decay in [1e-5, 1e-3]
     """
-    # 1. Sample hyperparameters
+    # 1. Sample genuine training hyperparameters
     lr_joint = trial.suggest_float('lr_joint', 5e-5, 5e-4, log=True)
+    lr_warmup = trial.suggest_float('lr_warmup', 1e-4, 1e-3, log=True)
     temperature = trial.suggest_float('temperature', 0.5, 2.0, step=0.1)
-    lambda_class = trial.suggest_float('lambda_class', 0.1, 0.4, step=0.05)
-    lambda_balance = trial.suggest_float('lambda_balance', 0.02, 0.20, step=0.02)
-    lambda_entropy = trial.suggest_float('lambda_entropy', 0.002, 0.04, log=True)
-    alpha = trial.suggest_float('alpha', 0.75, 0.95, step=0.05)
+    warmup_epochs = trial.suggest_int('warmup_epochs', 1, 3)
+    weight_decay = trial.suggest_float('weight_decay', 1e-5, 1e-3, log=True)
+
+    # Fixed loss formulation per assignment specification
+    lambda_recon = 0.8
+    lambda_class = 0.2
+    lambda_balance = 0.1
+    lambda_entropy = 0.01
+    alpha = 0.90
 
     # 2. Instantiate Soft MoE and load warm-start weights
     model = SoftMoERestorationNetwork(temperature=temperature).to(device)
@@ -52,25 +66,41 @@ def objective_moe(
     )
 
     criterion = SoftMoECompositeLoss(
-        lambda_recon=0.8,
+        lambda_recon=lambda_recon,
         lambda_class=lambda_class,
         lambda_balance=lambda_balance,
         lambda_entropy=lambda_entropy,
         alpha=alpha
     ).to(device)
 
-    # Joint optimizer
-    optimizer = torch.optim.AdamW(model.parameters(), lr=lr_joint, weight_decay=1e-4)
+    # 3. Phase 1: Warm-up (Gate only)
+    if warmup_epochs > 0:
+        model.freeze_experts()
+        model.unfreeze_gate()
+        opt_warmup = torch.optim.AdamW(model.gate.parameters(), lr=lr_warmup, weight_decay=weight_decay)
+        for _ in range(warmup_epochs):
+            train_one_epoch_moe(model, train_loader, criterion, opt_warmup, device)
 
-    # 3. Fast training loop with pruning
+    # 4. Phase 2: Joint fine-tuning
+    model.unfreeze_experts()
+    model.unfreeze_gate()
+    opt_joint = torch.optim.AdamW([
+        {'params': model.gate.parameters(), 'lr': lr_joint},
+        {'params': model.specialist_sp.parameters(), 'lr': lr_joint * 0.5},
+        {'params': model.specialist_blur.parameters(), 'lr': lr_joint * 0.5},
+        {'params': model.specialist_occlusion.parameters(), 'lr': lr_joint * 0.5},
+    ], weight_decay=weight_decay)
+
+    joint_eval_epochs = max(epochs_per_trial - warmup_epochs, 2)
     best_psnr = -float('inf')
-    for epoch in range(1, epochs_per_trial + 1):
-        train_m = train_one_epoch_moe(model, train_loader, criterion, optimizer, device)
+
+    for step in range(1, joint_eval_epochs + 1):
+        train_m = train_one_epoch_moe(model, train_loader, criterion, opt_joint, device)
         val_m, _ = evaluate_moe(model, val_loader, criterion, device)
         current_psnr = val_m['psnr']
         best_psnr = max(best_psnr, current_psnr)
 
-        trial.report(current_psnr, epoch)
+        trial.report(current_psnr, step)
         if trial.should_prune():
             raise optuna.exceptions.TrialPruned()
 
