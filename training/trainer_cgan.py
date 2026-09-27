@@ -74,9 +74,17 @@ def train_one_epoch_cgan(
     opt_g: torch.optim.Optimizer,
     opt_d: torch.optim.Optimizer,
     criterion: ConditionalGANLoss,
-    device: torch.device
+    device: torch.device,
+    d_update_freq: int = 2,
+    d_max_acc_throttle: float = 0.92
 ) -> Dict[str, float]:
-    """Executes one training epoch of conditional GAN (alternating D and G updates)."""
+    """
+    Executes one training epoch of conditional GAN with discriminator rebalancing.
+    
+    Args:
+        d_update_freq: Update D once every `d_update_freq` generator updates (default: 2).
+        d_max_acc_throttle: If D accuracy exceeds this threshold, skip D update on that step.
+    """
     net_g.train()
     net_d.train()
 
@@ -88,35 +96,48 @@ def train_one_epoch_cgan(
     total_d_acc_fake = 0.0
     total_d_acc = 0.0
     num_batches = 0
+    d_updates_count = 0
 
-    for batch in dataloader:
+    last_metrics_d = {
+        'loss_d': 0.5,
+        'd_acc_real': 0.5,
+        'd_acc_fake': 0.5,
+        'd_acc_total': 0.5
+    }
+
+    for batch_idx, batch in enumerate(dataloader):
         photos = batch['photo'].to(device, non_blocking=True)
         sketches = batch['sketch'].to(device, non_blocking=True)
         styles = batch['style'].to(device, non_blocking=True)
-        bs = photos.size(0)
 
         # ----------------------------------------------------
-        # 1. Train Discriminator: maximize log(D(x, y)) + log(1 - D(x, G(x, s)))
+        # 1. Forward Generator to produce current fakes
         # ----------------------------------------------------
-        opt_d.zero_grad()
-
-        # Real pair forward pass
-        d_real_logits = net_d(photos, sketches, styles)
-
-        # Generated pair forward pass (detach generator outputs to prevent backprop into G)
         fake_sketches = net_g(photos, styles)
-        d_fake_logits = net_d(photos, fake_sketches.detach(), styles)
-
-        loss_d, metrics_d = criterion.discriminator_loss(d_real_logits, d_fake_logits)
-        loss_d.backward()
-        opt_d.step()
 
         # ----------------------------------------------------
-        # 2. Train Generator: maximize log(D(x, G(x, s))) + lambda_L1 * ||y - G(x, s)||_1
+        # 2. Train Discriminator (only on scheduled frequency steps)
+        # ----------------------------------------------------
+        should_update_d = (batch_idx % d_update_freq == 0)
+
+        # Real and fake forward passes for D
+        d_real_logits = net_d(photos, sketches, styles)
+        d_fake_logits = net_d(photos, fake_sketches.detach(), styles)
+        loss_d, metrics_d = criterion.discriminator_loss(d_real_logits, d_fake_logits)
+        last_metrics_d = metrics_d
+
+        if should_update_d:
+            # Check if D is already overpowering G in this batch
+            if metrics_d['d_acc_total'] < d_max_acc_throttle:
+                opt_d.zero_grad()
+                loss_d.backward()
+                opt_d.step()
+                d_updates_count += 1
+
+        # ----------------------------------------------------
+        # 3. Train Generator: maximize adversarial + lambda_L1 * L1
         # ----------------------------------------------------
         opt_g.zero_grad()
-
-        # D forward pass on newly generated fakes (requires gradients through G)
         d_fake_logits_for_g = net_d(photos, fake_sketches, styles)
         loss_g, metrics_g = criterion.generator_loss(d_fake_logits_for_g, fake_sketches, sketches)
         loss_g.backward()
@@ -140,7 +161,8 @@ def train_one_epoch_cgan(
         'loss_g_l1': total_loss_g_l1 / n,
         'd_acc_real': total_d_acc_real / n,
         'd_acc_fake': total_d_acc_fake / n,
-        'd_acc_total': total_d_acc / n
+        'd_acc_total': total_d_acc / n,
+        'd_updates_ratio': d_updates_count / n
     }
 
 
@@ -191,21 +213,23 @@ def train_cgan_full(
     device: torch.device,
     save_dir: str,
     epochs: int = 40,
-    lr_g: float = 2e-4,
-    lr_d: float = 2e-4,
+    lr_g: float = 4e-4,
+    lr_d: float = 1.5e-4,
     beta1: float = 0.5,
     beta2: float = 0.999,
     lambda_l1: float = 100.0,
+    d_update_freq: int = 2,
+    patience: int = 12,
     experiment_name: str = "Task4_cGAN_Face_To_Sketch"
 ) -> Dict[str, Any]:
     """
-    Executes full multi-epoch cGAN training workflow.
+    Executes full multi-epoch cGAN training workflow with equilibrium monitoring.
     """
     os.makedirs(save_dir, exist_ok=True)
     samples_dir = os.path.join(save_dir, "samples")
     os.makedirs(samples_dir, exist_ok=True)
 
-    criterion = ConditionalGANLoss(lambda_l1=lambda_l1)
+    criterion = ConditionalGANLoss(lambda_l1=lambda_l1, real_label=0.9, fake_label=0.0)
     opt_g = torch.optim.Adam(net_g.parameters(), lr=lr_g, betas=(beta1, beta2))
     opt_d = torch.optim.Adam(net_d.parameters(), lr=lr_d, betas=(beta1, beta2))
 
@@ -226,11 +250,17 @@ def train_cgan_full(
     best_epoch = 0
     best_checkpoint_path = os.path.join(save_dir, "best_cgan_generator.pth")
 
-    print(f"\n=== Starting cGAN Training ({epochs} epochs, lr_g={lr_g:.1e}, lr_d={lr_d:.1e}, lambda_l1={lambda_l1}) ===")
+    consecutive_high_d_acc = 0
+    epochs_without_improvement = 0
+
+    print(f"\n=== Starting cGAN Training ({epochs} epochs, lr_g={lr_g:.1e}, lr_d={lr_d:.1e}, lambda_l1={lambda_l1}, d_freq={d_update_freq}) ===")
 
     for epoch in range(1, epochs + 1):
         t0 = time.time()
-        train_m = train_one_epoch_cgan(net_g, net_d, train_loader, opt_g, opt_d, criterion, device)
+        train_m = train_one_epoch_cgan(
+            net_g, net_d, train_loader, opt_g, opt_d, criterion, device,
+            d_update_freq=d_update_freq
+        )
         val_m = evaluate_cgan(net_g, val_loader, device)
         elapsed = time.time() - t0
 
@@ -245,6 +275,7 @@ def train_cgan_full(
             best_val_score = val_score
             best_val_metrics = val_m
             best_epoch = epoch
+            epochs_without_improvement = 0
             torch.save({
                 'epoch': epoch,
                 'generator_state_dict': net_g.state_dict(),
@@ -257,11 +288,24 @@ def train_cgan_full(
                 'base_channels_g': net_g.base_channels,
                 'base_channels_d': net_d.base_channels
             }, best_checkpoint_path)
+        else:
+            epochs_without_improvement += 1
 
         # Save sample visual grid periodically (every 5 epochs and on best)
         if epoch % 5 == 0 or is_best or epoch == epochs:
             sample_path = os.path.join(samples_dir, f"epoch_{epoch:03d}.png")
             save_sample_grid(net_g, fixed_val_batch, sample_path, device)
+
+        # Discriminator dominance diagnostic check
+        if train_m['d_acc_total'] >= 0.90:
+            consecutive_high_d_acc += 1
+            if consecutive_high_d_acc >= 4:
+                print(
+                    f"  >> [WARNING] Discriminator accuracy sustained at {train_m['d_acc_total']*100:.1f}% "
+                    f"for {consecutive_high_d_acc} consecutive epochs! Throttling D to maintain gradient flow to G."
+                )
+        else:
+            consecutive_high_d_acc = 0
 
         # Logging to MLflow
         if HAS_MLFLOW:
@@ -287,11 +331,17 @@ def train_cgan_full(
             f"Val PSNR: {val_m['psnr']:.2f}dB SSIM: {val_m['ssim']:.4f}{best_flag}"
         )
 
+        # Early stopping if sustained degradation occurs late in training
+        if epoch >= 20 and epochs_without_improvement >= patience:
+            print(f"\n[EARLY STOPPING] Validation metrics peaked at Epoch {best_epoch} ({best_val_metrics.get('psnr', 0):.2f}dB). Stopping to prevent mode collapse.")
+            break
+
     print(f"\n[COMPLETE] Best Validation: PSNR {best_val_metrics.get('psnr', 0):.2f}dB | SSIM {best_val_metrics.get('ssim', 0):.4f} at Epoch {best_epoch}")
-    print(f"Checkpoint saved to: {best_checkpoint_path}")
+    print(f"Best checkpoint preserved at: {best_checkpoint_path}")
 
     return {
         'best_val_metrics': best_val_metrics,
         'best_epoch': best_epoch,
         'checkpoint_path': best_checkpoint_path
     }
+

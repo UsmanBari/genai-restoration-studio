@@ -144,6 +144,45 @@ def test_paired_transform_synchronization():
     assert (s_aug[:, 64:, 0] == 128).all()
 
 
+def test_cgan_discriminator_rebalancing_and_update_frequency():
+    """Verify train_one_epoch_cgan throttles D update frequency and balances training dynamics."""
+    from torch.utils.data import TensorDataset, DataLoader
+
+    net_g = StyleConditionedUNetGenerator(base_channels=16, emb_dim=8, emb_channels=4)
+    net_d = ConditionalPatchGANDiscriminator(base_channels=16, emb_dim=8, emb_channels=4)
+    criterion = ConditionalGANLoss(lambda_l1=100.0, real_label=0.9, fake_label=0.0)
+
+    opt_g = torch.optim.Adam(net_g.parameters(), lr=4e-4)
+    opt_d = torch.optim.Adam(net_d.parameters(), lr=1.5e-4)
+
+    # 4 dummy batches
+    dummy_photos = torch.randn(8, 3, 128, 128)
+    dummy_sketches = torch.randn(8, 3, 128, 128)
+    dummy_styles = torch.tensor([0, 1, 2, 0, 1, 2, 0, 1], dtype=torch.long)
+
+    class DummyDictDataset(torch.utils.data.Dataset):
+        def __len__(self):
+            return 8
+        def __getitem__(self, idx):
+            return {
+                'photo': dummy_photos[idx],
+                'sketch': dummy_sketches[idx],
+                'style': dummy_styles[idx]
+            }
+
+    loader = DataLoader(DummyDictDataset(), batch_size=2, shuffle=False)
+    from training.trainer_cgan import train_one_epoch_cgan
+
+    metrics = train_one_epoch_cgan(
+        net_g, net_d, loader, opt_g, opt_d, criterion, torch.device('cpu'),
+        d_update_freq=2, d_max_acc_throttle=0.92
+    )
+
+    assert 'd_updates_ratio' in metrics
+    assert metrics['d_updates_ratio'] <= 0.60  # Updated roughly half the time
+    assert not np.isnan(metrics['loss_d']) and not np.isnan(metrics['loss_g'])
+
+
 def test_cgan_onnx_export_and_parity():
     """Verify Generator-only ONNX export and numerical equivalence with ONNX Runtime."""
     net_g = StyleConditionedUNetGenerator(base_channels=16, emb_dim=8, emb_channels=4)
@@ -161,3 +200,4 @@ def test_cgan_onnx_export_and_parity():
             atol=1e-4
         )
         assert parity_report['is_close'], f"ONNX parity failed with max_abs_diff={parity_report['max_abs_diff']}"
+

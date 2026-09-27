@@ -14,15 +14,24 @@ import torch.nn.functional as F
 
 class ConditionalGANLoss(nn.Module):
     """
-    Pix2Pix-style Conditional GAN Composite Loss.
+    Pix2Pix-style Conditional GAN Composite Loss with One-Sided Label Smoothing.
     
     Args:
         lambda_l1: Weight for L1 paired sketch reconstruction loss (default: 100.0).
+        real_label: Softened target label for real samples in D loss (default: 0.9).
+        fake_label: Target label for fake samples in D loss (default: 0.0).
     """
 
-    def __init__(self, lambda_l1: float = 100.0):
+    def __init__(
+        self,
+        lambda_l1: float = 100.0,
+        real_label: float = 0.9,
+        fake_label: float = 0.0
+    ):
         super().__init__()
         self.lambda_l1 = float(lambda_l1)
+        self.real_label = float(real_label)
+        self.fake_label = float(fake_label)
         self.bce_loss = nn.BCEWithLogitsLoss()
         self.l1_loss = nn.L1Loss()
 
@@ -38,7 +47,8 @@ class ConditionalGANLoss(nn.Module):
         d_fake_logits: torch.Tensor
     ) -> Tuple[torch.Tensor, Dict[str, float]]:
         """
-        Compute Discriminator loss and real/fake classification accuracy.
+        Compute Discriminator loss with one-sided label smoothing on real targets,
+        and track patch real/fake classification accuracy.
         
         Args:
             d_real_logits: Patch logits from real pairs (B, 1, H, W).
@@ -47,12 +57,14 @@ class ConditionalGANLoss(nn.Module):
         Returns:
             (loss_d, metrics_dict)
         """
-        real_targets = torch.ones_like(d_real_logits)
-        fake_targets = torch.zeros_like(d_fake_logits)
+        # One-sided label smoothing on real targets to prevent discriminator overconfidence
+        real_targets = torch.full_like(d_real_logits, self.real_label)
+        fake_targets = torch.full_like(d_fake_logits, self.fake_label)
 
         loss_d_real = self.bce_loss(d_real_logits, real_targets)
         loss_d_fake = self.bce_loss(d_fake_logits, fake_targets)
         loss_d = 0.5 * (loss_d_real + loss_d_fake)
+
 
         # Classification accuracy on local patches
         with torch.no_grad():

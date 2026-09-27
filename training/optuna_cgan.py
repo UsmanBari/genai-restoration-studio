@@ -76,15 +76,19 @@ def objective_cgan(
         base_channels=base_channels_d
     ).to(device)
 
-    criterion = ConditionalGANLoss(lambda_l1=lambda_l1)
+    criterion = ConditionalGANLoss(lambda_l1=lambda_l1, real_label=0.9, fake_label=0.0)
     opt_g = torch.optim.Adam(net_g.parameters(), lr=lr_g, betas=(0.5, 0.999))
     opt_d = torch.optim.Adam(net_d.parameters(), lr=lr_d, betas=(0.5, 0.999))
 
     best_psnr = -float('inf')
 
     for epoch in range(1, epochs_per_trial + 1):
-        train_one_epoch_cgan(net_g, net_d, trial_train_loader, opt_g, opt_d, criterion, device)
+        train_one_epoch_cgan(
+            net_g, net_d, trial_train_loader, opt_g, opt_d, criterion, device,
+            d_update_freq=2
+        )
         val_m = evaluate_cgan(net_g, val_loader, device)
+
 
         current_psnr = val_m['psnr']
         best_psnr = max(best_psnr, current_psnr)
