@@ -38,14 +38,24 @@ def objective_cgan(
     """
     Optuna objective function for cGAN. Evaluates validation PSNR across trial epochs.
     """
-    # 1. Sample hyperparameters
+    # 1. Sample hyperparameters (covering all 7 spec-mandated parameters)
     lr_g = trial.suggest_float('lr_g', 1e-4, 5e-4, log=True)
     lr_d = trial.suggest_float('lr_d', 1e-4, 5e-4, log=True)
+    batch_size = trial.suggest_categorical('batch_size', [8, 16, 32])
     lambda_l1 = trial.suggest_float('lambda_l1', 50.0, 150.0, step=10.0)
     base_channels_g = trial.suggest_categorical('base_channels_g', [32, 64])
     base_channels_d = 64
     emb_dim = trial.suggest_categorical('emb_dim', [16, 32, 64])
     dropout_rate = trial.suggest_categorical('dropout_rate', [0.0, 0.2, 0.5])
+
+    # Dynamic trial DataLoader for sampled batch_size
+    trial_train_loader = DataLoader(
+        train_loader.dataset,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=0
+    )
+
 
     # 2. Instantiate Models and Loss
     net_g = StyleConditionedUNetGenerator(
@@ -73,7 +83,7 @@ def objective_cgan(
     best_psnr = -float('inf')
 
     for epoch in range(1, epochs_per_trial + 1):
-        train_one_epoch_cgan(net_g, net_d, train_loader, opt_g, opt_d, criterion, device)
+        train_one_epoch_cgan(net_g, net_d, trial_train_loader, opt_g, opt_d, criterion, device)
         val_m = evaluate_cgan(net_g, val_loader, device)
 
         current_psnr = val_m['psnr']
