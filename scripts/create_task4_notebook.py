@@ -1,0 +1,452 @@
+"""
+Script to create notebooks/05_task4_cgan_sketch.ipynb with standard Colab configuration:
+- Git clone repo for code imports
+- Drive mount for data/checkpoints
+- Local NVMe caching for FS2K dataset
+- Optuna study (15 trials)
+- Full 40-epoch training schedule with sample visual grids
+- Style-stratified evaluation on test set (Styles 0, 1, 2, Overall)
+- Generator-only ONNX export & parity check
+- Copying checkpoints and figures to Google Drive
+"""
+
+import json
+import os
+
+def build_task4_notebook():
+    cells = [
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "# Task 4: Style-Conditioned Face-to-Sketch Generation Using a Conditional GAN\n",
+                "**Dataset:** FS2K Facial Sketch Synthesis Dataset (898 train / 160 val / 1,046 test pairs stratified by style 0, 1, 2)\n",
+                "**Architecture:** U-Net Generator with full skip connections at all levels + 70x70 PatchGAN Discriminator with categorical style embedding conditioning\n",
+                "**Loss Function:** $\\mathcal{L}_{\\text{cGAN}} = \\mathcal{L}_{\\text{adv}}(G, D) + \\lambda_{\\text{L1}} \\mathcal{L}_{\\text{L1}}(G)$\n",
+                "**Optimization:** 15-Trial Optuna Study tuning $\\text{lr}_g, \\text{lr}_d, \\lambda_{\\text{L1}}$, base channels, emb dim, and dropout rate."
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "### Step 1: Environment Diagnostics & GPU Verification"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "import torch\n",
+                "import os\n",
+                "import sys\n",
+                "import subprocess\n",
+                "\n",
+                "print(f\"PyTorch Version: {torch.__version__}\")\n",
+                "print(f\"CUDA Available: {torch.cuda.is_available()}\")\n",
+                "if torch.cuda.is_available():\n",
+                "    print(f\"GPU Device: {torch.cuda.get_device_name(0)}\")\n",
+                "    print(f\"VRAM: {torch.cuda.get_device_properties(0).total_memory / (1024**3):.2f} GB\")\n",
+                "else:\n",
+                "    print(\"WARNING: Running on CPU. Switch to GPU runtime for reasonable training speeds!\")"
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "### Step 2: Mount Google Drive & Clone/Pull GitHub Repository"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "# Mount Drive for data and checkpoint persistence\n",
+                "from google.colab import drive\n",
+                "drive.mount('/content/drive')\n",
+                "\n",
+                "REPO_DIR = '/content/genai-restoration-studio'\n",
+                "PROJECT_DIR = '/content/drive/MyDrive/GenAI-A1'\n",
+                "\n",
+                "# Clone or pull repository\n",
+                "if not os.path.exists(REPO_DIR):\n",
+                "    !git clone https://github.com/UsmanBari/genai-restoration-studio.git {REPO_DIR}\n",
+                "else:\n",
+                "    !cd {REPO_DIR} && git pull origin main\n",
+                "\n",
+                "if REPO_DIR not in sys.path:\n",
+                "    sys.path.insert(0, REPO_DIR)\n",
+                "\n",
+                "os.chdir(REPO_DIR)\n",
+                "print(f\"Working directory: {os.getcwd()}\")\n",
+                "\n",
+                "# Install requirements\n",
+                "!pip install -q onnx onnxruntime optuna mlflow"
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "### Step 3: Fast Local NVMe Caching & Dataset Preparation (FS2K)"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "import shutil\n",
+                "import json\n",
+                "from data.fs2k import FS2KDataset, get_fs2k_dataloaders\n",
+                "\n",
+                "LOCAL_DATA_DIR = '/content/local_data/FS2K'\n",
+                "os.makedirs(LOCAL_DATA_DIR, exist_ok=True)\n",
+                "\n",
+                "# Candidate zip locations in Drive\n",
+                "drive_zip_candidates = [\n",
+                "    os.path.join(PROJECT_DIR, 'raw/FS2K.zip'),\n",
+                "    os.path.join(PROJECT_DIR, 'raw/FS2K/FS2K.zip'),\n",
+                "    os.path.join(PROJECT_DIR, 'FS2K.zip'),\n",
+                "    os.path.join(PROJECT_DIR, 'data/FS2K.zip')\n",
+                "]\n",
+                "\n",
+                "drive_folder_candidates = [\n",
+                "    os.path.join(PROJECT_DIR, 'raw/FS2K/FS2K'),\n",
+                "    os.path.join(PROJECT_DIR, 'raw/FS2K'),\n",
+                "    os.path.join(PROJECT_DIR, 'data/FS2K')\n",
+                "]\n",
+                "\n",
+                "# Check if already extracted locally\n",
+                "if not os.path.exists(os.path.join(LOCAL_DATA_DIR, 'photo')):\n",
+                "    zip_found = None\n",
+                "    for zc in drive_zip_candidates:\n",
+                "        if os.path.exists(zc):\n",
+                "            zip_found = zc\n",
+                "            break\n",
+                "    \n",
+                "    if zip_found:\n",
+                "        print(f\"Unzipping FS2K dataset from {zip_found} to {LOCAL_DATA_DIR}...\")\n",
+                "        !unzip -q -o \"{zip_found}\" -d /content/local_data/\n",
+                "        if os.path.exists('/content/local_data/FS2K/FS2K'):\n",
+                "            !mv /content/local_data/FS2K/FS2K/* {LOCAL_DATA_DIR}/\n",
+                "    else:\n",
+                "        # Check if extracted folder exists on Drive\n",
+                "        folder_found = None\n",
+                "        for fc in drive_folder_candidates:\n",
+                "            if os.path.exists(os.path.join(fc, 'photo')):\n",
+                "                folder_found = fc\n",
+                "                break\n",
+                "        if folder_found:\n",
+                "            print(f\"Copying FS2K folder from {folder_found} to local NVMe {LOCAL_DATA_DIR}...\")\n",
+                "            !cp -r \"{folder_found}/\"* {LOCAL_DATA_DIR}/\n",
+                "        else:\n",
+                "            print(\"Using direct FS2K root resolution from manifests.\")\n",
+                "\n",
+                "MANIFEST_DIR = os.path.join(REPO_DIR, 'manifests')\n",
+                "if not os.path.exists(os.path.join(MANIFEST_DIR, 'fs2k_train_manifest.json')):\n",
+                "    MANIFEST_DIR = os.path.join(PROJECT_DIR, 'manifests')\n",
+                "\n",
+                "print(f\"Manifest Directory: {MANIFEST_DIR}\")\n",
+                "\n",
+                "# Build DataLoaders\n",
+                "train_loader, val_loader, test_loader = get_fs2k_dataloaders(\n",
+                "    manifest_dir=MANIFEST_DIR,\n",
+                "    fs2k_root=LOCAL_DATA_DIR,\n",
+                "    batch_size=16,\n",
+                "    num_workers=0\n",
+                ")\n",
+                "\n",
+                "print(f\"Train batches: {len(train_loader)} ({len(train_loader.dataset)} pairs)\")\n",
+                "print(f\"Val batches:   {len(val_loader)} ({len(val_loader.dataset)} pairs)\")\n",
+                "print(f\"Test batches:  {len(test_loader)} ({len(test_loader.dataset)} pairs)\")"
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "### Step 4: Baseline Model Sanity Check (U-Net Generator & PatchGAN Discriminator)"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "from models.cgan import StyleConditionedUNetGenerator, ConditionalPatchGANDiscriminator\n",
+                "from training.losses_cgan import ConditionalGANLoss\n",
+                "\n",
+                "device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\n",
+                "print(f\"Using device: {device}\")\n",
+                "\n",
+                "dummy_g = StyleConditionedUNetGenerator().to(device)\n",
+                "dummy_d = ConditionalPatchGANDiscriminator().to(device)\n",
+                "criterion = ConditionalGANLoss(lambda_l1=100.0)\n",
+                "\n",
+                "batch = next(iter(train_loader))\n",
+                "p = batch['photo'].to(device)\n",
+                "s = batch['sketch'].to(device)\n",
+                "st = batch['style'].to(device)\n",
+                "\n",
+                "fake = dummy_g(p, st)\n",
+                "d_real = dummy_d(p, s, st)\n",
+                "d_fake = dummy_d(p, fake.detach(), st)\n",
+                "\n",
+                "loss_d, m_d = criterion.discriminator_loss(d_real, d_fake)\n",
+                "loss_g, m_g = criterion.generator_loss(dummy_d(p, fake, st), fake, s)\n",
+                "\n",
+                "print(f\"Generator Output Shape:     {fake.shape} (Range: [{fake.min():.2f}, {fake.max():.2f}])\")\n",
+                "print(f\"Discriminator Patch Logits: {d_real.shape}\")\n",
+                "print(f\"Loss D: {loss_d.item():.4f} (Real Acc: {m_d['d_acc_real']*100:.1f}%, Fake Acc: {m_d['d_acc_fake']*100:.1f}%)\")\n",
+                "print(f\"Loss G: {loss_g.item():.4f} (Adv: {m_g['loss_g_adv']:.4f}, L1: {m_g['loss_g_l1']:.4f})\")\n",
+                "print(\"[SUCCESS] Baseline cGAN sanity check passed.\")"
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "### Step 5: 15-Trial Optuna Hyperparameter Optimization Study"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "from training.optuna_cgan import run_optuna_cgan_study\n",
+                "\n",
+                "study = run_optuna_cgan_study(\n",
+                "    train_loader=train_loader,\n",
+                "    val_loader=val_loader,\n",
+                "    device=device,\n",
+                "    n_trials=15,\n",
+                "    epochs_per_trial=5,\n",
+                "    study_name=\"task4_cgan_fs2k_study\"\n",
+                ")\n",
+                "\n",
+                "best_params = study.best_params\n",
+                "print(\"Winning Optuna Hyperparameters:\")\n",
+                "for k, v in best_params.items():\n",
+                "    print(f\"  {k}: {v}\")"
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "### Step 6: Full Schedule 40-Epoch Training of Optimal cGAN Model"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "from training.trainer_cgan import train_cgan_full\n",
+                "\n",
+                "# Instantiate models with optimal Optuna parameters\n",
+                "best_g = StyleConditionedUNetGenerator(\n",
+                "    in_channels=3,\n",
+                "    out_channels=3,\n",
+                "    num_styles=3,\n",
+                "    emb_dim=int(best_params.get('emb_dim', 32)),\n",
+                "    emb_channels=16,\n",
+                "    base_channels=int(best_params.get('base_channels_g', 64)),\n",
+                "    dropout_rate=float(best_params.get('dropout_rate', 0.5))\n",
+                ").to(device)\n",
+                "\n",
+                "best_d = ConditionalPatchGANDiscriminator(\n",
+                "    in_channels=3,\n",
+                "    num_styles=3,\n",
+                "    emb_dim=int(best_params.get('emb_dim', 32)),\n",
+                "    emb_channels=16,\n",
+                "    base_channels=64\n",
+                ").to(device)\n",
+                "\n",
+                "save_dir = os.path.join(REPO_DIR, 'checkpoints/task4')\n",
+                "os.makedirs(save_dir, exist_ok=True)\n",
+                "\n",
+                "training_results = train_cgan_full(\n",
+                "    net_g=best_g,\n",
+                "    net_d=best_d,\n",
+                "    train_loader=train_loader,\n",
+                "    val_loader=val_loader,\n",
+                "    device=device,\n",
+                "    save_dir=save_dir,\n",
+                "    epochs=40,\n",
+                "    lr_g=float(best_params.get('lr_g', 2e-4)),\n",
+                "    lr_d=float(best_params.get('lr_d', 2e-4)),\n",
+                "    lambda_l1=float(best_params.get('lambda_l1', 100.0)),\n",
+                "    experiment_name=\"Task4_cGAN_FS2K_Full\"\n",
+                ")"
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "### Step 7: Style-Stratified Evaluation on Test Split (Styles 0, 1, 2, Overall)"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "from evaluation.benchmark_cgan import run_cgan_benchmark\n",
+                "\n",
+                "# Load best checkpoint\n",
+                "best_ckpt_path = os.path.join(save_dir, 'best_generator.pth')\n",
+                "if os.path.exists(best_ckpt_path):\n",
+                "    print(f\"Loading best checkpoint from {best_ckpt_path}...\")\n",
+                "    ckpt = torch.load(best_ckpt_path, map_location=device)\n",
+                "    best_g.load_state_dict(ckpt['generator_state_dict'] if 'generator_state_dict' in ckpt else ckpt)\n",
+                "\n",
+                "benchmark_results = run_cgan_benchmark(\n",
+                "    generator=best_g,\n",
+                "    manifest_path=MANIFEST_DIR,\n",
+                "    fs2k_root=LOCAL_DATA_DIR,\n",
+                "    device=str(device),\n",
+                "    output_dir=\"artifacts/evaluation_task4\",\n",
+                "    num_visualizations=12\n",
+                ")"
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "### Step 8: Qualitative Visualization Across All 3 Styles"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "import matplotlib.pyplot as plt\n",
+                "from PIL import Image\n",
+                "\n",
+                "comp_path = 'artifacts/evaluation_task4/figures/test_synthesis_comparisons.png'\n",
+                "if os.path.exists(comp_path):\n",
+                "    plt.figure(figsize=(12, 16))\n",
+                "    img = Image.open(comp_path)\n",
+                "    plt.imshow(img)\n",
+                "    plt.axis('off')\n",
+                "    plt.title(\"Test Set Syntheses: Photo | Ground Truth Sketch | cGAN Generated\", fontsize=14)\n",
+                "    plt.show()\n",
+                "\n",
+                "# Style-transfer visualization (one photo across Style 0, Style 1, Style 2)\n",
+                "best_g.eval()\n",
+                "with torch.no_grad():\n",
+                "    sample_b = next(iter(test_loader))\n",
+                "    test_p = sample_b['photo'][:4].to(device)\n",
+                "    \n",
+                "    fig, axes = plt.subplots(4, 4, figsize=(12, 12))\n",
+                "    for row in range(4):\n",
+                "        p_np = ((test_p[row].permute(1, 2, 0).cpu().numpy() * 0.5) + 0.5).clip(0, 1)\n",
+                "        axes[row, 0].imshow(p_np)\n",
+                "        axes[row, 0].set_title(\"Input Photo\", fontsize=9)\n",
+                "        axes[row, 0].axis('off')\n",
+                "        \n",
+                "        for st_idx in range(3):\n",
+                "            st_t = torch.tensor([st_idx], device=device)\n",
+                "            fake_st = best_g(test_p[row:row+1], st_t)\n",
+                "            fake_np = ((fake_st[0].permute(1, 2, 0).cpu().numpy() * 0.5) + 0.5).clip(0, 1)\n",
+                "            axes[row, st_idx + 1].imshow(fake_np)\n",
+                "            axes[row, st_idx + 1].set_title(f\"Style {st_idx}\", fontsize=9)\n",
+                "            axes[row, st_idx + 1].axis('off')\n",
+                "            \n",
+                "    plt.tight_layout()\n",
+                "    plt.savefig('artifacts/evaluation_task4/figures/multistyle_transfer_matrix.png', dpi=150)\n",
+                "    plt.show()"
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "### Step 9: Generator-Only ONNX Export & Parity Verification"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "from models.onnx_export_cgan import export_cgan_generator_to_onnx, verify_cgan_onnx_numerical_equivalence\n",
+                "\n",
+                "onnx_path = 'checkpoints/task4/cgan_generator.onnx'\n",
+                "export_cgan_generator_to_onnx(best_g, onnx_path, opset_version=18)\n",
+                "\n",
+                "parity_report = verify_cgan_onnx_numerical_equivalence(\n",
+                "    generator=best_g,\n",
+                "    onnx_path=onnx_path,\n",
+                "    atol=1e-4\n",
+                ")\n",
+                "\n",
+                "print(f\"ONNX Model Size: {parity_report['onnx_size_mb']:.2f} MB\")\n",
+                "print(f\"Numerical Parity Status: {parity_report['equivalent']}\")"
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "### Step 10: Commit Artifacts & Sync Checkpoints to Google Drive"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "# Copy checkpoints and evaluation artifacts to Drive\n",
+                "DRIVE_TASK4_DIR = os.path.join(PROJECT_DIR, 'checkpoints/task4')\n",
+                "os.makedirs(DRIVE_TASK4_DIR, exist_ok=True)\n",
+                "\n",
+                "!cp -r checkpoints/task4/* \"{DRIVE_TASK4_DIR}/\"\n",
+                "\n",
+                "DRIVE_ARTIFACTS_DIR = os.path.join(PROJECT_DIR, 'artifacts/evaluation_task4')\n",
+                "os.makedirs(DRIVE_ARTIFACTS_DIR, exist_ok=True)\n",
+                "!cp -r artifacts/evaluation_task4/* \"{DRIVE_ARTIFACTS_DIR}/\"\n",
+                "\n",
+                "print(f\"[SUCCESS] All Task 4 checkpoints and figures synchronized to {PROJECT_DIR}.\")"
+            ]
+        }
+    ]
+
+    notebook_dict = {
+        "cells": cells,
+        "metadata": {
+            "language_info": {
+                "name": "python"
+            }
+        },
+        "nbformat": 4,
+        "nbformat_minor": 2
+    }
+
+    output_path = "notebooks/05_task4_cgan_sketch.ipynb"
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(notebook_dict, f, indent=2)
+
+    print(f"Created notebook at {output_path}")
+
+if __name__ == "__main__":
+    build_task4_notebook()

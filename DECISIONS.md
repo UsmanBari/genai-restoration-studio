@@ -246,6 +246,39 @@ This log records every architectural and design decision made during the project
     - Verified numerical equivalence with $\Delta_{\text{max}} = 1.67\times 10^{-6}$ across all outputs.
   - **Milestone 3b marked as COMPLETE.**
 
+---
+
+## 6. Milestone 4 — Style-Conditioned Conditional GAN for Photo-to-Sketch Synthesis (Task 4)
+
+- **Context:**
+  Task 4 requires building a photo-to-sketch synthesis system on the FS2K dataset (2,104 paired facial photographs and sketches with 3 style categories). This departs from autoencoder reconstruction and employs an adversarial conditional GAN framework (pix2pix paradigm).
+- **Compliance & Assignment Specification Verification:**
+  - **Dataset Split:** Official FS2K split with 15% stratified validation (898 train / 160 val / 1,046 test pairs stratified across styles 0, 1, 2) at $128\times 128\times 3$ resolution.
+  - **Generator Architecture:** `StyleConditionedUNetGenerator` with full skip connections between encoder and decoder at every matching resolution level ($128\to 64\to 32\to 16\to 8\to 4 \to 8\to 16\to 32\to 64\to 128$). Conditioned on learned style embedding for the 3 FS2K style categories, projected to spatial maps and concatenated at the input stage. Output range is $[-1.0, 1.0]$ via `Tanh`.
+  - **Discriminator Architecture:** `ConditionalPatchGANDiscriminator` with a $70\times 70$ receptive field, receiving concatenated (photo, sketch, style condition) and outputting a $14\times 14$ grid of patch logits.
+  - **Adversarial Loss:** Binary Cross-Entropy with logits (`nn.BCEWithLogitsLoss`) for real vs. fake patch discrimination.
+  - **Reconstruction Loss & $\lambda_{\text{L1}}$ Handling:** Paired L1 pixel distance. The assignment specifies initial $\lambda_{\text{L1}} = 100$, and explicitly mandates investigating the optimal value through Optuna (search range $[50.0, 150.0]$).
+  - **Paired Data Augmentation:** `PairedTransform` enforces strict spatial synchronization (e.g. random horizontal flips applied identically to both photograph and sketch) to prevent pixel misalignment.
+- **Training Stability & Diagnostics:**
+  - Alternating 2-player optimization step (`train_one_epoch_cgan`): D update with detached generated fakes; G update with adversarial loss + $\lambda_{\text{L1}} \cdot \text{L1}$.
+  - Tracking and logging Discriminator real accuracy, fake accuracy, and overall classification accuracy every epoch to prevent generator/discriminator imbalance.
+  - Visual progression sample grids (`save_sample_grid`) generated and saved every 5 epochs showing Photo | Ground-Truth Sketch | Generated Sketch across all 3 styles.
+- **Optuna Hyperparameter Search Space (`training/optuna_cgan.py`):**
+  - 15 trials with `MedianPruner` searching:
+    - `lr_g` $\in [1\times 10^{-4}, 5\times 10^{-4}]$ (log-uniform)
+    - `lr_d` $\in [1\times 10^{-4}, 5\times 10^{-4}]$ (log-uniform)
+    - `lambda_l1` $\in [50.0, 150.0]$ (step 10.0)
+    - `base_channels_g` $\in \{32, 64\}$
+    - `emb_dim` $\in \{16, 32, 64\}$
+    - `dropout_rate` $\in \{0.0, 0.2, 0.5\}$
+- **Evaluation Breakdown (`evaluation/benchmark_cgan.py`):**
+  - Evaluates L1 distance, PSNR (dB), SSIM, and approximate FID across the 1,046 test images stratified by Style 0, Style 1, Style 2, and Overall.
+- **ONNX Deployment (`models/onnx_export_cgan.py`):**
+  - Generator-only export (Discriminator is training-only) with dynamic batching, embedding weights directly into protobuf.
+  - Runner implementation in `models/onnx_runner.py` (`StyleConditionedCGANONNXRunner`).
+- **Evidence:** 34 passing local unit tests covering generator shapes, patch discriminator shapes, composite loss, forward/backward gradient flows, synchronized paired transforms, and ONNX numerical parity.
+
+
 
 
 

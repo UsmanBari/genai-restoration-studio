@@ -48,6 +48,20 @@ def to_tensor(img_np: np.ndarray, normalize_minus1_1: bool = True):
     return tensor_np
 
 
+class PairedTransform:
+    """Synchronized spatial data augmentation applied identically to both photo and sketch."""
+
+    def __init__(self, horizontal_flip_prob: float = 0.5):
+        self.horizontal_flip_prob = horizontal_flip_prob
+
+    def __call__(self, photo: np.ndarray, sketch: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        # Synchronized horizontal flip
+        if np.random.rand() < self.horizontal_flip_prob:
+            photo = np.fliplr(photo).copy()
+            sketch = np.fliplr(sketch).copy()
+        return photo, sketch
+
+
 class FS2KDataset(Dataset):
     """
     FS2K Paired Facial Sketch Dataset.
@@ -55,9 +69,9 @@ class FS2KDataset(Dataset):
     Args:
         manifest_path: Path to JSON manifest file or manifests directory
         fs2k_root: Root directory of extracted FS2K dataset containing 'photo' and 'sketch'
-        target_size: tuple (256, 256)
+        target_size: tuple (128, 128) per assignment specification
         normalize_gan: normalize images to [-1, 1] for pix2pix GAN
-        transform: optional additional transform
+        transform: optional paired transform (applied identically to photo and sketch)
     """
 
     def __init__(
@@ -65,7 +79,7 @@ class FS2KDataset(Dataset):
         manifest_path: str,
         fs2k_root: str,
         split: str = 'train',
-        target_size: Tuple[int, int] = (256, 256),
+        target_size: Tuple[int, int] = (128, 128),
         normalize_gan: bool = True,
         transform: Optional[Callable] = None
     ):
@@ -73,7 +87,7 @@ class FS2KDataset(Dataset):
         self.split = split
         self.target_size = target_size
         self.normalize_gan = normalize_gan
-        self.transform = transform
+        self.transform = transform or (PairedTransform(horizontal_flip_prob=0.5) if split == 'train' else None)
 
         default_filename = f"fs2k_{split}_manifest.json"
         resolved_path = resolve_manifest_path(manifest_path, default_filename)
@@ -142,6 +156,9 @@ class FS2KDataset(Dataset):
 
         photo_np = self._load_image(photo_path)
         sketch_np = self._load_image(sketch_path)
+
+        if self.transform is not None:
+            photo_np, sketch_np = self.transform(photo_np, sketch_np)
 
         photo_t = to_tensor(photo_np, normalize_minus1_1=self.normalize_gan)
         sketch_t = to_tensor(sketch_np, normalize_minus1_1=self.normalize_gan)

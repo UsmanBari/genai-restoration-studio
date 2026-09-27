@@ -29,16 +29,36 @@ except ImportError:
     SoftMoERestorationNetwork = None
 
 try:
-    from models.onnx_runner import UniversalRestorationONNXRunner
+    from models.cgan import StyleConditionedUNetGenerator, ConditionalPatchGANDiscriminator
+except ImportError:
+    StyleConditionedUNetGenerator = None
+    ConditionalPatchGANDiscriminator = None
+
+try:
+    from models.onnx_export_cgan import export_cgan_generator_to_onnx, verify_cgan_onnx_numerical_equivalence
+except ImportError:
+    export_cgan_generator_to_onnx = None
+    verify_cgan_onnx_numerical_equivalence = None
+
+try:
+    from models.onnx_runner import UniversalRestorationONNXRunner, SoftMoERestorationNetwork, StyleConditionedCGANONNXRunner
 except ImportError:
     UniversalRestorationONNXRunner = None
+    SoftMoERestorationNetwork = None
+    StyleConditionedCGANONNXRunner = None
 
 __all__ = [
     'UniversalAutoencoder',
     'CorruptionClassifier',
     'HardRoutingRestorationPipeline',
     'SoftMoERestorationNetwork',
+    'StyleConditionedUNetGenerator',
+    'ConditionalPatchGANDiscriminator',
     'export_to_onnx',
     'verify_onnx_numerical_equivalence',
-    'UniversalRestorationONNXRunner'
+    'export_cgan_generator_to_onnx',
+    'verify_cgan_onnx_numerical_equivalence',
+    'UniversalRestorationONNXRunner',
+    'StyleConditionedCGANONNXRunner'
 ]
+
