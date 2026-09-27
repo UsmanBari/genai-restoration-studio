@@ -230,7 +230,7 @@ def build_task4_notebook():
                 "    val_loader=val_loader,\n",
                 "    device=device,\n",
                 "    n_trials=15,\n",
-                "    epochs_per_trial=5,\n",
+                "    epochs_per_trial=10,\n",
                 "    study_name=\"task4_cgan_fs2k_study\"\n",
                 ")\n",
                 "\n",
@@ -282,9 +282,9 @@ def build_task4_notebook():
                 "save_dir = os.path.join(REPO_DIR, 'checkpoints/task4')\n",
                 "os.makedirs(save_dir, exist_ok=True)\n",
                 "\n",
-                "# Balance D learning rate relative to G to prevent D overpowering G\n",
+                "# Strict D/G Rebalancing: enforce 0.2x D/G learning rate ratio and D throttling\n",
                 "opt_lr_g = float(best_params.get('lr_g', 4e-4))\n",
-                "opt_lr_d = min(float(best_params.get('lr_d', 1.5e-4)), opt_lr_g * 0.5)\n",
+                "opt_lr_d = opt_lr_g * 0.2\n",
                 "print(f\"Rebalanced Learning Rates: G={opt_lr_g:.2e}, D={opt_lr_d:.2e} (D/G ratio: {opt_lr_d/opt_lr_g:.2f})\")\n",
                 "\n",
                 "training_results = train_cgan_full(\n",
@@ -299,11 +299,13 @@ def build_task4_notebook():
                 "    lr_d=opt_lr_d,\n",
                 "    lambda_l1=float(best_params.get('lambda_l1', 100.0)),\n",
                 "    d_update_freq=2,\n",
-                "    patience=12,\n",
+                "    d_max_acc_throttle=0.85,\n",
+                "    patience=8,\n",
                 "    experiment_name=\"Task4_cGAN_FS2K_Full\"\n",
                 ")"
             ]
         },
+
         {
             "cell_type": "markdown",
             "metadata": {},
