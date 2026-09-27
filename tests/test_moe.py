@@ -151,3 +151,38 @@ def test_soft_moe_onnx_export_and_parity():
             rtol=1e-2
         )
         assert verification["equivalent"], f"ONNX numerical equivalence failed: max diff = {verification['max_abs_diff']}"
+
+
+def test_soft_moe_warmstart_loading():
+    """Verify that load_warmstart_weights correctly loads Task 2 classifier and specialists."""
+    from models.classifiers import CorruptionClassifier
+    from models.autoencoders import UniversalAutoencoder
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # Create dummy checkpoints matching Task 2
+        cls = CorruptionClassifier(in_channels=3, num_classes=4, base_channels=32, dropout_rate=0.2)
+        cls_p = os.path.join(tmpdir, "classifier.pth")
+        torch.save({'model_state_dict': cls.state_dict(), 'base_channels': 32}, cls_p)
+
+        spec_paths = {}
+        for name in ['sp', 'blur', 'occlusion']:
+            spec = UniversalAutoencoder(in_channels=3, out_channels=3, base_channels=64, bottleneck_dim=96)
+            p = os.path.join(tmpdir, f"specialist_{name}.pth")
+            torch.save({'model_state_dict': spec.state_dict(), 'base_channels': 64, 'bottleneck_dim': 96}, p)
+            spec_paths[name] = p
+
+        # Test loading into SoftMoERestorationNetwork
+        moe = SoftMoERestorationNetwork()
+        status = moe.load_warmstart_weights(
+            classifier_path=cls_p,
+            sp_path=spec_paths['sp'],
+            blur_path=spec_paths['blur'],
+            occlusion_path=spec_paths['occlusion']
+        )
+
+        assert status == {'gate': True, 'sp': True, 'blur': True, 'occlusion': True}, f"Expected all True, got {status}"
+        assert moe.gate.base_channels == 32
+        assert moe.specialist_sp.base_channels == 64 and moe.specialist_sp.bottleneck_dim == 96
+        assert moe.specialist_blur.base_channels == 64 and moe.specialist_blur.bottleneck_dim == 96
+        assert moe.specialist_occlusion.base_channels == 64 and moe.specialist_occlusion.bottleneck_dim == 96
+

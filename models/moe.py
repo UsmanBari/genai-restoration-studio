@@ -41,7 +41,7 @@ class SoftMoERestorationNetwork(nn.Module):
         self,
         gate_base_channels: int = 32,
         gate_dropout: float = 0.2,
-        specialist_base_channels: int = 48,
+        specialist_base_channels: int = 64,
         specialist_bottleneck_dim: int = 96,
         specialist_dropout: float = 0.2,
         temperature: float = 1.0
@@ -170,31 +170,101 @@ class SoftMoERestorationNetwork(nn.Module):
     ) -> Dict[str, bool]:
         """
         Load warm-start pretrained weights from Task 2 into Gate and Specialists.
+        Automatically inspects checkpoint state_dicts to ensure channel & bottleneck
+        compatibility, re-instantiating submodules if necessary, and surfacing detailed
+        load diagnostics.
         """
         status = {"gate": False, "sp": False, "blur": False, "occlusion": False}
 
-        def _load_weights(model: nn.Module, path: Optional[str]) -> bool:
-            if not path or not os.path.exists(path):
+        def _load_component(name: str, path: Optional[str], is_specialist: bool = False) -> bool:
+            if not path:
+                print(f"[MoE Warmstart] No checkpoint path provided for '{name}'.")
                 return False
+            if not os.path.exists(path):
+                print(f"[MoE Warmstart ERROR] Checkpoint path for '{name}' does not exist: {path}")
+                return False
+
             try:
                 try:
                     ckpt = torch.load(path, map_location=device, weights_only=False)
                 except TypeError:
                     ckpt = torch.load(path, map_location=device)
+
                 state_dict = ckpt.get("model_state_dict", ckpt.get("state_dict", ckpt))
-                model.load_state_dict(state_dict, strict=True)
-                return True
-            except Exception:
-                try:
-                    # Fallback to non-strict loading if minor prefix differences exist
-                    model.load_state_dict(state_dict, strict=False)
-                    return True
-                except Exception:
+                if not isinstance(state_dict, dict):
+                    print(f"[MoE Warmstart ERROR] Invalid state_dict format in {path}: {type(state_dict)}")
                     return False
 
-        status["gate"] = _load_weights(self.gate, classifier_path)
-        status["sp"] = _load_weights(self.specialist_sp, sp_path)
-        status["blur"] = _load_weights(self.specialist_blur, blur_path)
-        status["occlusion"] = _load_weights(self.specialist_occlusion, occlusion_path)
+                # Clean any unexpected prefix like 'module.'
+                cleaned_sd = {}
+                for k, v in state_dict.items():
+                    key = k[7:] if k.startswith("module.") else k
+                    cleaned_sd[key] = v
+
+                if is_specialist:
+                    # Determine base_channels and bottleneck_dim from checkpoint
+                    ckpt_base_channels = ckpt.get("base_channels")
+                    if ckpt_base_channels is None and "enc_init.block.0.weight" in cleaned_sd:
+                        ckpt_base_channels = cleaned_sd["enc_init.block.0.weight"].shape[0]
+
+                    ckpt_bottleneck_dim = ckpt.get("bottleneck_dim")
+                    if ckpt_bottleneck_dim is None and "bottleneck_conv.0.weight" in cleaned_sd:
+                        ckpt_bottleneck_dim = cleaned_sd["bottleneck_conv.0.weight"].shape[0]
+
+                    target_module: UniversalAutoencoder = getattr(self, f"specialist_{name}")
+
+                    # Adapt architecture if checkpoint dimensions differ from current module
+                    need_reinit = False
+                    if ckpt_base_channels is not None and target_module.base_channels != ckpt_base_channels:
+                        need_reinit = True
+                    if ckpt_bottleneck_dim is not None and target_module.bottleneck_dim != ckpt_bottleneck_dim:
+                        need_reinit = True
+
+                    if need_reinit:
+                        base_c = ckpt_base_channels if ckpt_base_channels is not None else target_module.base_channels
+                        b_dim = ckpt_bottleneck_dim if ckpt_bottleneck_dim is not None else target_module.bottleneck_dim
+                        print(f"[MoE Warmstart] Adapting specialist_{name} architecture to match checkpoint: base_channels={base_c}, bottleneck_dim={b_dim}")
+                        new_spec = UniversalAutoencoder(
+                            in_channels=3,
+                            out_channels=3,
+                            base_channels=base_c,
+                            bottleneck_dim=b_dim,
+                            dropout_rate=target_module.dropout_rate
+                        ).to(device)
+                        setattr(self, f"specialist_{name}", new_spec)
+                        target_module = new_spec
+
+                    target_module.load_state_dict(cleaned_sd, strict=True)
+                    print(f"[MoE Warmstart] Successfully loaded specialist '{name}' (base_channels={target_module.base_channels}, bottleneck_dim={target_module.bottleneck_dim}) from {path}")
+                    return True
+                else:
+                    # Loading gate classifier
+                    ckpt_base_channels = ckpt.get("base_channels")
+                    if ckpt_base_channels is None and "features.0.block.0.weight" in cleaned_sd:
+                        ckpt_base_channels = cleaned_sd["features.0.block.0.weight"].shape[0]
+
+                    if ckpt_base_channels is not None and self.gate.base_channels != ckpt_base_channels:
+                        print(f"[MoE Warmstart] Adapting gate architecture to match checkpoint: base_channels={ckpt_base_channels}")
+                        self.gate = CorruptionClassifier(
+                            in_channels=3,
+                            num_classes=4,
+                            base_channels=ckpt_base_channels,
+                            dropout_rate=self.gate.dropout_rate
+                        ).to(device)
+
+                    self.gate.load_state_dict(cleaned_sd, strict=True)
+                    print(f"[MoE Warmstart] Successfully loaded gate classifier (base_channels={self.gate.base_channels}) from {path}")
+                    return True
+
+            except Exception as e:
+                import traceback
+                print(f"[MoE Warmstart ERROR] Failed to load '{name}' from {path}: {type(e).__name__}: {e}")
+                print(f"[MoE Warmstart ERROR] Traceback:\n{traceback.format_exc()}")
+                return False
+
+        status["gate"] = _load_component("gate", classifier_path, is_specialist=False)
+        status["sp"] = _load_component("sp", sp_path, is_specialist=True)
+        status["blur"] = _load_component("blur", blur_path, is_specialist=True)
+        status["occlusion"] = _load_component("occlusion", occlusion_path, is_specialist=True)
 
         return status
