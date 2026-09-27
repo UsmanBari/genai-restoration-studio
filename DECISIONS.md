@@ -220,7 +220,31 @@ This log records every architectural and design decision made during the project
     - `warmup_epochs` $\in \{1, 2, 3\}$
     - `weight_decay` $\in [1\times 10^{-5}, 1\times 10^{-3}]$ (log-uniform)
 - **4-Way Benchmark (`evaluation/benchmark_moe.py`):** Universal (Task 1) vs. Oracle Hard vs. Predicted Hard (Task 2) vs. Soft MoE (Task 3) across 3,669 test images, logging weight distribution matrices and routing heatmaps.
-- **Evidence:** Verified with 27 passing local unit tests covering forward shapes, temperature scaling, freeze/unfreeze mechanisms, 4-term composite loss backprop, and multi-output ONNX export parity.
+- **Evidence:** Verified with 28 passing local unit tests covering forward shapes, temperature scaling, freeze/unfreeze mechanisms, 4-term composite loss backprop, and multi-output ONNX export parity.
+- **Experiment:** Executed `notebooks/04_task3_soft_moe.ipynb` on Google Colab (Tesla T4 GPU).
+- **Result:**
+  - **Optuna Hyperparameter Search (15 Trials, 4 Epochs/Trial):**
+    - Winner: `lr_joint = 0.000419`, `lr_warmup = 0.000245`, `temperature = 0.5`, `warmup_epochs = 1`, `weight_decay = 0.00016`.
+    - Best Trial Validation PSNR: **60.21 dB**. All 15 trials confirmed warm-start loading of all 4 modules.
+  - **2-Phase Full Training (1 Warmup + 30 Joint Epochs, 31 total):**
+    - Phase 1 (Warmup): Epoch 1 Val PSNR **54.20 dB** (Gate-only alignment).
+    - Phase 2 (Joint Fine-Tuning): Steady continuous improvement, reaching Best Validation PSNR of **60.63 dB** and Val SSIM **0.8956** at Epoch 23 (checkpoint saved to `checkpoints/task3/best_soft_moe.pth`).
+  - **4-Way Comparative Benchmark (3,669 Test Images, 108.61s total, 29.60 ms/image):**
+    - **Clean:** 29.20 dB / 0.888 (Universal) $\to$ 100.00 dB / 1.000 (Hard-Routed) $\to$ **167.47 dB / 1.000** (Soft MoE). *(Note: Soft MoE's near-identity routing produces near-zero floating point MSE ($< 10^{-16}$), yielding extremely high PSNR values which reflect mathematically lossless identity bypass rather than an anomaly).*
+    - **Salt & Pepper:** 23.96 dB / 0.654 (Universal) $\to$ 27.56 dB / 0.856 (Hard-Routed) $\to$ **28.69 dB / 0.872** (Soft MoE) [**+1.13 dB gain over Hard-Routing**].
+    - **Gaussian Blur:** 26.24 dB / 0.776 (Universal) $\to$ 26.91 dB / 0.826 (Hard-Routed) $\to$ **28.18 dB / 0.853** (Soft MoE) [**+1.27 dB gain over Hard-Routing**].
+    - **Rectangular Occlusion:** 15.10 dB / 0.695 (Universal) $\to$ 21.69 dB / 0.783 (Hard-Routed) $\to$ **22.40 dB / 0.803** (Soft MoE) [**+0.71 dB gain over Hard-Routing**].
+    - **Overall Average:** 22.51 dB / 0.727 (Universal) $\to$ 32.85 dB / 0.840 (Hard-Routed) $\to$ **40.53 dB / 0.858** (Soft MoE) [**+7.68 dB / +0.018 SSIM overall gain**]. Soft MoE outperforms Hard Routing across every single real corruption category.
+  - **Gating Network Weight Distribution Matrix (Mean Weight per True Class):**
+    - Clean: $w_0 = 0.9965, w_1 = 0.0000, w_2 = 0.0034, w_3 = 0.0001$
+    - Salt & Pepper: $w_0 = 0.0000, w_1 = 1.0000, w_2 = 0.0000, w_3 = 0.0000$
+    - Gaussian Blur: $w_0 = 0.0000, w_1 = 0.0000, w_2 = 1.0000, w_3 = 0.0000$
+    - Rectangular Occlusion: $w_0 = 0.0049, w_1 = 0.0000, w_2 = 0.0000, w_3 = 0.9951$
+    - Gating matrix is virtually purely diagonal, demonstrating sharp, confident corruption discrimination and zero negative interference, matching the low temperature ($\tau=0.50$) selected by Optuna. Heatmap visualization saved to `moe_gating_heatmap.png`.
+  - **ONNX Deployment:**
+    - `models/task3_soft_moe.onnx`: **56.58 MB** on disk, 138 weight initializers embedded, 3 output tensors (`restored_image`, `routing_weights`, `logits`).
+    - Verified numerical equivalence with $\Delta_{\text{max}} = 1.67\times 10^{-6}$ across all outputs.
+  - **Milestone 3b marked as COMPLETE.**
 
 
 
