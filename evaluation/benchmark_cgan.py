@@ -315,17 +315,34 @@ def run_cgan_benchmark(
             }
 
     # -------------------------------------------------------------------------
-    # Visual comparison panels with Absolute Error Maps (|Fake - Real|)
+    # Stratified Visual Comparison Panels with Absolute Error Maps (|Fake - Real|)
+    # Selects a fixed, stratified set of 4 test pairs per style (seeded for repeatability)
     # -------------------------------------------------------------------------
-    print(f"[BENCHMARK] Generating visual comparison figures and error maps for {num_visualizations} sample pairs...")
-    vis_count = min(num_visualizations, len(all_results))
+    print(f"[BENCHMARK] Generating style-stratified visual comparison panels and error maps (4 pairs per style)...")
+    
+    stratified_samples: List[Dict[str, Any]] = []
+    rng_vis = np.random.RandomState(42)
+    per_style_k = max(1, num_visualizations // 3) if num_visualizations >= 3 else 1
+
+    for st_id in sorted(style_buckets.keys()):
+        bucket = style_buckets[st_id]
+        if bucket:
+            sample_count = min(per_style_k, len(bucket))
+            chosen_idxs = sorted(rng_vis.choice(len(bucket), sample_count, replace=False))
+            for c_idx in chosen_idxs:
+                stratified_samples.append(bucket[c_idx])
+
+    # Fallback to general list if stratified buckets are empty
+    if not stratified_samples:
+        stratified_samples = all_results[:min(num_visualizations, len(all_results))]
+
+    vis_count = len(stratified_samples)
     if vis_count > 0:
-        fig, axes = plt.subplots(vis_count, 4, figsize=(13, 3.2 * vis_count))
+        fig, axes = plt.subplots(vis_count, 4, figsize=(15, 3.8 * vis_count))
         if vis_count == 1:
             axes = np.expand_dims(axes, 0)
 
-        for idx in range(vis_count):
-            r = all_results[idx]
+        for idx, r in enumerate(stratified_samples):
             p_img = r['photo']
             r_img = r['real_sketch']
             f_img = r['gen_sketch']
@@ -333,28 +350,76 @@ def run_cgan_benchmark(
 
             # 1. Input Photo
             axes[idx, 0].imshow(p_img)
-            axes[idx, 0].set_title(f"Input Photo (Style {r['style']})", fontsize=9)
+            axes[idx, 0].set_title(f"[Style {r['style']}] Input Photo", fontsize=11, fontweight='bold')
             axes[idx, 0].axis('off')
 
             # 2. Ground Truth Sketch
             axes[idx, 1].imshow(r_img)
-            axes[idx, 1].set_title("Ground Truth Sketch", fontsize=9)
+            axes[idx, 1].set_title(f"[Style {r['style']}] Ground Truth ({r['image_name']})", fontsize=11, fontweight='bold')
             axes[idx, 1].axis('off')
 
             # 3. cGAN Synthesis
             axes[idx, 2].imshow(f_img)
-            axes[idx, 2].set_title(f"cGAN Gen ({r['psnr']:.1f}dB, SSIM {r['ssim']:.2f})", fontsize=9)
+            axes[idx, 2].set_title(f"cGAN Gen (PSNR: {r['psnr']:.2f} dB, SSIM: {r['ssim']:.4f})", fontsize=11, fontweight='bold')
             axes[idx, 2].axis('off')
 
             # 4. Absolute Error Map
-            im = axes[idx, 3].imshow(err_map, cmap='inferno', vmin=0.0, vmax=0.5)
-            axes[idx, 3].set_title(f"|Fake - Real| (L1: {r['l1']:.3f})", fontsize=9)
+            axes[idx, 3].imshow(err_map, cmap='inferno', vmin=0.0, vmax=0.5)
+            axes[idx, 3].set_title(f"|Fake - Real| (L1: {r['l1']:.4f})", fontsize=11, fontweight='bold')
             axes[idx, 3].axis('off')
 
         plt.tight_layout()
         comparison_plot_path = os.path.join(figures_dir, "test_synthesis_comparisons.png")
-        plt.savefig(comparison_plot_path, dpi=150, bbox_inches='tight')
+        plt.savefig(comparison_plot_path, dpi=180, bbox_inches='tight')
         plt.close()
+        print(f"[BENCHMARK] Saved stratified 12-sample comparison grid to: {comparison_plot_path}")
+
+    # -------------------------------------------------------------------------
+    # Multi-Style Transfer Matrix Figure (4 subjects x 3 synthesized styles)
+    # -------------------------------------------------------------------------
+    print("[BENCHMARK] Generating multi-style transfer matrix figure across all 3 styles...")
+    matrix_samples = []
+    rng_matrix = np.random.RandomState(1337)
+    if all_results:
+        n_matrix = min(4, len(all_results))
+        m_idxs = sorted(rng_matrix.choice(len(all_results), n_matrix, replace=False))
+        matrix_samples = [all_results[i] for i in m_idxs]
+
+    if matrix_samples:
+        fig_m, axes_m = plt.subplots(len(matrix_samples), 4, figsize=(14, 3.6 * len(matrix_samples)))
+        if len(matrix_samples) == 1:
+            axes_m = np.expand_dims(axes_m, 0)
+
+        generator.eval()
+        with torch.no_grad():
+            for row_idx, r_item in enumerate(matrix_samples):
+                p_np = r_item['photo']
+                # Convert back to normalized GAN tensor [-1, 1]
+                p_tensor = torch.from_numpy(p_np).permute(2, 0, 1).unsqueeze(0).float()
+                p_tensor = (p_tensor - 0.5) / 0.5
+                p_tensor = p_tensor.to(device)
+
+                # Col 0: Input Photo
+                axes_m[row_idx, 0].imshow(p_np)
+                axes_m[row_idx, 0].set_title(f"Input ({r_item['image_name']})", fontsize=11, fontweight='bold')
+                axes_m[row_idx, 0].axis('off')
+
+                # Cols 1-3: Styles 0, 1, 2
+                for s_id in range(3):
+                    s_tensor = torch.tensor([s_id], dtype=torch.long, device=device)
+                    fake_out = generator(p_tensor, s_tensor)
+                    fake_img = unnormalize_to_0_1(fake_out)[0]
+
+                    axes_m[row_idx, s_id + 1].imshow(fake_img)
+                    axes_m[row_idx, s_id + 1].set_title(f"Synthesized Style {s_id}", fontsize=11, fontweight='bold')
+                    axes_m[row_idx, s_id + 1].axis('off')
+
+        plt.suptitle("Task 4 Style-Conditioned Synthesis: Multi-Style Matrix (Styles 0, 1, 2)", fontsize=13, fontweight='bold', y=1.01)
+        plt.tight_layout()
+        matrix_plot_path = os.path.join(figures_dir, "multistyle_transfer_matrix.png")
+        plt.savefig(matrix_plot_path, dpi=180, bbox_inches='tight')
+        plt.close()
+        print(f"[BENCHMARK] Saved multi-style transfer matrix to: {matrix_plot_path}")
 
     # Identify Worst Failure Cases (lowest PSNR)
     sorted_by_psnr = sorted(all_results, key=lambda x: x['psnr'])
