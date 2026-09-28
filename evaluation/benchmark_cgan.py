@@ -21,7 +21,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from evaluation.metrics import compute_psnr, compute_ssim, compute_l1, evaluate_image_pair
-from data.fs2k import FS2KDataset
+from data.fs2k import FS2KDataset, collate_fs2k
 from models.cgan import StyleConditionedUNetGenerator
 
 
@@ -112,7 +112,8 @@ def run_cgan_benchmark(
         dataset,
         batch_size=16,
         shuffle=False,
-        num_workers=0
+        num_workers=0,
+        collate_fn=collate_fs2k
     )
 
     generator.to(device)

@@ -198,13 +198,32 @@ class FS2KDataset(Dataset):
         return {
             'photo': photo_t,
             'sketch': sketch_t,
-            'style': style,
-            'image_name': item.get('image_name', f'img_{idx}'),
-            'metadata': {
-                'image_name': item.get('image_name', f'img_{idx}'),
-                'style': style
-            }
+            'style': int(style),
+            'image_name': str(item.get('image_name', f'img_{idx}')),
+            'metadata': dict(item)
         }
+
+
+def collate_fs2k(batch: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Custom collate function for FS2K batches.
+    Stacks photos and sketches into (B, 3, 128, 128) tensors, styles into (B,) long tensor,
+    and formats image_name as list of strings and metadata as list of per-item dictionaries (length B),
+    completely eliminating default_collate list-stacking bugs on non-scalar annotation fields.
+    """
+    photos = torch.stack([b['photo'] for b in batch], dim=0)
+    sketches = torch.stack([b['sketch'] for b in batch], dim=0)
+    styles = torch.tensor([b['style'] for b in batch], dtype=torch.long)
+    image_names = [str(b['image_name']) for b in batch]
+    metadata = [b.get('metadata', {'image_name': b['image_name'], 'style': b['style']}) for b in batch]
+
+    return {
+        'photo': photos,
+        'sketch': sketches,
+        'style': styles,
+        'image_name': image_names,
+        'metadata': metadata
+    }
 
 
 def get_fs2k_dataloaders(
@@ -214,7 +233,7 @@ def get_fs2k_dataloaders(
     num_workers: int = 0,
     pin_memory: bool = True
 ):
-    """Constructs train, val, and test DataLoaders for FS2K."""
+    """Constructs train, val, and test DataLoaders for FS2K using custom collate_fs2k."""
     if not HAS_TORCH:
         raise RuntimeError("PyTorch is required to build DataLoaders.")
 
@@ -237,8 +256,9 @@ def get_fs2k_dataloaders(
         normalize_gan=True
     )
 
-    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=num_workers, pin_memory=pin_memory)
-    val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=pin_memory)
-    test_loader = DataLoader(test_ds, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=pin_memory)
+    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=num_workers, pin_memory=pin_memory, collate_fn=collate_fs2k)
+    val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=pin_memory, collate_fn=collate_fs2k)
+    test_loader = DataLoader(test_ds, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=pin_memory, collate_fn=collate_fs2k)
 
     return train_loader, val_loader, test_loader
+
