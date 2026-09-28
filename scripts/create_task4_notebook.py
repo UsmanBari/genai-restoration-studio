@@ -105,6 +105,37 @@ def build_task4_notebook():
             "cell_type": "markdown",
             "metadata": {},
             "source": [
+                "### Step 2.5: Safety Backup of Prior Valid Checkpoint (Protect Epoch 28 Weights)"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "import os\n",
+                "import shutil\n",
+                "\n",
+                "src = '/content/drive/MyDrive/GenAI-A1/checkpoints/task4'\n",
+                "dst = '/content/drive/MyDrive/GenAI-A1/checkpoints/task4_run1_backup'\n",
+                "\n",
+                "if os.path.isdir(src) and not os.path.exists(dst):\n",
+                "    shutil.copytree(src, dst)\n",
+                "    print(f\"[BACKUP SUCCESS] Successfully backed up {src} to {dst}\")\n",
+                "elif os.path.exists(dst):\n",
+                "    print(f\"[BACKUP PRESENT] Backup directory already exists at {dst}\")\n",
+                "else:\n",
+                "    print(\"[INFO] No existing task4 checkpoint directory found to backup yet.\")\n",
+                "\n",
+                "if os.path.exists(dst):\n",
+                "    print(\"Backup directory contents:\", os.listdir(dst))\n"
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
                 "### Step 3: Fast Local NVMe Caching & Dataset Preparation (FS2K)"
             ]
         },
