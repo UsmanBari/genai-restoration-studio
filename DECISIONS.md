@@ -264,10 +264,10 @@ This log records every architectural and design decision made during the project
   - **Paired Data Augmentation:** `PairedTransform` enforces strict spatial synchronization (e.g. random horizontal flips applied identically to both photograph and sketch) to prevent pixel misalignment.
 - **Final Training Runs (Run 1 vs Run 2) & Model Selection:**
   - **Dataset Verification:** Executed on 100% authentic manifests (898 train / 160 val / 1,046 test) with 0 load errors and 0 flat placeholder images.
-  - **Run 1 (Baseline Optuna 1 Params):** `lr_g=1.92e-4`, `lr_d=3.84e-5`, `lambda_l1=150.0`, `emb_dim=32`, `dropout=0.2`. Peak validation achieved at **Epoch 28**:
+  - **Run 1 (Optuna Study 1 Winner):** `lr_g=1.92e-4`, `lr_d=3.84e-5`, `lambda_l1=150.0`, `emb_dim=32`, `dropout=0.2`. Peak validation achieved at **Epoch 28**:
     - Val PSNR: **16.84 dB**, Val SSIM: **0.5387**, Val L1: **0.1065**, Validation Score ($\text{val\_L1} + (1 - \text{val\_SSIM})$): **0.5493**.
     - Preserved as backup at `checkpoints/task4_run1_backup/`.
-  - **Run 2 (Optuna 2 Winning Params):** `lr_g=3.53e-4`, `lr_d=7.06e-5` ($0.2\times$ manual ratio), `batch_size=8`, `lambda_l1=275.0`, `base_channels_g=64`, `emb_dim=64`, `dropout_rate=0.0`. Peak validation achieved at **Epoch 21**:
+  - **Run 2 (Optuna Study 2 Winner):** `lr_g=3.53e-4`, `lr_d=7.06e-5` ($0.2\times$ manual ratio), `batch_size=8`, `lambda_l1=275.0`, `base_channels_g=64`, `emb_dim=64`, `dropout_rate=0.0`. Peak validation achieved at **Epoch 21**:
     - Val PSNR: **17.17 dB**, Val SSIM: **0.5522**, Val L1: **0.0853**, Validation Score: **0.5331**.
   - **Model Selection:** Selected **Run 2 (Epoch 21)** based on validation score ($0.5331$ vs $0.5493$). The difference between runs is small (+0.33 dB PSNR, +0.0135 SSIM).
 - **Discriminator Dominance Dynamics (Measured Outcome):**

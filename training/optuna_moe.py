@@ -54,6 +54,9 @@ def objective_moe(
       - warmup_epochs in [1, 2, 3]
       - weight_decay in [1e-5, 1e-3]
     """
+    if not HAS_OPTUNA:
+        raise RuntimeError("Optuna is not installed. Please run `pip install optuna` to run hyperparameter optimization.")
+
     # 1. Sample genuine training hyperparameters
     lr_joint = trial.suggest_float('lr_joint', 5e-5, 5e-4, log=True)
     lr_warmup = trial.suggest_float('lr_warmup', 1e-4, 1e-3, log=True)
@@ -132,6 +135,9 @@ def run_optuna_moe_study(
     """
     Executes a 15-trial Optuna study for Soft MoE hyperparameters.
     """
+    if not HAS_OPTUNA:
+        raise RuntimeError("Optuna is not installed. Please run `pip install optuna` to run hyperparameter optimization.")
+
     pruner = MedianPruner(n_startup_trials=3, n_warmup_steps=1)
     study = optuna.create_study(direction="maximize", pruner=pruner, study_name=study_name)
 

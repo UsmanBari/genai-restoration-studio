@@ -34,20 +34,23 @@ def unnormalize_to_0_1(tensor: torch.Tensor) -> np.ndarray:
 
 def compute_pixel_frechet_distance(
     real_images: np.ndarray,
-    fake_images: np.ndarray
+    fake_images: np.ndarray,
+    seed: int = 42
 ) -> float:
     """
     Computes Pixel-Space Fréchet Distance (Pixel-FD) on 49,152-dim raw pixel distribution statistics:
     ||mu_1 - mu_2||^2 + Tr(C1 + C2 - 2 * sqrt(C1 * C2)) over flattened image vectors.
+    Uses deterministic seeded subsampling (seed=42) to ensure exact reproducibility.
     """
     try:
         b = len(real_images)
         if b < 2:
             return 0.0
 
-        # Subsample if dataset is large
+        # Subsample if dataset is large with deterministic RandomState
         sub_n = min(b, 500)
-        idx = np.random.choice(b, sub_n, replace=False)
+        rng = np.random.RandomState(seed)
+        idx = rng.choice(b, sub_n, replace=False)
         r_flat = real_images[idx].reshape(sub_n, -1).astype(np.float32)
         f_flat = fake_images[idx].reshape(sub_n, -1).astype(np.float32)
 

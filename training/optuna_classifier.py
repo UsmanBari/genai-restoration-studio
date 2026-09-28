@@ -54,6 +54,8 @@ def objective_classifier(
     device: str = "cuda" if (HAS_TORCH and torch.cuda.is_available()) else "cpu"
 ) -> float:
     """Optuna objective function for corruption classifier tuning."""
+    if not HAS_OPTUNA:
+        raise RuntimeError("Optuna is not installed. Please run `pip install optuna` to run hyperparameter optimization.")
     if not HAS_TORCH:
         raise RuntimeError("PyTorch is required for classifier Optuna tuning.")
 
@@ -124,6 +126,9 @@ def run_classifier_optuna_study(
     Executes a 15-trial Optuna study to optimize classifier hyperparameters.
     Returns best trial hyperparameters and validation accuracy.
     """
+    if not HAS_OPTUNA:
+        raise RuntimeError("Optuna is not installed. Please run `pip install optuna` to run hyperparameter optimization.")
+
     if mlflow_tracking_uri:
         mlflow.set_tracking_uri(mlflow_tracking_uri)
 

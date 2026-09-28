@@ -55,6 +55,8 @@ def objective_universal(
     device: str = "cuda" if (HAS_TORCH and torch.cuda.is_available()) else "cpu"
 ) -> float:
     """Optuna objective function for a single trial."""
+    if not HAS_OPTUNA:
+        raise RuntimeError("Optuna is not installed. Please run `pip install optuna` to run hyperparameter optimization.")
     if not HAS_TORCH:
         raise RuntimeError("PyTorch is required to execute Optuna tuning trials.")
 
@@ -143,6 +145,9 @@ def run_optuna_study(
     """
     Executes Optuna study with MedianPruner and returns best trial configuration.
     """
+    if not HAS_OPTUNA:
+        raise RuntimeError("Optuna is not installed. Please run `pip install optuna` to run hyperparameter optimization.")
+
     pruner = MedianPruner(n_startup_trials=3, n_warmup_steps=1)
     study = optuna.create_study(
         study_name=study_name,

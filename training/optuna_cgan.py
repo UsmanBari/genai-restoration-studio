@@ -51,6 +51,9 @@ def objective_cgan(
     Optuna objective function for cGAN. Minimizes composite score: val_l1 + (1.0 - val_ssim),
     matching the checkpoint selection criterion. Note: PSNR differences < 0.3 dB are within noise.
     """
+    if not HAS_OPTUNA:
+        raise RuntimeError("Optuna is not installed. Please run `pip install optuna` to run hyperparameter optimization.")
+
     # 1. Sample hyperparameters (covering all 7 spec-mandated parameters)
     lr_g = trial.suggest_float('lr_g', 1e-4, 5e-4, log=True)
     lr_d = trial.suggest_float('lr_d', 2e-5, 2e-4, log=True)
