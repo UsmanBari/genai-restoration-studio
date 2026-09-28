@@ -262,10 +262,9 @@ This log records every architectural and design decision made during the project
   - **Adversarial Loss:** Binary Cross-Entropy with logits (`nn.BCEWithLogitsLoss`) for real vs. fake patch discrimination.
   - **Reconstruction Loss & $\lambda_{\text{L1}}$ Handling:** Paired L1 pixel distance. The assignment specifies initial $\lambda_{\text{L1}} = 100$, and explicitly mandates investigating the optimal value through Optuna (search range $[50.0, 150.0]$ with step 10.0).
   - **Paired Data Augmentation:** `PairedTransform` enforces strict spatial synchronization (e.g. random horizontal flips applied identically to both photograph and sketch) to prevent pixel misalignment.
-- **Discriminator Rebalancing & Training Dynamics Strategy:**
+- **Discriminator Rebalancing & Training Dynamics Status:**
   - Standard alternating GAN updates on paired image translation often lead to rapid Discriminator saturation (real/fake accuracy $> 98\%$), causing vanishing generator gradients and image degradation after 10–20 epochs.
-  - **Manual Learning Rate Rebalancing:** While Optuna explores learning rates, the final full training schedule explicitly enforces $\text{lr}_d = 0.20 \times \text{lr}_g$ (a manual $5\times$ slowdown for $D$) rather than allowing unconstrained $D$ learning rates. This asymmetry slows down PatchGAN convergence, allowing the U-Net generator sufficient gradient signal to learn fine line-sketch textures.
-  - **Adaptive Throttling & Early Stopping Restoration:** In addition to the $0.2\times$ learning rate ratio and $0.9$ one-sided label smoothing, $D$ updates are throttled whenever total $D$ accuracy exceeds $0.85$. If validation quality does not improve for 8 consecutive epochs, early stopping triggers and restores the peak validation generator checkpoint (`best_cgan_generator.pth`).
+  - **Caveat & Unproven Necessity:** The earlier heuristic D-rebalancing settings ($\text{lr}_d = 0.20 \times \text{lr}_g$, $85\%$ accuracy throttling, $0.9$ one-sided label smoothing) were configured during diagnostic runs when the data loader returned flat grey placeholders for missing entries and conditioned on corrupted/scrambled style labels. Therefore, their necessity on genuine, clean FS2K data is unproven. Unconstrained Optuna hyperparameter optimization (`training/optuna_cgan.py`) explores generator and discriminator learning rates independently across wide log-uniform spaces to discover the true optimal regime.
 - **Optuna Hyperparameter Search Space (`training/optuna_cgan.py`):**
   - 15 trials with `MedianPruner` searching:
     - `lr_g` $\in [1\times 10^{-4}, 5\times 10^{-4}]$ (log-uniform)
@@ -279,13 +278,15 @@ This log records every architectural and design decision made during the project
   - `train_cgan_full` saves `best_cgan_generator.pth` directly to Google Drive (`/content/drive/MyDrive/GenAI-A1/checkpoints/task4/`) as well as local disk during training.
   - Step 5 writes `optuna_best_params.json` to Drive and local disk.
   - Steps 7, 8, 9 re-establish environment paths, rebuild model architecture from `optuna_best_params.json`, and strictly load the checkpoint from Drive, raising an error if missing.
-- **Evaluation Breakdown (`evaluation/benchmark_cgan.py`):**
-  - Evaluates L1 distance, PSNR (dB), SSIM, and approximate FID across the 1,046 test images stratified by Style 0, Style 1, Style 2, and Overall.
+- **Evaluation Metrics Decision (`evaluation/benchmark_cgan.py`):**
+  - The Task 4 evaluation requirements in the assignment specification (lines 156–191) do not specify or require FID.
+  - The evaluation benchmark computes L1 distance, PSNR (dB), and SSIM across the 1,046 test images stratified by Style 0, Style 1, Style 2, and Overall.
+  - A supplementary distribution metric is computed as **Pixel-Space Fréchet Distance (Pixel-FD)** on 49,152-dimensional raw pixel distributions. It is explicitly named `pixel_frechet_distance` / `Pixel-FD` in the code, benchmark reports, and notebook outputs to maintain honest naming and distinguish it from Inception-based FID.
 - **ONNX Deployment (`models/onnx_export_cgan.py`):**
   - Generator-only export (Discriminator is training-only) with dynamic batching, opset 18, embedded weights.
   - Inputs: `photo` (float32, $[B, 3, 128, 128]$) and `style_id` (int64, $[B]$). Output: `sketch` (float32, $[B, 3, 128, 128]$).
   - Runner implementation in `models/onnx_runner.py` (`StyleConditionedCGANONNXRunner`).
-- **Evidence:** 35 passing local unit tests covering generator shapes, patch discriminator shapes, composite loss, forward/backward gradient flows, synchronized paired transforms, and ONNX numerical parity.
+- **Evidence:** 38 passing local unit tests covering generator shapes, patch discriminator shapes, composite loss, forward/backward gradient flows, synchronized paired transforms, case-insensitive path resolution, and ONNX numerical parity.
 
 
 

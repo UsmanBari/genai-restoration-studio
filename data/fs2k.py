@@ -65,20 +65,13 @@ class PairedTransform:
 def _find_file_case_insensitive(base_path_without_ext: str) -> Optional[str]:
     """
     Find file matching base_path_without_ext regardless of extension casing or format.
-    Checks common extensions first (O(1)), then falls back to case-insensitive directory scan.
+    Scans parent directory to return the exact case-preserved path as it exists on disk.
     """
-    if os.path.isfile(base_path_without_ext):
-        return base_path_without_ext
+    norm_path = os.path.normpath(base_path_without_ext)
+    if os.path.isfile(norm_path):
+        return norm_path
 
-    # Fast path: check common extension variations
-    common_exts = ['.jpg', '.JPG', '.png', '.PNG', '.jpeg', '.JPEG']
-    for ext in common_exts:
-        cand = base_path_without_ext + ext
-        if os.path.isfile(cand):
-            return cand
-
-    # Case-insensitive directory scan fallback (handles arbitrary extension casing e.g. .Jpg, .Png)
-    parent_dir, stem = os.path.split(base_path_without_ext)
+    parent_dir, stem = os.path.split(norm_path)
     if os.path.isdir(parent_dir):
         stem_lower = stem.lower()
         try:
@@ -90,6 +83,13 @@ def _find_file_case_insensitive(base_path_without_ext: str) -> Optional[str]:
                         return full_path
         except OSError:
             pass
+
+    # Fallback direct candidate checks
+    for ext in ['.jpg', '.JPG', '.png', '.PNG', '.jpeg', '.JPEG']:
+        cand = norm_path + ext
+        if os.path.isfile(cand):
+            return cand
+
     return None
 
 

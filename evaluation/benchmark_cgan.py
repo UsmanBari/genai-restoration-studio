@@ -28,13 +28,13 @@ def unnormalize_to_0_1(tensor: torch.Tensor) -> np.ndarray:
     return np_img
 
 
-def compute_dataset_fid_approx(
+def compute_pixel_frechet_distance(
     real_images: np.ndarray,
     fake_images: np.ndarray
 ) -> float:
     """
-    Computes Gaussian Fréchet Inception Distance approximation on raw/color feature stats.
-    Calculates ||mu_1 - mu_2||^2 + Tr(C1 + C2 - 2 * sqrt(C1 * C2)) over flattened image distributions.
+    Computes Pixel-Space Fréchet Distance (Pixel-FD) on 49,152-dim raw pixel distribution statistics:
+    ||mu_1 - mu_2||^2 + Tr(C1 + C2 - 2 * sqrt(C1 * C2)) over flattened image vectors.
     """
     try:
         b = len(real_images)
@@ -55,8 +55,8 @@ def compute_dataset_fid_approx(
         tr_r = float(np.var(r_flat, axis=0).sum())
         tr_f = float(np.var(f_flat, axis=0).sum())
         
-        fid = float(np.dot(diff, diff) + tr_r + tr_f - 2.0 * np.sqrt(max(0.0, tr_r * tr_f)))
-        return round(float(np.clip(fid, 0.0, 500.0)), 2)
+        fd = float(np.dot(diff, diff) + tr_r + tr_f - 2.0 * np.sqrt(max(0.0, tr_r * tr_f)))
+        return round(float(np.clip(fd, 0.0, 500.0)), 2)
     except Exception:
         return 0.0
 
@@ -173,7 +173,7 @@ def run_cgan_benchmark(
     avg_l1 = float(np.mean([r['l1'] for r in all_results])) if all_results else 0.0
     avg_psnr = float(np.mean([r['psnr'] for r in all_results])) if all_results else 0.0
     avg_ssim = float(np.mean([r['ssim'] for r in all_results])) if all_results else 0.0
-    approx_fid = compute_dataset_fid_approx(np.array(all_real_imgs), np.array(all_fake_imgs)) if all_real_imgs else 0.0
+    pixel_fd = compute_pixel_frechet_distance(np.array(all_real_imgs), np.array(all_fake_imgs)) if all_real_imgs else 0.0
 
     fps = total_images / total_inference_time if total_inference_time > 0 else 0.0
     latency_ms = (total_inference_time / total_images) * 1000.0 if total_images > 0 else 0.0
@@ -236,7 +236,7 @@ def run_cgan_benchmark(
             'mean_l1': round(avg_l1, 4),
             'mean_psnr': round(avg_psnr, 2),
             'mean_ssim': round(avg_ssim, 4),
-            'approx_fid': approx_fid,
+            'pixel_frechet_distance': pixel_fd,
             'latency_ms_per_image': round(latency_ms, 2),
             'throughput_fps': round(fps, 1)
         },
@@ -252,11 +252,11 @@ def run_cgan_benchmark(
     print("\n" + "=" * 60)
     print("TASK 4 CONDITIONAL GAN (FS2K) BENCHMARK SUMMARY")
     print("=" * 60)
-    print(f"Overall Test PSNR:  {structured_results['summary']['mean_psnr']} dB")
-    print(f"Overall Test SSIM:  {structured_results['summary']['mean_ssim']}")
-    print(f"Overall Test L1:    {structured_results['summary']['mean_l1']}")
-    print(f"Approximate FID:    {structured_results['summary']['approx_fid']}")
-    print(f"Inference Latency:  {structured_results['summary']['latency_ms_per_image']} ms/image ({structured_results['summary']['throughput_fps']} FPS)")
+    print(f"Overall Test PSNR:        {structured_results['summary']['mean_psnr']} dB")
+    print(f"Overall Test SSIM:        {structured_results['summary']['mean_ssim']}")
+    print(f"Overall Test L1:          {structured_results['summary']['mean_l1']}")
+    print(f"Pixel-Space Fréchet Dist: {structured_results['summary']['pixel_frechet_distance']}")
+    print(f"Inference Latency:        {structured_results['summary']['latency_ms_per_image']} ms/image ({structured_results['summary']['throughput_fps']} FPS)")
     print("-" * 60)
     for st_k, st_v in by_style_summary.items():
         print(f"  {st_k.upper()} (N={st_v['count']}): PSNR = {st_v['psnr']} dB | SSIM = {st_v['ssim']} | L1 = {st_v['l1']}")

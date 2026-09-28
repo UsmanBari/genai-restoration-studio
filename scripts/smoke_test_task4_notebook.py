@@ -24,8 +24,8 @@ from evaluation.benchmark_cgan import run_cgan_benchmark
 from models.onnx_export_cgan import export_cgan_generator_to_onnx, verify_cgan_onnx_numerical_equivalence
 
 
-def test_1_json_validation_all_notebooks():
-    print("\n--- TEST 1: json.load validation of ALL notebooks ---")
+def test_1_json_and_compile_validation_all_notebooks():
+    print("\n--- TEST 1: json.load & compile() validation of ALL notebooks ---")
     notebook_dir = "notebooks"
     files = [f for f in os.listdir(notebook_dir) if f.endswith(".ipynb")]
     assert len(files) > 0, "No notebooks found in notebooks/"
@@ -35,11 +35,30 @@ def test_1_json_validation_all_notebooks():
         with open(path, "r", encoding="utf-8") as f:
             nb = json.load(f)
         assert "cells" in nb, f"Malformed notebook (no cells): {nb_file}"
-        print(f"  [PASS] {nb_file} is valid JSON ({len(nb['cells'])} cells, {os.path.getsize(path)/1024:.1f} KB)")
+        
+        code_cells = [c for c in nb["cells"] if c.get("cell_type") == "code"]
+        for idx, cell in enumerate(code_cells, start=1):
+            src_lines = cell.get("source", [])
+            clean_lines = []
+            for line in src_lines:
+                l_strip = line.strip()
+                indent = len(line) - len(line.lstrip())
+                if l_strip.startswith("!") or l_strip.startswith("%"):
+                    clean_lines.append(" " * indent + f"pass # {l_strip}\n")
+                else:
+                    clean_lines.append(line)
+            clean_code = "".join(clean_lines)
+            try:
+                compile(clean_code, f"<{nb_file}_cell_{idx}>", "exec")
+            except Exception as e:
+                print(f"  [FAIL] {nb_file} Code cell {idx} failed compilation: {e}")
+                raise e
+
+        print(f"  [PASS] {nb_file}: valid JSON and all {len(code_cells)} code cells compiled successfully ({os.path.getsize(path)/1024:.1f} KB)")
 
 
 def test_2_static_compile_task4_notebook():
-    print("\n--- TEST 2: Static compile() check on Task 4 notebook code cells ---")
+    print("\n--- TEST 2: Detailed compile() check on Task 4 notebook code cells ---")
     nb_path = "notebooks/05_task4_cgan_sketch.ipynb"
     with open(nb_path, "r", encoding="utf-8") as f:
         nb = json.load(f)
@@ -51,18 +70,18 @@ def test_2_static_compile_task4_notebook():
             src_lines = cell.get("source", [])
             clean_lines = []
             for line in src_lines:
-                # Strip shell / colab magics for pure python syntax compilation
                 l_strip = line.strip()
+                indent = len(line) - len(line.lstrip())
                 if l_strip.startswith("!") or l_strip.startswith("%"):
-                    clean_lines.append(f"# {line}")
+                    clean_lines.append(" " * indent + f"pass # {l_strip}\n")
                 else:
                     clean_lines.append(line)
             clean_code = "".join(clean_lines)
             try:
                 compile(clean_code, f"<cell_{code_cell_idx}>", "exec")
-                print(f"  [PASS] Code cell {code_cell_idx} compiled successfully ({len(src_lines)} lines)")
+                print(f"  [PASS] Task 4 Code cell {code_cell_idx} compiled successfully ({len(src_lines)} lines)")
             except Exception as e:
-                print(f"  [FAIL] Code cell {code_cell_idx} failed compilation: {e}")
+                print(f"  [FAIL] Task 4 Code cell {code_cell_idx} failed compilation: {e}")
                 raise e
 
 
@@ -84,7 +103,6 @@ class SyntheticFS2KDataset(Dataset):
         return self.n_samples
 
     def __getitem__(self, idx):
-        # Return photo in [-1, 1], sketch in [-1, 1], style int
         st = self.samples[idx]['style']
         photo = torch.randn(3, 128, 128).clamp(-1.0, 1.0)
         sketch = torch.randn(3, 128, 128).clamp(-1.0, 1.0)
@@ -116,13 +134,23 @@ def test_3_end_to_end_smoke_test():
         os.makedirs(synth_manifest_dir, exist_ok=True)
         os.makedirs(os.path.join(synth_data_dir, "photo/photo1"), exist_ok=True)
         os.makedirs(os.path.join(synth_data_dir, "sketch/sketch1"), exist_ok=True)
+        os.makedirs(os.path.join(synth_data_dir, "photo/photo3"), exist_ok=True)
+        os.makedirs(os.path.join(synth_data_dir, "sketch/sketch3"), exist_ok=True)
 
-        # Create dummy test manifest and images
+        # Create dummy test manifest and images including uppercase .JPG photo and .png sketch
         manifest_items = []
         for i in range(12):
             st = i % 3
-            p_rel = f"photo/photo1/img_{i}.jpg"
-            s_rel = f"sketch/sketch1/img_{i}.jpg"
+            if i == 7:
+                # Include uppercase .JPG photo and .png sketch
+                p_rel = f"photo/photo3/img_{i}.JPG"
+                s_rel = f"sketch/sketch3/img_{i}.png"
+                img_name = f"photo3/img_{i}"
+            else:
+                p_rel = f"photo/photo1/img_{i}.jpg"
+                s_rel = f"sketch/sketch1/img_{i}.jpg"
+                img_name = f"photo1/img_{i}"
+
             p_full = os.path.join(synth_data_dir, p_rel)
             s_full = os.path.join(synth_data_dir, s_rel)
             
@@ -134,7 +162,7 @@ def test_3_end_to_end_smoke_test():
                 'photo_path': p_rel,
                 'sketch_path': s_rel,
                 'style': st,
-                'image_name': f"photo1/img_{i}",
+                'image_name': img_name,
                 'split': 'test'
             })
 
@@ -241,6 +269,6 @@ def test_3_end_to_end_smoke_test():
 
 
 if __name__ == '__main__':
-    test_1_json_validation_all_notebooks()
+    test_1_json_and_compile_validation_all_notebooks()
     test_2_static_compile_task4_notebook()
     test_3_end_to_end_smoke_test()

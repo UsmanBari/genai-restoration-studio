@@ -100,43 +100,76 @@ def test_capitalized_breed_name_resolution(tmp_path):
 
 
 def test_fs2k_uppercase_jpg_and_png_extension_resolution(tmp_path):
-    """Verifies that FS2KDataset resolves uppercase .JPG photo (e.g. photo3/image0449.JPG) and .png sketch."""
+    """Verifies that FS2KDataset resolves uppercase .JPG photo (e.g. photo3/image0449.JPG), .png sketch, and preserves distinct folder boundaries."""
     from PIL import Image
     import json
     from data.fs2k import FS2KDataset
 
     fs2k_root = tmp_path / "FS2K"
-    photo_dir = fs2k_root / "photo" / "photo3"
-    sketch_dir = fs2k_root / "sketch" / "sketch3"
-    photo_dir.mkdir(parents=True)
-    sketch_dir.mkdir(parents=True)
+    
+    # Subfolder 1: photo1 (.jpg photo, .jpg sketch)
+    photo1_dir = fs2k_root / "photo" / "photo1"
+    sketch1_dir = fs2k_root / "sketch" / "sketch1"
+    photo1_dir.mkdir(parents=True)
+    sketch1_dir.mkdir(parents=True)
+    
+    photo1_file = photo1_dir / "image0449.jpg"
+    Image.new('RGB', (128, 128), color=(100, 150, 200)).save(str(photo1_file))
+    sketch1_file = sketch1_dir / "sketch0449.jpg"
+    Image.new('RGB', (128, 128), color=(30, 30, 30)).save(str(sketch1_file))
+
+    # Subfolder 3: photo3 (.JPG photo, .png sketch)
+    photo3_dir = fs2k_root / "photo" / "photo3"
+    sketch3_dir = fs2k_root / "sketch" / "sketch3"
+    photo3_dir.mkdir(parents=True)
+    sketch3_dir.mkdir(parents=True)
+
+    photo3_file = photo3_dir / "image0449.JPG"
+    Image.new('RGB', (128, 128), color=(200, 120, 60)).save(str(photo3_file))
+    sketch3_file = sketch3_dir / "sketch0449.png"
+    Image.new('RGB', (128, 128), color=(70, 70, 70)).save(str(sketch3_file))
+
     manifest_dir = tmp_path / "manifests"
     manifest_dir.mkdir()
 
-    # Save photo with uppercase .JPG extension
-    photo_file = photo_dir / "image0449.JPG"
-    Image.new('RGB', (128, 128), color=(180, 120, 60)).save(str(photo_file))
-
-    # Save sketch with .png extension
-    sketch_file = sketch_dir / "sketch0449.png"
-    Image.new('RGB', (128, 128), color=(50, 50, 50)).save(str(sketch_file))
-
-    manifest_data = [{
-        'image_name': 'photo3/image0449',
-        'style': 2,
-        'split': 'train'
-    }]
+    manifest_data = [
+        {
+            'image_name': 'photo1/image0449',
+            'style': 0,
+            'split': 'train'
+        },
+        {
+            'image_name': 'photo3/image0449',
+            'style': 2,
+            'split': 'train'
+        }
+    ]
     m_path = manifest_dir / "fs2k_train_manifest.json"
     with open(str(m_path), 'w') as f:
         json.dump(manifest_data, f)
 
     ds = FS2KDataset(manifest_path=str(manifest_dir), fs2k_root=str(fs2k_root), split='train')
-    assert len(ds) == 1
-    sample = ds[0]
-    assert sample['photo'].shape == (3, 128, 128)
-    assert sample['sketch'].shape == (3, 128, 128)
-    assert sample['style'] == 2
-    # Verify values are non-zero/non-flat
-    assert float(sample['photo'].std()) > 0.0
-    assert float(sample['sketch'].std()) > 0.0
+    assert len(ds) == 2
+
+    # Verify item 0 (photo1/image0449.jpg)
+    p0_path, s0_path = ds._resolve_paths(ds.items[0])
+    assert p0_path.endswith("image0449.jpg")
+    assert "photo1" in p0_path
+    sample0 = ds[0]
+    assert sample0['photo'].shape == (3, 128, 128)
+    assert sample0['sketch'].shape == (3, 128, 128)
+    assert sample0['style'] == 0
+    assert float(sample0['photo'].std()) > 0.0
+
+    # Verify item 1 (photo3/image0449.JPG)
+    p1_path, s1_path = ds._resolve_paths(ds.items[1])
+    assert p1_path.endswith("image0449.JPG")
+    assert "photo3" in p1_path
+    assert s1_path.endswith("sketch0449.png")
+    sample1 = ds[1]
+    assert sample1['photo'].shape == (3, 128, 128)
+    assert sample1['sketch'].shape == (3, 128, 128)
+    assert sample1['style'] == 2
+    assert float(sample1['photo'].std()) > 0.0
+    assert float(sample1['sketch'].std()) > 0.0
 
