@@ -73,13 +73,15 @@ def test_fs2k_manifest_disjointness_and_distribution():
     assert len(t_ids & te_ids) == 0, f"FS2K train/test overlap: {len(t_ids & te_ids)}"
     assert len(v_ids & te_ids) == 0, f"FS2K val/test overlap: {len(v_ids & te_ids)}"
 
-    # If authentic manifests (898/160/1046) are installed, assert exact style distribution
+    # Enforce strict unconditional assertions for authentic FS2K dataset
+    assert len(train_data) == 898, f"Expected 898 train items, got {len(train_data)}"
+    assert len(val_data) == 160, f"Expected 160 val items, got {len(val_data)}"
+    assert len(test_data) == 1046, f"Expected 1046 test items, got {len(test_data)}"
+
     train_counts = Counter(x.get("style", 0) for x in train_data)
     val_counts = Counter(x.get("style", 0) for x in val_data)
     test_counts = Counter(x.get("style", 0) for x in test_data)
 
-    if len(train_data) == 898:
-        assert len(val_data) == 160, f"Expected 160 val items, got {len(val_data)}"
-        assert train_counts == {0: 303, 1: 297, 2: 298}, f"Unexpected train style distribution: {train_counts}"
-        assert val_counts == {0: 54, 1: 53, 2: 53}, f"Unexpected val style distribution: {val_counts}"
-        assert test_counts == {0: 619, 1: 381, 2: 46}, f"Unexpected test style distribution: {test_counts}"
+    assert train_counts == {0: 303, 1: 297, 2: 298}, f"Unexpected train style distribution: {train_counts}"
+    assert val_counts == {0: 54, 1: 53, 2: 53}, f"Unexpected val style distribution: {val_counts}"
+    assert test_counts == {0: 619, 1: 381, 2: 46}, f"Unexpected test style distribution: {test_counts}"

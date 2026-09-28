@@ -37,8 +37,8 @@ def test_fs2k_dataset_instantiation():
     test_ds = FS2KDataset(manifest_path=manifest_dir, fs2k_root=fs2k_root, split='test')
 
     assert len(train_ds) + len(val_ds) == 1058, f"Expected 1058 total train+val items"
-    assert len(train_ds) in [898, 899], f"Unexpected train count: {len(train_ds)}"
-    assert len(val_ds) in [159, 160], f"Unexpected val count: {len(val_ds)}"
+    assert len(train_ds) == 898, f"Unexpected train count: {len(train_ds)}"
+    assert len(val_ds) == 160, f"Unexpected val count: {len(val_ds)}"
     assert len(test_ds) == 1046, f"Expected 1046 test items, got {len(test_ds)}"
 
 
