@@ -270,9 +270,9 @@ This log records every architectural and design decision made during the project
     - Validation L1: **0.1065**
     - Selected checkpoint criterion: $\min(\text{val\_L1} + (1 - \text{val\_SSIM}))$.
   - **All Earlier Task 4 Numbers Voided:** All prior metrics (including 27.05 dB from corrupted synthetic manifests and 24.61 dB) are officially discarded.
-- **Discriminator Dominance Dynamics & Hypothesis Correction:**
-  - **Correction:** The earlier hypothesis that Discriminator dominance was triggered by corrupted manifests or flat-image artifacts is formally refuted. On 100% authentic, clean FS2K pairs, Discriminator accuracy rapidly climbed to **~90% by Epoch 3** and remained elevated throughout training despite active accuracy throttling ($85\%$ ceiling) and $0.2\times$ learning rate scaling.
-  - **Analysis:** High-contrast binary-like sketch lines (white canvas with sparse black strokes) present distinct feature distributions from RGB natural photographs, providing strong discriminator gradients that PatchGAN readily separates.
+- **Discriminator Dominance Dynamics (Measured Outcome):**
+  - **Empirical Observation:** On 100% authentic, clean FS2K pairs with zero missing or flat placeholder samples, Discriminator accuracy rapidly reached **~90% by Epoch 3** and remained elevated throughout training despite active accuracy throttling ($85\%$ ceiling) and $0.2\times$ learning rate scaling.
+  - **Cause Status:** The exact cause of this early and sustained Discriminator dominance is unconfirmed and remains an open empirical question.
 - **Optuna Hyperparameter Search & Noise Findings:**
   - **Winning Parameters:** `lr_g = 1.92e-4`, `lr_d = 3.93e-5` (training script enforced $0.2 \times \text{lr}_g = 3.84\times 10^{-5}$), `batch_size = 8`, `lambda_l1 = 150.0`, `base_channels_g = 64`, `emb_dim = 32`, `dropout_rate = 0.2`.
   - **Pruning & Stochastic Noise Finding:** 12 of 15 trials were pruned early by MedianPruner because validation PSNR across trials clustered tightly in a narrow band between 16.36 dB and 16.80 dB. In this regime, variations below ~0.3 dB represent stochastic noise rather than significant architecture divergence. For future retrains, `n_startup_trials` is raised to 8 (or pruning disabled) and the objective is aligned with the checkpoint composite score.

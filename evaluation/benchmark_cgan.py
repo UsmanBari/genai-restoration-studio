@@ -399,7 +399,7 @@ def run_cgan_benchmark(
     print(f"Inference Latency:        {structured_results['summary']['latency_ms_per_image']} ms/image ({structured_results['summary']['throughput_fps']} FPS)")
     print("-" * 68)
     for st_k, st_v in by_style_summary.items():
-        warn = " [LOW-SAMPLE N=46]" if st_v['low_sample_warning'] else ""
+        warn = f" [LOW-SAMPLE N={st_v['count']} < 100]" if st_v['low_sample_warning'] else ""
         print(f"  {st_k.upper()} (N={st_v['count']}){warn}: PSNR = {st_v['psnr']} dB | SSIM = {st_v['ssim']} | L1 = {st_v['l1']}")
     print("=" * 68)
 
