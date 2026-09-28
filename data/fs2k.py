@@ -62,6 +62,37 @@ class PairedTransform:
         return photo, sketch
 
 
+def _find_file_case_insensitive(base_path_without_ext: str) -> Optional[str]:
+    """
+    Find file matching base_path_without_ext regardless of extension casing or format.
+    Checks common extensions first (O(1)), then falls back to case-insensitive directory scan.
+    """
+    if os.path.isfile(base_path_without_ext):
+        return base_path_without_ext
+
+    # Fast path: check common extension variations
+    common_exts = ['.jpg', '.JPG', '.png', '.PNG', '.jpeg', '.JPEG']
+    for ext in common_exts:
+        cand = base_path_without_ext + ext
+        if os.path.isfile(cand):
+            return cand
+
+    # Case-insensitive directory scan fallback (handles arbitrary extension casing e.g. .Jpg, .Png)
+    parent_dir, stem = os.path.split(base_path_without_ext)
+    if os.path.isdir(parent_dir):
+        stem_lower = stem.lower()
+        try:
+            for fname in os.listdir(parent_dir):
+                fstem, _ = os.path.splitext(fname)
+                if fstem.lower() == stem_lower:
+                    full_path = os.path.join(parent_dir, fname)
+                    if os.path.isfile(full_path):
+                        return full_path
+        except OSError:
+            pass
+    return None
+
+
 class FS2KDataset(Dataset):
     """
     FS2K Paired Facial Sketch Dataset.
@@ -114,8 +145,6 @@ class FS2KDataset(Dataset):
             'data/raw/FS2K'
         ]
         
-        extensions = ['.jpg', '.JPG', '.png', '.PNG', '.jpeg', '.JPEG']
-        
         photo_path = ''
         sketch_path = ''
         
@@ -124,19 +153,8 @@ class FS2KDataset(Dataset):
             s_subpath = image_name.replace('photo', 'sketch').replace('image', 'sketch')
             s_base = os.path.join(r, 'sketch', s_subpath)
             
-            p_found = ''
-            for ext in extensions:
-                p_cand = p_base + ext
-                if os.path.exists(p_cand):
-                    p_found = p_cand
-                    break
-            
-            s_found = ''
-            for ext in extensions:
-                s_cand = s_base + ext
-                if os.path.exists(s_cand):
-                    s_found = s_cand
-                    break
+            p_found = _find_file_case_insensitive(p_base)
+            s_found = _find_file_case_insensitive(s_base)
             
             if p_found and s_found:
                 return p_found, s_found
