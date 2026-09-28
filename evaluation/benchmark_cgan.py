@@ -37,27 +37,23 @@ def compute_dataset_fid_approx(
     Calculates ||mu_1 - mu_2||^2 + Tr(C1 + C2 - 2 * sqrt(C1 * C2)) over flattened image distributions.
     """
     try:
-        # Flatten H*W*C per image to vector
         b = len(real_images)
         if b < 2:
             return 0.0
         
-        # Subsample if dataset is large for matrix stability
+        # Subsample if dataset is large
         sub_n = min(b, 500)
         idx = np.random.choice(b, sub_n, replace=False)
-        r_flat = real_images[idx].reshape(sub_n, -1)
-        f_flat = fake_images[idx].reshape(sub_n, -1)
+        r_flat = real_images[idx].reshape(sub_n, -1).astype(np.float32)
+        f_flat = fake_images[idx].reshape(sub_n, -1).astype(np.float32)
 
-        # PCA/feature compression to 64 dims for numerical stability
-        cov_r = np.cov(r_flat, rowvar=False)
-        cov_f = np.cov(f_flat, rowvar=False)
         mu_r = np.mean(r_flat, axis=0)
         mu_f = np.mean(f_flat, axis=0)
-
         diff = mu_r - mu_f
-        # Trace approximation
-        tr_r = np.trace(cov_r) if cov_r.ndim == 2 else np.sum(cov_r)
-        tr_f = np.trace(cov_f) if cov_f.ndim == 2 else np.sum(cov_f)
+
+        # Tr(Cov) = sum(Var(x))
+        tr_r = float(np.var(r_flat, axis=0).sum())
+        tr_f = float(np.var(f_flat, axis=0).sum())
         
         fid = float(np.dot(diff, diff) + tr_r + tr_f - 2.0 * np.sqrt(max(0.0, tr_r * tr_f)))
         return round(float(np.clip(fid, 0.0, 500.0)), 2)

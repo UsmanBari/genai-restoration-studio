@@ -143,11 +143,10 @@ class FS2KDataset(Dataset):
 
     def _load_image(self, path: str) -> np.ndarray:
         if not os.path.exists(path):
-            img = Image.new('RGB', self.target_size, color=(128, 128, 128))
-        else:
-            img = Image.open(path).convert('RGB')
-            if img.size != self.target_size:
-                img = img.resize(self.target_size, Image.Resampling.BILINEAR)
+            raise FileNotFoundError(f"FS2K image file not found: {path}")
+        img = Image.open(path).convert('RGB')
+        if img.size != self.target_size:
+            img = img.resize(self.target_size, Image.Resampling.BILINEAR)
         return np.array(img, dtype=np.uint8)
 
     def __getitem__(self, idx: int):

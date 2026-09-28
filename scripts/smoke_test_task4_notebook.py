@@ -134,7 +134,7 @@ def test_3_end_to_end_smoke_test():
                 'photo_path': p_rel,
                 'sketch_path': s_rel,
                 'style': st,
-                'image_name': f"img_{i}",
+                'image_name': f"photo1/img_{i}",
                 'split': 'test'
             })
 
