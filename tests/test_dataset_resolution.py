@@ -98,3 +98,45 @@ def test_capitalized_breed_name_resolution(tmp_path):
     sample_lower = ds_lower[0]
     assert sample_lower['clean'].shape == (3, 128, 128)
 
+
+def test_fs2k_uppercase_jpg_and_png_extension_resolution(tmp_path):
+    """Verifies that FS2KDataset resolves uppercase .JPG photo (e.g. photo3/image0449.JPG) and .png sketch."""
+    from PIL import Image
+    import json
+    from data.fs2k import FS2KDataset
+
+    fs2k_root = tmp_path / "FS2K"
+    photo_dir = fs2k_root / "photo" / "photo3"
+    sketch_dir = fs2k_root / "sketch" / "sketch3"
+    photo_dir.mkdir(parents=True)
+    sketch_dir.mkdir(parents=True)
+    manifest_dir = tmp_path / "manifests"
+    manifest_dir.mkdir()
+
+    # Save photo with uppercase .JPG extension
+    photo_file = photo_dir / "image0449.JPG"
+    Image.new('RGB', (128, 128), color=(180, 120, 60)).save(str(photo_file))
+
+    # Save sketch with .png extension
+    sketch_file = sketch_dir / "sketch0449.png"
+    Image.new('RGB', (128, 128), color=(50, 50, 50)).save(str(sketch_file))
+
+    manifest_data = [{
+        'image_name': 'photo3/image0449',
+        'style': 2,
+        'split': 'train'
+    }]
+    m_path = manifest_dir / "fs2k_train_manifest.json"
+    with open(str(m_path), 'w') as f:
+        json.dump(manifest_data, f)
+
+    ds = FS2KDataset(manifest_path=str(manifest_dir), fs2k_root=str(fs2k_root), split='train')
+    assert len(ds) == 1
+    sample = ds[0]
+    assert sample['photo'].shape == (3, 128, 128)
+    assert sample['sketch'].shape == (3, 128, 128)
+    assert sample['style'] == 2
+    # Verify values are non-zero/non-flat
+    assert float(sample['photo'].std()) > 0.0
+    assert float(sample['sketch'].std()) > 0.0
+

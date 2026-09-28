@@ -114,23 +114,36 @@ class FS2KDataset(Dataset):
             'data/raw/FS2K'
         ]
         
+        extensions = ['.jpg', '.JPG', '.png', '.PNG', '.jpeg', '.JPEG']
+        
         photo_path = ''
         sketch_path = ''
         
         for r in roots:
-            p_cand = os.path.join(r, 'photo', image_name)
+            p_base = os.path.join(r, 'photo', image_name)
             s_subpath = image_name.replace('photo', 'sketch').replace('image', 'sketch')
-            s_cand = os.path.join(r, 'sketch', s_subpath)
+            s_base = os.path.join(r, 'sketch', s_subpath)
             
-            p_final = (p_cand + '.jpg') if os.path.exists(p_cand + '.jpg') else ((p_cand + '.png') if os.path.exists(p_cand + '.png') else '')
-            s_final = (s_cand + '.jpg') if os.path.exists(s_cand + '.jpg') else ((s_cand + '.png') if os.path.exists(s_cand + '.png') else '')
+            p_found = ''
+            for ext in extensions:
+                p_cand = p_base + ext
+                if os.path.exists(p_cand):
+                    p_found = p_cand
+                    break
             
-            if p_final and s_final:
-                return p_final, s_final
-            if p_final:
-                photo_path = p_final
-            if s_final:
-                sketch_path = s_final
+            s_found = ''
+            for ext in extensions:
+                s_cand = s_base + ext
+                if os.path.exists(s_cand):
+                    s_found = s_cand
+                    break
+            
+            if p_found and s_found:
+                return p_found, s_found
+            if p_found and not photo_path:
+                photo_path = p_found
+            if s_found and not sketch_path:
+                sketch_path = s_found
 
         # Fallback default constructed paths
         if not photo_path:
