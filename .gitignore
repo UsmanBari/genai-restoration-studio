@@ -39,6 +39,7 @@ mlruns/
 .mlflow/
 runs/
 *.log
+*.db
 
 # Frontend & Node
 node_modules/
