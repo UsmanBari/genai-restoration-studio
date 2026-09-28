@@ -226,7 +226,18 @@ def test_3_end_to_end_smoke_test():
 
         assert os.path.exists(os.path.join(local_ckpt_dir, "best_cgan_generator.pth")), "Local checkpoint not saved!"
         assert os.path.exists(os.path.join(drive_ckpt_dir, "best_cgan_generator.pth")), "Drive checkpoint not saved!"
-        print(f"  [Step 6 Sim] Training complete. Checkpoints verified in both local ({os.path.getsize(os.path.join(local_ckpt_dir, 'best_cgan_generator.pth'))/1024/1024:.2f} MB) and Drive.")
+        assert os.path.exists(os.path.join(local_ckpt_dir, "training_history.json")), "Local training_history.json not saved!"
+        assert os.path.exists(os.path.join(drive_ckpt_dir, "training_history.json")), "Drive training_history.json not saved!"
+        assert os.path.exists(os.path.join(local_ckpt_dir, "training_history.csv")), "Local training_history.csv not saved!"
+        assert os.path.exists(os.path.join(drive_ckpt_dir, "training_history.csv")), "Drive training_history.csv not saved!"
+
+        # Verify all 4 required losses recorded separately
+        assert 'history' in train_res, "History list missing from train_cgan_full result!"
+        assert len(train_res['history']) == 2
+        for h_row in train_res['history']:
+            for key in ['loss_d_real', 'loss_d_fake', 'loss_g_adv', 'loss_g_recon_l1', 'val_psnr', 'val_ssim', 'val_l1']:
+                assert key in h_row, f"Required metric key '{key}' missing from training history row!"
+        print(f"  [Step 6 Sim] Training complete. Checkpoints & 4-loss history verified in local ({os.path.getsize(os.path.join(local_ckpt_dir, 'best_cgan_generator.pth'))/1024/1024:.2f} MB) and Drive.")
 
         # 3. Simulate Step 7: Load from Drive checkpoint & Run Benchmark
         rebuilt_g = StyleConditionedUNetGenerator(

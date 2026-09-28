@@ -10,7 +10,10 @@ Implements:
 
 from typing import Dict, Any, Tuple, Optional
 import os
+import json
 import time
+import csv
+import shutil
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
@@ -41,7 +44,7 @@ def save_sample_grid(
     save_path: str,
     device: torch.device
 ):
-    """Generates and saves a side-by-side comparison grid: Photo | Real Sketch | Generated Sketch."""
+    """Generates and saves a side-by-side comparison grid on the same fixed validation batch: Photo | Real Sketch | Generated Sketch."""
     net_g.eval()
     with torch.no_grad():
         photos = fixed_batch['photo'].to(device)
@@ -80,15 +83,14 @@ def train_one_epoch_cgan(
 ) -> Dict[str, float]:
     """
     Executes one training epoch of conditional GAN with discriminator rebalancing.
-    
-    Args:
-        d_update_freq: Update D once every `d_update_freq` generator updates (default: 2).
-        d_max_acc_throttle: If D accuracy exceeds this threshold (default: 0.85), skip D update.
+    Records D real loss, D fake loss, G adversarial loss, and G reconstruction loss separately.
     """
     net_g.train()
     net_d.train()
 
     total_loss_d = 0.0
+    total_loss_d_real = 0.0
+    total_loss_d_fake = 0.0
     total_loss_g = 0.0
     total_loss_g_adv = 0.0
     total_loss_g_l1 = 0.0
@@ -135,8 +137,10 @@ def train_one_epoch_cgan(
         loss_g.backward()
         opt_g.step()
 
-        # Accumulate metrics
+        # Accumulate metrics separately
         total_loss_d += metrics_d['loss_d']
+        total_loss_d_real += metrics_d['loss_d_real']
+        total_loss_d_fake += metrics_d['loss_d_fake']
         total_loss_g += metrics_g['loss_g']
         total_loss_g_adv += metrics_g['loss_g_adv']
         total_loss_g_l1 += metrics_g['loss_g_l1']
@@ -148,6 +152,8 @@ def train_one_epoch_cgan(
     n = max(1, num_batches)
     return {
         'loss_d': total_loss_d / n,
+        'loss_d_real': total_loss_d_real / n,
+        'loss_d_fake': total_loss_d_fake / n,
         'loss_g': total_loss_g / n,
         'loss_g_adv': total_loss_g_adv / n,
         'loss_g_l1': total_loss_g_l1 / n,
@@ -218,7 +224,7 @@ def train_cgan_full(
 ) -> Dict[str, Any]:
     """
     Executes full multi-epoch cGAN training workflow with equilibrium monitoring and early stopping.
-    Saves best checkpoints and sample grids both locally and to Google Drive (if drive_save_dir provided).
+    Saves best checkpoints, training history (JSON and CSV), and sample grids both locally and to Google Drive.
     """
     os.makedirs(save_dir, exist_ok=True)
     samples_dir = os.path.join(save_dir, "samples")
@@ -244,7 +250,7 @@ def train_cgan_full(
     scheduler_g = torch.optim.lr_scheduler.CosineAnnealingLR(opt_g, T_max=epochs, eta_min=1e-6)
     scheduler_d = torch.optim.lr_scheduler.CosineAnnealingLR(opt_d, T_max=epochs, eta_min=1e-6)
 
-    # Grab a fixed validation batch for progress visualization
+    # Grab a fixed validation batch for consistent qualitative progress visualization across all epochs
     fixed_val_batch = next(iter(val_loader))
 
     if HAS_MLFLOW:
@@ -257,6 +263,7 @@ def train_cgan_full(
     best_val_metrics = {}
     best_epoch = 0
     best_checkpoint_path = os.path.join(save_dir, "best_cgan_generator.pth")
+    history = []
 
     consecutive_high_d_acc = 0
     epochs_without_improvement = 0
@@ -307,7 +314,45 @@ def train_cgan_full(
         else:
             epochs_without_improvement += 1
 
-        # Save sample visual grid periodically (every 5 epochs and on best)
+        # Record full history row for training curves
+        epoch_record = {
+            'epoch': epoch,
+            'elapsed_sec': round(elapsed, 2),
+            'loss_d_real': round(train_m['loss_d_real'], 5),
+            'loss_d_fake': round(train_m['loss_d_fake'], 5),
+            'loss_g_adv': round(train_m['loss_g_adv'], 5),
+            'loss_g_recon_l1': round(train_m['loss_g_l1'], 5),
+            'loss_d_total': round(train_m['loss_d'], 5),
+            'loss_g_total': round(train_m['loss_g'], 5),
+            'd_acc_real': round(train_m['d_acc_real'], 4),
+            'd_acc_fake': round(train_m['d_acc_fake'], 4),
+            'd_acc_total': round(train_m['d_acc_total'], 4),
+            'val_psnr': round(val_m['psnr'], 3),
+            'val_ssim': round(val_m['ssim'], 4),
+            'val_l1': round(val_m['l1'], 5),
+            'is_best': is_best
+        }
+        history.append(epoch_record)
+
+        # Persist history JSON and CSV files locally and to Google Drive
+        history_json_path = os.path.join(save_dir, "training_history.json")
+        with open(history_json_path, 'w', encoding='utf-8') as f:
+            json.dump(history, f, indent=2)
+
+        history_csv_path = os.path.join(save_dir, "training_history.csv")
+        with open(history_csv_path, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=list(history[0].keys()))
+            writer.writeheader()
+            writer.writerows(history)
+
+        if drive_save_dir:
+            try:
+                shutil.copy2(history_json_path, os.path.join(drive_save_dir, "training_history.json"))
+                shutil.copy2(history_csv_path, os.path.join(drive_save_dir, "training_history.csv"))
+            except Exception:
+                pass
+
+        # Save sample visual grid periodically (every 5 epochs and on best) on fixed validation photos
         if epoch % 5 == 0 or is_best or epoch == epochs:
             sample_path = os.path.join(samples_dir, f"epoch_{epoch:03d}.png")
             save_sample_grid(net_g, fixed_val_batch, sample_path, device)
@@ -332,10 +377,12 @@ def train_cgan_full(
         # Logging to MLflow
         if HAS_MLFLOW:
             try:
+                mlflow.log_metric("train_loss_d_real", train_m['loss_d_real'], step=epoch)
+                mlflow.log_metric("train_loss_d_fake", train_m['loss_d_fake'], step=epoch)
                 mlflow.log_metric("train_loss_d", train_m['loss_d'], step=epoch)
-                mlflow.log_metric("train_loss_g", train_m['loss_g'], step=epoch)
                 mlflow.log_metric("train_loss_g_adv", train_m['loss_g_adv'], step=epoch)
                 mlflow.log_metric("train_loss_g_l1", train_m['loss_g_l1'], step=epoch)
+                mlflow.log_metric("train_loss_g", train_m['loss_g'], step=epoch)
                 mlflow.log_metric("d_acc_real", train_m['d_acc_real'], step=epoch)
                 mlflow.log_metric("d_acc_fake", train_m['d_acc_fake'], step=epoch)
                 mlflow.log_metric("d_acc_total", train_m['d_acc_total'], step=epoch)
@@ -348,8 +395,8 @@ def train_cgan_full(
         best_flag = " [BEST]" if is_best else f" (no gain for {epochs_without_improvement}/{patience} eps)"
         print(
             f"Epoch [{epoch:02d}/{epochs:02d}] ({elapsed:.1f}s) | "
-            f"Loss D: {train_m['loss_d']:.4f} (Acc: {train_m['d_acc_total']*100:.1f}%, D_up: {train_m.get('d_updates_ratio', 0)*100:.0f}%) | "
-            f"Loss G: {train_m['loss_g']:.2f} (L1: {train_m['loss_g_l1']:.4f}) | "
+            f"D Real: {train_m['loss_d_real']:.4f}, Fake: {train_m['loss_d_fake']:.4f} (Acc: {train_m['d_acc_total']*100:.1f}%) | "
+            f"G Adv: {train_m['loss_g_adv']:.4f}, L1: {train_m['loss_g_l1']:.4f} | "
             f"Val PSNR: {val_m['psnr']:.2f}dB SSIM: {val_m['ssim']:.4f}{best_flag}"
         )
 
@@ -381,7 +428,8 @@ def train_cgan_full(
     return {
         'best_val_metrics': best_val_metrics,
         'best_epoch': best_epoch,
-        'checkpoint_path': best_checkpoint_path
+        'checkpoint_path': best_checkpoint_path,
+        'history': history
     }
 
 

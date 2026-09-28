@@ -56,7 +56,7 @@ def compute_pixel_frechet_distance(
         tr_f = float(np.var(f_flat, axis=0).sum())
         
         fd = float(np.dot(diff, diff) + tr_r + tr_f - 2.0 * np.sqrt(max(0.0, tr_r * tr_f)))
-        return round(float(np.clip(fd, 0.0, 500.0)), 2)
+        return round(float(max(0.0, fd)), 2)
     except Exception:
         return 0.0
 

@@ -153,7 +153,8 @@ def test_fs2k_uppercase_jpg_and_png_extension_resolution(tmp_path):
 
     # Verify item 0 (photo1/image0449.jpg)
     p0_path, s0_path = ds._resolve_paths(ds.items[0])
-    assert p0_path.endswith("image0449.jpg")
+    assert os.path.basename(p0_path) == "image0449.jpg"
+    assert os.path.basename(s0_path) == "sketch0449.jpg"
     assert "photo1" in p0_path
     sample0 = ds[0]
     assert sample0['photo'].shape == (3, 128, 128)
@@ -163,9 +164,9 @@ def test_fs2k_uppercase_jpg_and_png_extension_resolution(tmp_path):
 
     # Verify item 1 (photo3/image0449.JPG)
     p1_path, s1_path = ds._resolve_paths(ds.items[1])
-    assert p1_path.endswith("image0449.JPG")
+    assert os.path.basename(p1_path) == "image0449.JPG"
+    assert os.path.basename(s1_path) == "sketch0449.png"
     assert "photo3" in p1_path
-    assert s1_path.endswith("sketch0449.png")
     sample1 = ds[1]
     assert sample1['photo'].shape == (3, 128, 128)
     assert sample1['sketch'].shape == (3, 128, 128)
