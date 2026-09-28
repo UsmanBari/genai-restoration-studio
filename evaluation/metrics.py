@@ -10,38 +10,56 @@ from skimage.metrics import structural_similarity as skimage_ssim
 from skimage.metrics import peak_signal_noise_ratio as skimage_psnr
 
 
+def _ensure_0_1(img: np.ndarray) -> np.ndarray:
+    """Safely converts any image array (H, W, C) from [-1, 1] or [0, 255] to [0.0, 1.0]."""
+    arr = img.astype(np.float64)
+    if arr.min() < -0.05:
+        # Array is in [-1.0, 1.0] from Tanh
+        arr = np.clip((arr * 0.5) + 0.5, 0.0, 1.0)
+    elif arr.max() > 1.05:
+        # Array is in [0, 255]
+        arr = np.clip(arr / 255.0, 0.0, 1.0)
+    else:
+        arr = np.clip(arr, 0.0, 1.0)
+    return arr
+
+
 def compute_psnr(img_pred: np.ndarray, img_target: np.ndarray) -> float:
     """
-    Computes Peak Signal-to-Noise Ratio (PSNR) in dB.
-    Images should be NumPy arrays (H, W, C) in [0.0, 1.0] or [0, 255].
+    Computes Peak Signal-to-Noise Ratio (PSNR) in dB on [0.0, 1.0] range.
+    Returns 100.0 dB for identical images (MSE < 1e-12).
     """
-    data_range = 255.0 if img_pred.max() > 1.0 else 1.0
-    mse = np.mean((img_pred.astype(np.float64) - img_target.astype(np.float64)) ** 2)
-    if mse == 0:
+    p = _ensure_0_1(img_pred)
+    t = _ensure_0_1(img_target)
+    mse = float(np.mean((p - t) ** 2))
+    if mse <= 1e-12:
         return 100.0
-    return 10.0 * math.log10((data_range ** 2) / mse)
+    return float(10.0 * math.log10(1.0 / mse))
 
 
 def compute_ssim(img_pred: np.ndarray, img_target: np.ndarray) -> float:
     """
-    Computes Structural Similarity Index (SSIM).
-    Images should be NumPy arrays (H, W, C).
+    Computes Structural Similarity Index (SSIM) on [0.0, 1.0] range.
+    Returns 1.0 for identical images.
     """
-    data_range = 255.0 if img_pred.max() > 1.0 else 1.0
-    channel_axis = 2 if len(img_pred.shape) == 3 else None
+    p = _ensure_0_1(img_pred)
+    t = _ensure_0_1(img_target)
+    if np.allclose(p, t, atol=1e-6):
+        return 1.0
+    channel_axis = 2 if len(p.shape) == 3 else None
     return float(skimage_ssim(
-        img_target,
-        img_pred,
-        data_range=data_range,
+        t,
+        p,
+        data_range=1.0,
         channel_axis=channel_axis
     ))
 
 
 def compute_l1(img_pred: np.ndarray, img_target: np.ndarray) -> float:
-    """Computes Mean Absolute Error (L1 distance)."""
-    data_range = 255.0 if img_pred.max() > 1.0 else 1.0
-    l1 = np.mean(np.abs(img_pred.astype(np.float64) - img_target.astype(np.float64)))
-    return float(l1 / data_range)
+    """Computes Mean Absolute Error (L1 distance) on [0.0, 1.0] range."""
+    p = _ensure_0_1(img_pred)
+    t = _ensure_0_1(img_target)
+    return float(np.mean(np.abs(p - t)))
 
 
 def evaluate_image_pair(pred_np: np.ndarray, target_np: np.ndarray) -> Dict[str, float]:
@@ -49,13 +67,9 @@ def evaluate_image_pair(pred_np: np.ndarray, target_np: np.ndarray) -> Dict[str,
     Evaluates a single prediction and clean target pair (H, W, C) in [0.0, 1.0].
     Returns dict: {'psnr': float, 'ssim': float, 'l1': float}.
     """
-    # Ensure clipping to [0.0, 1.0]
-    pred_clamped = np.clip(pred_np, 0.0, 1.0)
-    target_clamped = np.clip(target_np, 0.0, 1.0)
-
-    psnr_val = compute_psnr(pred_clamped, target_clamped)
-    ssim_val = compute_ssim(pred_clamped, target_clamped)
-    l1_val = compute_l1(pred_clamped, target_clamped)
+    psnr_val = compute_psnr(pred_np, target_np)
+    ssim_val = compute_ssim(pred_np, target_np)
+    l1_val = compute_l1(pred_np, target_np)
 
     return {
         'psnr': round(psnr_val, 4),
@@ -68,10 +82,21 @@ def calculate_psnr(pred: Union[np.ndarray, Any], target: Union[np.ndarray, Any])
     """Computes PSNR from NumPy array or PyTorch Tensor."""
     if hasattr(pred, "detach"):
         import torch
-        mse = float(torch.mean((pred.detach().float() - target.detach().float()) ** 2).item())
-        if mse <= 0:
+        p_t = pred.detach().float()
+        t_t = target.detach().float()
+        if p_t.min() < -0.05:
+            p_t = torch.clamp((p_t * 0.5) + 0.5, 0.0, 1.0)
+            t_t = torch.clamp((t_t * 0.5) + 0.5, 0.0, 1.0)
+        elif p_t.max() > 1.05:
+            p_t = torch.clamp(p_t / 255.0, 0.0, 1.0)
+            t_t = torch.clamp(t_t / 255.0, 0.0, 1.0)
+        else:
+            p_t = torch.clamp(p_t, 0.0, 1.0)
+            t_t = torch.clamp(t_t, 0.0, 1.0)
+        mse = float(torch.mean((p_t - t_t) ** 2).item())
+        if mse <= 1e-12:
             return 100.0
-        return 10.0 * math.log10(1.0 / mse)
+        return float(10.0 * math.log10(1.0 / mse))
     return compute_psnr(pred, target)
 
 

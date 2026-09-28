@@ -327,6 +327,7 @@ def train_cgan_full(
             'd_acc_real': round(train_m['d_acc_real'], 4),
             'd_acc_fake': round(train_m['d_acc_fake'], 4),
             'd_acc_total': round(train_m['d_acc_total'], 4),
+            'd_updates_ratio': round(train_m['d_updates_ratio'], 4),
             'val_psnr': round(val_m['psnr'], 3),
             'val_ssim': round(val_m['ssim'], 4),
             'val_l1': round(val_m['l1'], 5),
@@ -395,7 +396,7 @@ def train_cgan_full(
         best_flag = " [BEST]" if is_best else f" (no gain for {epochs_without_improvement}/{patience} eps)"
         print(
             f"Epoch [{epoch:02d}/{epochs:02d}] ({elapsed:.1f}s) | "
-            f"D Real: {train_m['loss_d_real']:.4f}, Fake: {train_m['loss_d_fake']:.4f} (Acc: {train_m['d_acc_total']*100:.1f}%) | "
+            f"D Real: {train_m['loss_d_real']:.4f}, Fake: {train_m['loss_d_fake']:.4f} (Acc: {train_m['d_acc_total']*100:.1f}%, D_up: {train_m['d_updates_ratio']*100:.0f}%) | "
             f"G Adv: {train_m['loss_g_adv']:.4f}, L1: {train_m['loss_g_l1']:.4f} | "
             f"Val PSNR: {val_m['psnr']:.2f}dB SSIM: {val_m['ssim']:.4f}{best_flag}"
         )

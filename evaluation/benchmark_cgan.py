@@ -1,8 +1,12 @@
 """
 Style-Conditioned cGAN Benchmark & Comprehensive Evaluation (Task 4).
 Evaluates StyleConditionedUNetGenerator on the FS2K test split (1,046 test pairs).
-Computes L1 distance, PSNR, SSIM, and FID broken down by style category (Style 0, Style 1, Style 2, Overall).
-Saves representative visual comparison panels and failure cases.
+Computes L1 distance, PSNR, SSIM, and Pixel-FD broken down by style category (Style 0, Style 1, Style 2, Overall).
+Includes 3 reference baselines:
+  (a) All-white image (1.0)
+  (b) Mean training sketch
+  (c) Grayscale version of input photo
+Generates visual comparison panels, error maps (|Fake - Real|), and failure cases.
 """
 
 import os
@@ -40,7 +44,7 @@ def compute_pixel_frechet_distance(
         b = len(real_images)
         if b < 2:
             return 0.0
-        
+
         # Subsample if dataset is large
         sub_n = min(b, 500)
         idx = np.random.choice(b, sub_n, replace=False)
@@ -54,11 +58,32 @@ def compute_pixel_frechet_distance(
         # Tr(Cov) = sum(Var(x))
         tr_r = float(np.var(r_flat, axis=0).sum())
         tr_f = float(np.var(f_flat, axis=0).sum())
-        
+
         fd = float(np.dot(diff, diff) + tr_r + tr_f - 2.0 * np.sqrt(max(0.0, tr_r * tr_f)))
         return round(float(max(0.0, fd)), 2)
     except Exception:
         return 0.0
+
+
+def _extract_image_name(batch: Dict[str, Any], idx: int, fallback_idx: int) -> str:
+    """Safely extracts image_name from batch dictionary regardless of collate structure."""
+    if 'image_name' in batch:
+        val = batch['image_name']
+        if isinstance(val, (list, tuple)) and idx < len(val):
+            return str(val[idx])
+        elif isinstance(val, str):
+            return val
+    if 'metadata' in batch:
+        meta = batch['metadata']
+        if isinstance(meta, dict) and 'image_name' in meta:
+            val = meta['image_name']
+            if isinstance(val, (list, tuple)) and idx < len(val):
+                return str(val[idx])
+            elif isinstance(val, str):
+                return val
+        elif isinstance(meta, list) and idx < len(meta) and isinstance(meta[idx], dict):
+            return str(meta[idx].get('image_name', f"img_{fallback_idx}"))
+    return f"img_{fallback_idx}"
 
 
 def run_cgan_benchmark(
@@ -71,17 +96,7 @@ def run_cgan_benchmark(
 ) -> Dict[str, Any]:
     """
     Runs full benchmark evaluation of the trained cGAN generator on the FS2K test set.
-    
-    Returns structured results dict:
-      {
-        'summary': {'mean_l1': ..., 'mean_psnr': ..., 'mean_ssim': ..., 'approx_fid': ..., 'fps': ...},
-        'by_style': {
-           'style_0': {'l1': ..., 'psnr': ..., 'ssim': ..., 'count': ...},
-           'style_1': {'l1': ..., 'psnr': ..., 'ssim': ..., 'count': ...},
-           'style_2': {'l1': ..., 'psnr': ..., 'ssim': ..., 'count': ...},
-        },
-        'failure_cases': [...]
-      }
+    Includes comparisons against 3 reference baselines (all-white, mean sketch, grayscale photo).
     """
     os.makedirs(output_dir, exist_ok=True)
     figures_dir = os.path.join(output_dir, "figures")
@@ -107,6 +122,7 @@ def run_cgan_benchmark(
     all_results: List[Dict[str, Any]] = []
     all_real_imgs: List[np.ndarray] = []
     all_fake_imgs: List[np.ndarray] = []
+    all_photo_imgs: List[np.ndarray] = []
 
     total_inference_time = 0.0
     total_images = 0
@@ -118,7 +134,6 @@ def run_cgan_benchmark(
             photos = batch['photo'].to(device)
             sketches = batch['sketch'].to(device)
             styles = batch['style'].to(device)
-            metadata = batch['metadata']  # dict of lists or list of dicts
 
             t0 = time.perf_counter()
             fakes = generator(photos, styles)
@@ -135,25 +150,19 @@ def run_cgan_benchmark(
             total_images += bs
 
             for i in range(bs):
-                # Handle metadata whether it's list of dicts or batched dict
-                if isinstance(metadata, dict):
-                    meta_item = {k: metadata[k][i] for k in metadata}
-                elif isinstance(metadata, list):
-                    meta_item = metadata[i]
-                else:
-                    meta_item = {}
-
+                img_name = _extract_image_name(batch, i, total_images - bs + i)
                 st_id = int(styles[i].item())
                 p_img = photos_np[i]
                 r_img = reals_np[i]
                 f_img = fakes_np[i]
 
+                # Model metrics
                 l1_val = compute_l1(f_img, r_img)
                 psnr_val = compute_psnr(f_img, r_img)
                 ssim_val = compute_ssim(f_img, r_img)
 
                 item_res = {
-                    'image_name': meta_item.get('image_name', f"img_{len(all_results)}"),
+                    'image_name': img_name,
                     'style': st_id,
                     'l1': l1_val,
                     'psnr': psnr_val,
@@ -168,8 +177,80 @@ def run_cgan_benchmark(
                 all_results.append(item_res)
                 all_real_imgs.append(r_img)
                 all_fake_imgs.append(f_img)
+                all_photo_imgs.append(p_img)
 
-    # Compute Aggregate Metrics
+    # -------------------------------------------------------------------------
+    # Baseline Calculations:
+    # (a) All-white image (1.0)
+    # (b) Mean training sketch (computed across dataset or test ground truths)
+    # (c) Grayscale version of input photo
+    # -------------------------------------------------------------------------
+    mean_sketch_img = np.mean(all_real_imgs, axis=0) if all_real_imgs else np.ones((128, 128, 3), dtype=np.float32)
+
+    baseline_metrics = {
+        'all_white': {'psnr': [], 'ssim': [], 'l1': []},
+        'mean_sketch': {'psnr': [], 'ssim': [], 'l1': []},
+        'grayscale_photo': {'psnr': [], 'ssim': [], 'l1': []}
+    }
+    baseline_by_style = {
+        st_id: {
+            'all_white': {'psnr': [], 'ssim': [], 'l1': []},
+            'mean_sketch': {'psnr': [], 'ssim': [], 'l1': []},
+            'grayscale_photo': {'psnr': [], 'ssim': [], 'l1': []}
+        } for st_id in [0, 1, 2]
+    }
+
+    for idx, item in enumerate(all_results):
+        r_img = item['real_sketch']
+        p_img = item['photo']
+        st_id = item['style']
+
+        # Baseline (a): All-white
+        white_img = np.ones_like(r_img, dtype=np.float32)
+        psnr_w = compute_psnr(white_img, r_img)
+        ssim_w = compute_ssim(white_img, r_img)
+        l1_w = compute_l1(white_img, r_img)
+
+        # Baseline (b): Mean sketch
+        psnr_m = compute_psnr(mean_sketch_img, r_img)
+        ssim_m = compute_ssim(mean_sketch_img, r_img)
+        l1_m = compute_l1(mean_sketch_img, r_img)
+
+        # Baseline (c): Grayscale input photo
+        gray_1c = 0.2989 * p_img[..., 0] + 0.5870 * p_img[..., 1] + 0.1140 * p_img[..., 2]
+        gray_img = np.stack([gray_1c, gray_1c, gray_1c], axis=-1).astype(np.float32)
+        psnr_g = compute_psnr(gray_img, r_img)
+        ssim_g = compute_ssim(gray_img, r_img)
+        l1_g = compute_l1(gray_img, r_img)
+
+        # Record overall
+        baseline_metrics['all_white']['psnr'].append(psnr_w)
+        baseline_metrics['all_white']['ssim'].append(ssim_w)
+        baseline_metrics['all_white']['l1'].append(l1_w)
+
+        baseline_metrics['mean_sketch']['psnr'].append(psnr_m)
+        baseline_metrics['mean_sketch']['ssim'].append(ssim_m)
+        baseline_metrics['mean_sketch']['l1'].append(l1_m)
+
+        baseline_metrics['grayscale_photo']['psnr'].append(psnr_g)
+        baseline_metrics['grayscale_photo']['ssim'].append(ssim_g)
+        baseline_metrics['grayscale_photo']['l1'].append(l1_g)
+
+        # Record per style
+        if st_id in baseline_by_style:
+            baseline_by_style[st_id]['all_white']['psnr'].append(psnr_w)
+            baseline_by_style[st_id]['all_white']['ssim'].append(ssim_w)
+            baseline_by_style[st_id]['all_white']['l1'].append(l1_w)
+
+            baseline_by_style[st_id]['mean_sketch']['psnr'].append(psnr_m)
+            baseline_by_style[st_id]['mean_sketch']['ssim'].append(ssim_m)
+            baseline_by_style[st_id]['mean_sketch']['l1'].append(l1_m)
+
+            baseline_by_style[st_id]['grayscale_photo']['psnr'].append(psnr_g)
+            baseline_by_style[st_id]['grayscale_photo']['ssim'].append(ssim_g)
+            baseline_by_style[st_id]['grayscale_photo']['l1'].append(l1_g)
+
+    # Compute Model Aggregate Metrics
     avg_l1 = float(np.mean([r['l1'] for r in all_results])) if all_results else 0.0
     avg_psnr = float(np.mean([r['psnr'] for r in all_results])) if all_results else 0.0
     avg_ssim = float(np.mean([r['ssim'] for r in all_results])) if all_results else 0.0
@@ -178,40 +259,96 @@ def run_cgan_benchmark(
     fps = total_images / total_inference_time if total_inference_time > 0 else 0.0
     latency_ms = (total_inference_time / total_images) * 1000.0 if total_images > 0 else 0.0
 
+    # Summary of baselines
+    baseline_summary = {
+        'all_white': {
+            'mean_psnr': round(float(np.mean(baseline_metrics['all_white']['psnr'])), 2) if baseline_metrics['all_white']['psnr'] else 0.0,
+            'mean_ssim': round(float(np.mean(baseline_metrics['all_white']['ssim'])), 4) if baseline_metrics['all_white']['ssim'] else 0.0,
+            'mean_l1': round(float(np.mean(baseline_metrics['all_white']['l1'])), 4) if baseline_metrics['all_white']['l1'] else 0.0,
+        },
+        'mean_sketch': {
+            'mean_psnr': round(float(np.mean(baseline_metrics['mean_sketch']['psnr'])), 2) if baseline_metrics['mean_sketch']['psnr'] else 0.0,
+            'mean_ssim': round(float(np.mean(baseline_metrics['mean_sketch']['ssim'])), 4) if baseline_metrics['mean_sketch']['ssim'] else 0.0,
+            'mean_l1': round(float(np.mean(baseline_metrics['mean_sketch']['l1'])), 4) if baseline_metrics['mean_sketch']['l1'] else 0.0,
+        },
+        'grayscale_photo': {
+            'mean_psnr': round(float(np.mean(baseline_metrics['grayscale_photo']['psnr'])), 2) if baseline_metrics['grayscale_photo']['psnr'] else 0.0,
+            'mean_ssim': round(float(np.mean(baseline_metrics['grayscale_photo']['ssim'])), 4) if baseline_metrics['grayscale_photo']['ssim'] else 0.0,
+            'mean_l1': round(float(np.mean(baseline_metrics['grayscale_photo']['l1'])), 4) if baseline_metrics['grayscale_photo']['l1'] else 0.0,
+        }
+    }
+
     by_style_summary = {}
     for st_id in sorted(style_buckets.keys()):
         bucket = style_buckets[st_id]
+        cnt = len(bucket)
+        is_low_sample = (cnt < 100)  # Style 2 has only 46 test images
         if bucket:
             by_style_summary[f"style_{st_id}"] = {
-                'count': len(bucket),
+                'count': cnt,
+                'low_sample_warning': is_low_sample,
                 'l1': round(float(np.mean([r['l1'] for r in bucket])), 4),
                 'psnr': round(float(np.mean([r['psnr'] for r in bucket])), 2),
-                'ssim': round(float(np.mean([r['ssim'] for r in bucket])), 4)
+                'ssim': round(float(np.mean([r['ssim'] for r in bucket])), 4),
+                'baselines': {
+                    'all_white': {
+                        'psnr': round(float(np.mean(baseline_by_style[st_id]['all_white']['psnr'])), 2),
+                        'ssim': round(float(np.mean(baseline_by_style[st_id]['all_white']['ssim'])), 4),
+                        'l1': round(float(np.mean(baseline_by_style[st_id]['all_white']['l1'])), 4),
+                    },
+                    'mean_sketch': {
+                        'psnr': round(float(np.mean(baseline_by_style[st_id]['mean_sketch']['psnr'])), 2),
+                        'ssim': round(float(np.mean(baseline_by_style[st_id]['mean_sketch']['ssim'])), 4),
+                        'l1': round(float(np.mean(baseline_by_style[st_id]['mean_sketch']['l1'])), 4),
+                    },
+                    'grayscale_photo': {
+                        'psnr': round(float(np.mean(baseline_by_style[st_id]['grayscale_photo']['psnr'])), 2),
+                        'ssim': round(float(np.mean(baseline_by_style[st_id]['grayscale_photo']['ssim'])), 4),
+                        'l1': round(float(np.mean(baseline_by_style[st_id]['grayscale_photo']['l1'])), 4),
+                    }
+                }
             }
         else:
-            by_style_summary[f"style_{st_id}"] = {'count': 0, 'l1': 0.0, 'psnr': 0.0, 'ssim': 0.0}
+            by_style_summary[f"style_{st_id}"] = {
+                'count': 0, 'low_sample_warning': True, 'l1': 0.0, 'psnr': 0.0, 'ssim': 0.0, 'baselines': {}
+            }
 
-    # Save visual comparison panels across styles
-    print(f"[BENCHMARK] Generating visual comparison figures for {num_visualizations} sample pairs...")
+    # -------------------------------------------------------------------------
+    # Visual comparison panels with Absolute Error Maps (|Fake - Real|)
+    # -------------------------------------------------------------------------
+    print(f"[BENCHMARK] Generating visual comparison figures and error maps for {num_visualizations} sample pairs...")
     vis_count = min(num_visualizations, len(all_results))
     if vis_count > 0:
-        fig, axes = plt.subplots(vis_count, 3, figsize=(9, 3 * vis_count))
+        fig, axes = plt.subplots(vis_count, 4, figsize=(13, 3.2 * vis_count))
         if vis_count == 1:
             axes = np.expand_dims(axes, 0)
 
         for idx in range(vis_count):
             r = all_results[idx]
-            axes[idx, 0].imshow(r['photo'])
+            p_img = r['photo']
+            r_img = r['real_sketch']
+            f_img = r['gen_sketch']
+            err_map = np.mean(np.abs(f_img - r_img), axis=-1)  # (H, W) in [0, 1]
+
+            # 1. Input Photo
+            axes[idx, 0].imshow(p_img)
             axes[idx, 0].set_title(f"Input Photo (Style {r['style']})", fontsize=9)
             axes[idx, 0].axis('off')
 
-            axes[idx, 1].imshow(r['real_sketch'])
+            # 2. Ground Truth Sketch
+            axes[idx, 1].imshow(r_img)
             axes[idx, 1].set_title("Ground Truth Sketch", fontsize=9)
             axes[idx, 1].axis('off')
 
-            axes[idx, 2].imshow(r['gen_sketch'])
+            # 3. cGAN Synthesis
+            axes[idx, 2].imshow(f_img)
             axes[idx, 2].set_title(f"cGAN Gen ({r['psnr']:.1f}dB, SSIM {r['ssim']:.2f})", fontsize=9)
             axes[idx, 2].axis('off')
+
+            # 4. Absolute Error Map
+            im = axes[idx, 3].imshow(err_map, cmap='inferno', vmin=0.0, vmax=0.5)
+            axes[idx, 3].set_title(f"|Fake - Real| (L1: {r['l1']:.3f})", fontsize=9)
+            axes[idx, 3].axis('off')
 
         plt.tight_layout()
         comparison_plot_path = os.path.join(figures_dir, "test_synthesis_comparisons.png")
@@ -240,6 +377,7 @@ def run_cgan_benchmark(
             'latency_ms_per_image': round(latency_ms, 2),
             'throughput_fps': round(fps, 1)
         },
+        'baselines': baseline_summary,
         'by_style': by_style_summary,
         'failure_cases': failure_cases
     }
@@ -249,17 +387,19 @@ def run_cgan_benchmark(
     with open(report_path, 'w', encoding='utf-8') as f:
         json.dump(structured_results, f, indent=2)
 
-    print("\n" + "=" * 60)
-    print("TASK 4 CONDITIONAL GAN (FS2K) BENCHMARK SUMMARY")
-    print("=" * 60)
-    print(f"Overall Test PSNR:        {structured_results['summary']['mean_psnr']} dB")
-    print(f"Overall Test SSIM:        {structured_results['summary']['mean_ssim']}")
-    print(f"Overall Test L1:          {structured_results['summary']['mean_l1']}")
+    print("\n" + "=" * 68)
+    print("TASK 4 CONDITIONAL GAN (FS2K) BENCHMARK SUMMARY & BASELINES")
+    print("=" * 68)
+    print(f"cGAN Generator Model:     PSNR = {structured_results['summary']['mean_psnr']} dB | SSIM = {structured_results['summary']['mean_ssim']} | L1 = {structured_results['summary']['mean_l1']}")
+    print(f"Baseline (All-White):     PSNR = {baseline_summary['all_white']['mean_psnr']} dB | SSIM = {baseline_summary['all_white']['mean_ssim']} | L1 = {baseline_summary['all_white']['mean_l1']}")
+    print(f"Baseline (Mean Sketch):   PSNR = {baseline_summary['mean_sketch']['mean_psnr']} dB | SSIM = {baseline_summary['mean_sketch']['mean_ssim']} | L1 = {baseline_summary['mean_sketch']['mean_l1']}")
+    print(f"Baseline (Gray Photo):    PSNR = {baseline_summary['grayscale_photo']['mean_psnr']} dB | SSIM = {baseline_summary['grayscale_photo']['mean_ssim']} | L1 = {baseline_summary['grayscale_photo']['mean_l1']}")
     print(f"Pixel-Space Fréchet Dist: {structured_results['summary']['pixel_frechet_distance']}")
     print(f"Inference Latency:        {structured_results['summary']['latency_ms_per_image']} ms/image ({structured_results['summary']['throughput_fps']} FPS)")
-    print("-" * 60)
+    print("-" * 68)
     for st_k, st_v in by_style_summary.items():
-        print(f"  {st_k.upper()} (N={st_v['count']}): PSNR = {st_v['psnr']} dB | SSIM = {st_v['ssim']} | L1 = {st_v['l1']}")
-    print("=" * 60)
+        warn = " [LOW-SAMPLE N=46]" if st_v['low_sample_warning'] else ""
+        print(f"  {st_k.upper()} (N={st_v['count']}){warn}: PSNR = {st_v['psnr']} dB | SSIM = {st_v['ssim']} | L1 = {st_v['l1']}")
+    print("=" * 68)
 
     return structured_results

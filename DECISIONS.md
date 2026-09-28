@@ -262,31 +262,34 @@ This log records every architectural and design decision made during the project
   - **Adversarial Loss:** Binary Cross-Entropy with logits (`nn.BCEWithLogitsLoss`) for real vs. fake patch discrimination.
   - **Reconstruction Loss & $\lambda_{\text{L1}}$ Handling:** Paired L1 pixel distance. The assignment specifies initial $\lambda_{\text{L1}} = 100$, and explicitly mandates investigating the optimal value through Optuna (search range $[50.0, 150.0]$ with step 10.0).
   - **Paired Data Augmentation:** `PairedTransform` enforces strict spatial synchronization (e.g. random horizontal flips applied identically to both photograph and sketch) to prevent pixel misalignment.
-- **Discriminator Rebalancing & Training Dynamics Status:**
-  - Standard alternating GAN updates on paired image translation often lead to rapid Discriminator saturation (real/fake accuracy $> 98\%$), causing vanishing generator gradients and image degradation after 10–20 epochs.
-  - **Caveat & Unproven Necessity:** The earlier heuristic D-rebalancing settings ($\text{lr}_d = 0.20 \times \text{lr}_g$, $85\%$ accuracy throttling, $0.9$ one-sided label smoothing) were configured during diagnostic runs when the data loader returned flat grey placeholders for missing entries and conditioned on corrupted/scrambled style labels. Therefore, their necessity on genuine, clean FS2K data is unproven. Unconstrained Optuna hyperparameter optimization (`training/optuna_cgan.py`) explores generator and discriminator learning rates independently across wide log-uniform spaces to discover the true optimal regime.
-- **Optuna Hyperparameter Search Space (`training/optuna_cgan.py`):**
-  - 15 trials with `MedianPruner` searching:
-    - `lr_g` $\in [1\times 10^{-4}, 5\times 10^{-4}]$ (log-uniform)
-    - `lr_d` $\in [2\times 10^{-5}, 2\times 10^{-4}]$ (log-uniform)
-    - `lambda_l1` $\in [50.0, 150.0]$ (step 10.0)
-    - `batch_size` $\in \{8, 16, 32\}$
-    - `base_channels_g` $\in \{32, 64\}$
-    - `emb_dim` $\in \{16, 32, 64\}$
-    - `dropout_rate` $\in \{0.0, 0.2, 0.5\}$
+- **First Valid Task 4 Training Run & Empirical Results:**
+  - **Dataset Verification:** Executed on 100% authentic manifests (898 train / 160 val / 1,046 test) with zero load errors and zero flat placeholder images.
+  - **Training Outcome:** 40-epoch schedule with early stopping triggered at **Epoch 36**. Peak validation performance achieved at **Epoch 28**:
+    - Validation PSNR: **16.84 dB**
+    - Validation SSIM: **0.5387**
+    - Validation L1: **0.1065**
+    - Selected checkpoint criterion: $\min(\text{val\_L1} + (1 - \text{val\_SSIM}))$.
+  - **All Earlier Task 4 Numbers Voided:** All prior metrics (including 27.05 dB from corrupted synthetic manifests and 24.61 dB) are officially discarded.
+- **Discriminator Dominance Dynamics & Hypothesis Correction:**
+  - **Correction:** The earlier hypothesis that Discriminator dominance was triggered by corrupted manifests or flat-image artifacts is formally refuted. On 100% authentic, clean FS2K pairs, Discriminator accuracy rapidly climbed to **~90% by Epoch 3** and remained elevated throughout training despite active accuracy throttling ($85\%$ ceiling) and $0.2\times$ learning rate scaling.
+  - **Analysis:** High-contrast binary-like sketch lines (white canvas with sparse black strokes) present distinct feature distributions from RGB natural photographs, providing strong discriminator gradients that PatchGAN readily separates.
+- **Optuna Hyperparameter Search & Noise Findings:**
+  - **Winning Parameters:** `lr_g = 1.92e-4`, `lr_d = 3.93e-5` (training script enforced $0.2 \times \text{lr}_g = 3.84\times 10^{-5}$), `batch_size = 8`, `lambda_l1 = 150.0`, `base_channels_g = 64`, `emb_dim = 32`, `dropout_rate = 0.2`.
+  - **Pruning & Stochastic Noise Finding:** 12 of 15 trials were pruned early by MedianPruner because validation PSNR across trials clustered tightly in a narrow band between 16.36 dB and 16.80 dB. In this regime, variations below ~0.3 dB represent stochastic noise rather than significant architecture divergence. For future retrains, `n_startup_trials` is raised to 8 (or pruning disabled) and the objective is aligned with the checkpoint composite score.
+  - **$\lambda_{\text{L1}}$ Boundary Expansion:** The winning $\lambda_{\text{L1}}$ (150.0) saturated the upper edge of $[50.0, 150.0]$. The search space for future studies is widened to $[50.0, 300.0]$ with step 25.0 to explore stronger pixel-level fidelity.
+- **Metric Range Audit & Rigorous Normalization:**
+  - All generator outputs $[-1.0, 1.0]$ (from `nn.Tanh`) and target sketches $[-1.0, 1.0]$ are strictly mapped to $[0.0, 1.0]$ via `unnormalize_to_0_1` before entering `compute_psnr`, `compute_ssim`, and `compute_l1`.
+  - `evaluation/metrics.py` enforces a standard `data_range=1.0` (with identical images returning $100.0\text{ dB}$ PSNR and $1.0$ SSIM). Unit tests in `tests/test_metrics.py` verify identical mathematical outputs whether inputs originate in $[-1, 1]$ or $[0, 1]$.
+- **Comparative Reference Baselines in Benchmark:**
+  - To contextualize the ~16.8 dB model score, `evaluation/benchmark_cgan.py` computes 3 standardized baselines across all test pairs and broken down per style:
+    1. **All-White Canvas (1.0):** Evaluates the trivial constant white prediction.
+    2. **Mean Training Sketch:** Evaluates dataset-average sketch distribution.
+    3. **Grayscale Input Photo:** Evaluates direct intensity conversion without synthesis.
 - **Direct-to-Drive Checkpointing & Reset Resilience:**
-  - `train_cgan_full` saves `best_cgan_generator.pth` directly to Google Drive (`/content/drive/MyDrive/GenAI-A1/checkpoints/task4/`) as well as local disk during training.
-  - Step 5 writes `optuna_best_params.json` to Drive and local disk.
-  - Steps 7, 8, 9 re-establish environment paths, rebuild model architecture from `optuna_best_params.json`, and strictly load the checkpoint from Drive, raising an error if missing.
-- **Evaluation Metrics Decision (`evaluation/benchmark_cgan.py`):**
-  - The Task 4 evaluation requirements in the assignment specification (lines 156–191) do not specify or require FID.
-  - The evaluation benchmark computes L1 distance, PSNR (dB), and SSIM across the 1,046 test images stratified by Style 0, Style 1, Style 2, and Overall.
-  - A supplementary distribution metric is computed as **Pixel-Space Fréchet Distance (Pixel-FD)** on 49,152-dimensional raw pixel distributions. It is explicitly named `pixel_frechet_distance` / `Pixel-FD` in the code, benchmark reports, and notebook outputs to maintain honest naming and distinguish it from Inception-based FID.
-- **ONNX Deployment (`models/onnx_export_cgan.py`):**
-  - Generator-only export (Discriminator is training-only) with dynamic batching, opset 18, embedded weights.
-  - Inputs: `photo` (float32, $[B, 3, 128, 128]$) and `style_id` (int64, $[B]$). Output: `sketch` (float32, $[B, 3, 128, 128]$).
-  - Runner implementation in `models/onnx_runner.py` (`StyleConditionedCGANONNXRunner`).
-- **Evidence:** 38 passing local unit tests covering generator shapes, patch discriminator shapes, composite loss, forward/backward gradient flows, synchronized paired transforms, case-insensitive path resolution, and ONNX numerical parity.
+  - `train_cgan_full` saves `best_cgan_generator.pth`, `training_history.json`, and `training_history.csv` directly to Google Drive (`/content/drive/MyDrive/GenAI-A1/checkpoints/task4/`) and local disk.
+  - Steps 7, 8, 9 re-establish environment paths, rebuild model architecture from `optuna_best_params.json`, and strictly load the checkpoint from Drive.
+- **Spec Deliverables:** Absolute error maps ($|y_{\text{fake}} - y_{\text{real}}|$), generated sample grids across styles, per-style breakdown tables (with Style 2 flagged as low-sample: $N=46$), and training loss curve plotting from `training_history.json`.
+- **Evidence:** 42 passing unit tests across the full repository test suite (`pytest -q`), including `test_metrics.py` and authentic on-disk multi-folder smoke test (`smoke_test_task4_notebook.py`).
 
 
 

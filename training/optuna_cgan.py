@@ -3,10 +3,16 @@ Optuna Hyperparameter Optimization Study for Style-Conditioned cGAN (Task 4).
 Searches:
   - lr_g: Generator learning rate
   - lr_d: Discriminator learning rate
-  - lambda_l1: L1 paired reconstruction loss weight
+  - lambda_l1: L1 paired reconstruction loss weight (widened to [50.0, 300.0])
   - base_channels_g: Generator base channel count
   - emb_dim: Style categorical embedding dimension
   - dropout_rate: Bottleneck dropout rate
+  - batch_size: Mini-batch size
+
+Design Notes:
+  - Pruning: Uses MedianPruner with n_startup_trials=8 and n_warmup_steps=3 to prevent
+    premature random pruning on early epochs where metric variations (<0.3 dB) are stochastic noise.
+  - Objective: Composite metric aligned with checkpoint selection: val_l1 + (1.0 - val_ssim).
 """
 
 from typing import Dict, Any, Optional
@@ -36,13 +42,15 @@ def objective_cgan(
     epochs_per_trial: int = 10
 ) -> float:
     """
-    Optuna objective function for cGAN. Evaluates validation PSNR across trial epochs.
+    Optuna objective function for cGAN. Minimizes composite score: val_l1 + (1.0 - val_ssim),
+    matching the checkpoint selection criterion. Note: PSNR differences < 0.3 dB are within noise.
     """
     # 1. Sample hyperparameters (covering all 7 spec-mandated parameters)
     lr_g = trial.suggest_float('lr_g', 1e-4, 5e-4, log=True)
     lr_d = trial.suggest_float('lr_d', 2e-5, 2e-4, log=True)
     batch_size = trial.suggest_categorical('batch_size', [8, 16, 32])
-    lambda_l1 = trial.suggest_float('lambda_l1', 50.0, 150.0, step=10.0)
+    # Widened lambda_l1 search space to explore stronger pixel fidelity up to 300.0
+    lambda_l1 = trial.suggest_float('lambda_l1', 50.0, 300.0, step=25.0)
     base_channels_g = trial.suggest_categorical('base_channels_g', [32, 64])
     base_channels_d = 64
     emb_dim = trial.suggest_categorical('emb_dim', [16, 32, 64])
@@ -79,7 +87,7 @@ def objective_cgan(
     opt_g = torch.optim.Adam(net_g.parameters(), lr=lr_g, betas=(0.5, 0.999))
     opt_d = torch.optim.Adam(net_d.parameters(), lr=lr_d, betas=(0.5, 0.999))
 
-    best_psnr = -float('inf')
+    best_score = float('inf')
 
     for epoch in range(1, epochs_per_trial + 1):
         train_one_epoch_cgan(
@@ -89,14 +97,15 @@ def objective_cgan(
         )
         val_m = evaluate_cgan(net_g, val_loader, device)
 
-        current_psnr = val_m['psnr']
-        best_psnr = max(best_psnr, current_psnr)
+        # Composite score matching trainer checkpoint selection
+        composite_score = val_m['l1'] + (1.0 - val_m['ssim'])
+        best_score = min(best_score, composite_score)
 
-        trial.report(current_psnr, epoch)
+        trial.report(composite_score, epoch)
         if trial.should_prune():
             raise optuna.exceptions.TrialPruned()
 
-    return best_psnr
+    return best_score
 
 
 def run_optuna_cgan_study(
@@ -107,13 +116,13 @@ def run_optuna_cgan_study(
     epochs_per_trial: int = 10,
     study_name: str = "cgan_face_to_sketch_study"
 ) -> optuna.Study:
-
-    """Executes a 15-trial Optuna study for cGAN hyperparameters."""
+    """Executes an Optuna study for cGAN hyperparameters with relaxed startup pruning."""
     if not HAS_OPTUNA:
         raise ImportError("Optuna is not installed.")
 
-    pruner = MedianPruner(n_startup_trials=3, n_warmup_steps=1)
-    study = optuna.create_study(direction="maximize", pruner=pruner, study_name=study_name)
+    # Higher startup trials and warmup steps to avoid pruning on noise (<0.3 dB variation)
+    pruner = MedianPruner(n_startup_trials=8, n_warmup_steps=3)
+    study = optuna.create_study(direction="minimize", pruner=pruner, study_name=study_name)
 
     print(f"\n[OPTUNA] Starting {n_trials}-trial study for Task 4 cGAN ({epochs_per_trial} epochs/trial)...")
     study.optimize(
@@ -122,7 +131,7 @@ def run_optuna_cgan_study(
     )
 
     print("\n" + "=" * 60)
-    print(f"[OPTUNA STUDY COMPLETE] Best Val PSNR: {study.best_value:.2f} dB")
+    print(f"[OPTUNA STUDY COMPLETE] Best Val Composite Score: {study.best_value:.4f}")
     print("Best Hyperparameters:")
     for k, v in study.best_params.items():
         print(f"  - {k}: {v}")

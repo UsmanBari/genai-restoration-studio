@@ -199,7 +199,11 @@ class FS2KDataset(Dataset):
             'photo': photo_t,
             'sketch': sketch_t,
             'style': style,
-            'metadata': item
+            'image_name': item.get('image_name', f'img_{idx}'),
+            'metadata': {
+                'image_name': item.get('image_name', f'img_{idx}'),
+                'style': style
+            }
         }
 
 
