@@ -42,7 +42,7 @@ def test_oxford_manifest_integrity():
     assert len(v_ids & te_ids) == 0, f"Oxford val/test overlap: {len(v_ids & te_ids)}"
 
 
-def test_fs2k_manifest_disjointness():
+def test_fs2k_manifest_disjointness_and_distribution():
     manifest_dir = "configs/manifests"
     train_path = os.path.join(manifest_dir, "fs2k_train_manifest.json")
     val_path = os.path.join(manifest_dir, "fs2k_val_manifest.json")
@@ -72,3 +72,14 @@ def test_fs2k_manifest_disjointness():
     assert len(t_ids & v_ids) == 0, f"FS2K train/val overlap: {len(t_ids & v_ids)}"
     assert len(t_ids & te_ids) == 0, f"FS2K train/test overlap: {len(t_ids & te_ids)}"
     assert len(v_ids & te_ids) == 0, f"FS2K val/test overlap: {len(v_ids & te_ids)}"
+
+    # If authentic manifests (898/160/1046) are installed, assert exact style distribution
+    train_counts = Counter(x.get("style", 0) for x in train_data)
+    val_counts = Counter(x.get("style", 0) for x in val_data)
+    test_counts = Counter(x.get("style", 0) for x in test_data)
+
+    if len(train_data) == 898:
+        assert len(val_data) == 160, f"Expected 160 val items, got {len(val_data)}"
+        assert train_counts == {0: 303, 1: 297, 2: 298}, f"Unexpected train style distribution: {train_counts}"
+        assert val_counts == {0: 54, 1: 53, 2: 53}, f"Unexpected val style distribution: {val_counts}"
+        assert test_counts == {0: 619, 1: 381, 2: 46}, f"Unexpected test style distribution: {test_counts}"
