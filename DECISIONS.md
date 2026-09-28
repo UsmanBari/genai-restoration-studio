@@ -253,30 +253,37 @@ This log records every architectural and design decision made during the project
 - **Context:**
   Task 4 requires building a photo-to-sketch synthesis system on the FS2K dataset (2,104 paired facial photographs and sketches with 3 style categories). This departs from autoencoder reconstruction and employs an adversarial conditional GAN framework (pix2pix paradigm).
 - **Compliance & Assignment Specification Verification:**
-  - **Dataset Split:** Official FS2K split with 15% stratified validation (898 train / 160 val / 1,046 test pairs stratified across styles 0, 1, 2) at $128\times 128\times 3$ resolution.
+  - **Dataset Split (FS2K):** Official FS2K dataset has 1,058 training pairs (Style 0: 353, Style 1: 353, Style 2: 352) and 1,046 test pairs (Style 0: 349, Style 1: 349, Style 2: 348) totaling 2,104 pairs. Reserving 15% stratified across each style category with ceiling rounding ($353 \times 0.15 \to 53$, $353 \times 0.15 \to 53$, $352 \times 0.15 \to 53$) produces exactly **159 validation pairs** ($53\times 3$) and **899 training pairs** ($300 + 300 + 299$), with **1,046 test pairs**.
   - **Generator Architecture:** `StyleConditionedUNetGenerator` with full skip connections between encoder and decoder at every matching resolution level ($128\to 64\to 32\to 16\to 8\to 4 \to 8\to 16\to 32\to 64\to 128$). Conditioned on learned style embedding for the 3 FS2K style categories, projected to spatial maps and concatenated at the input stage. Output range is $[-1.0, 1.0]$ via `Tanh`.
   - **Discriminator Architecture:** `ConditionalPatchGANDiscriminator` with a $70\times 70$ receptive field, receiving concatenated (photo, sketch, style condition) and outputting a $14\times 14$ grid of patch logits.
   - **Adversarial Loss:** Binary Cross-Entropy with logits (`nn.BCEWithLogitsLoss`) for real vs. fake patch discrimination.
-  - **Reconstruction Loss & $\lambda_{\text{L1}}$ Handling:** Paired L1 pixel distance. The assignment specifies initial $\lambda_{\text{L1}} = 100$, and explicitly mandates investigating the optimal value through Optuna (search range $[50.0, 150.0]$).
+  - **Reconstruction Loss & $\lambda_{\text{L1}}$ Handling:** Paired L1 pixel distance. The assignment specifies initial $\lambda_{\text{L1}} = 100$, and explicitly mandates investigating the optimal value through Optuna (search range $[50.0, 150.0]$ with step 10.0). Note that in earlier diagnostic runs, the optimization selected $\lambda_{\text{L1}} = 50.0$ (the lower bound), prioritizing adversarial sharpness over raw mean-pixel convergence.
   - **Paired Data Augmentation:** `PairedTransform` enforces strict spatial synchronization (e.g. random horizontal flips applied identically to both photograph and sketch) to prevent pixel misalignment.
-- **Training Stability & Diagnostics:**
-  - Alternating 2-player optimization step (`train_one_epoch_cgan`): D update with detached generated fakes; G update with adversarial loss + $\lambda_{\text{L1}} \cdot \text{L1}$.
-  - Tracking and logging Discriminator real accuracy, fake accuracy, and overall classification accuracy every epoch to prevent generator/discriminator imbalance.
-  - Visual progression sample grids (`save_sample_grid`) generated and saved every 5 epochs showing Photo | Ground-Truth Sketch | Generated Sketch across all 3 styles.
+- **Discriminator Rebalancing & Training Dynamics Strategy:**
+  - Standard alternating GAN updates on paired image translation often lead to rapid Discriminator saturation (real/fake accuracy $> 98\%$), causing vanishing generator gradients and image degradation after 10–20 epochs.
+  - **Manual Learning Rate Rebalancing:** While Optuna explores learning rates, the final full training schedule explicitly enforces $\text{lr}_d = 0.20 \times \text{lr}_g$ (a manual $5\times$ slowdown for $D$) rather than allowing unconstrained $D$ learning rates. This asymmetry slows down PatchGAN convergence, allowing the U-Net generator sufficient gradient signal to learn fine line-sketch textures.
+  - **Adaptive Throttling & Early Stopping Restoration:** In addition to the $0.2\times$ learning rate ratio and $0.9$ one-sided label smoothing, $D$ updates are throttled whenever total $D$ accuracy exceeds $0.85$. If validation quality does not improve for 8 consecutive epochs, early stopping triggers and restores the peak validation generator checkpoint (`best_cgan_generator.pth`).
 - **Optuna Hyperparameter Search Space (`training/optuna_cgan.py`):**
   - 15 trials with `MedianPruner` searching:
     - `lr_g` $\in [1\times 10^{-4}, 5\times 10^{-4}]$ (log-uniform)
-    - `lr_d` $\in [1\times 10^{-4}, 5\times 10^{-4}]$ (log-uniform)
+    - `lr_d` $\in [2\times 10^{-5}, 2\times 10^{-4}]$ (log-uniform)
     - `lambda_l1` $\in [50.0, 150.0]$ (step 10.0)
+    - `batch_size` $\in \{8, 16, 32\}$
     - `base_channels_g` $\in \{32, 64\}$
     - `emb_dim` $\in \{16, 32, 64\}$
     - `dropout_rate` $\in \{0.0, 0.2, 0.5\}$
+- **Direct-to-Drive Checkpointing & Reset Resilience:**
+  - `train_cgan_full` saves `best_cgan_generator.pth` directly to Google Drive (`/content/drive/MyDrive/GenAI-A1/checkpoints/task4/`) as well as local disk during training.
+  - Step 5 writes `optuna_best_params.json` to Drive and local disk.
+  - Steps 7, 8, 9 re-establish environment paths, rebuild model architecture from `optuna_best_params.json`, and strictly load the checkpoint from Drive, raising an error if missing.
 - **Evaluation Breakdown (`evaluation/benchmark_cgan.py`):**
   - Evaluates L1 distance, PSNR (dB), SSIM, and approximate FID across the 1,046 test images stratified by Style 0, Style 1, Style 2, and Overall.
 - **ONNX Deployment (`models/onnx_export_cgan.py`):**
-  - Generator-only export (Discriminator is training-only) with dynamic batching, embedding weights directly into protobuf.
+  - Generator-only export (Discriminator is training-only) with dynamic batching, opset 18, embedded weights.
+  - Inputs: `photo` (float32, $[B, 3, 128, 128]$) and `style_id` (int64, $[B]$). Output: `sketch` (float32, $[B, 3, 128, 128]$).
   - Runner implementation in `models/onnx_runner.py` (`StyleConditionedCGANONNXRunner`).
-- **Evidence:** 34 passing local unit tests covering generator shapes, patch discriminator shapes, composite loss, forward/backward gradient flows, synchronized paired transforms, and ONNX numerical parity.
+- **Evidence:** 35 passing local unit tests covering generator shapes, patch discriminator shapes, composite loss, forward/backward gradient flows, synchronized paired transforms, and ONNX numerical parity.
+
 
 
 

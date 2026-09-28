@@ -204,6 +204,7 @@ def train_cgan_full(
     val_loader: DataLoader,
     device: torch.device,
     save_dir: str,
+    drive_save_dir: Optional[str] = None,
     epochs: int = 40,
     lr_g: float = 4e-4,
     lr_d: Optional[float] = None,
@@ -217,10 +218,18 @@ def train_cgan_full(
 ) -> Dict[str, Any]:
     """
     Executes full multi-epoch cGAN training workflow with equilibrium monitoring and early stopping.
+    Saves best checkpoints and sample grids both locally and to Google Drive (if drive_save_dir provided).
     """
     os.makedirs(save_dir, exist_ok=True)
     samples_dir = os.path.join(save_dir, "samples")
     os.makedirs(samples_dir, exist_ok=True)
+
+    if drive_save_dir:
+        try:
+            os.makedirs(drive_save_dir, exist_ok=True)
+            os.makedirs(os.path.join(drive_save_dir, "samples"), exist_ok=True)
+        except Exception as e:
+            print(f"[WARNING] Could not create drive_save_dir: {e}")
 
     # Rebalance D learning rate to 0.2 * lr_g if not explicitly provided or if too high
     if lr_d is None:
@@ -276,7 +285,7 @@ def train_cgan_full(
             best_val_metrics = val_m
             best_epoch = epoch
             epochs_without_improvement = 0
-            torch.save({
+            ckpt_payload = {
                 'epoch': epoch,
                 'generator_state_dict': net_g.state_dict(),
                 'discriminator_state_dict': net_d.state_dict(),
@@ -287,7 +296,14 @@ def train_cgan_full(
                 'emb_dim': net_g.emb_dim,
                 'base_channels_g': net_g.base_channels,
                 'base_channels_d': net_d.base_channels
-            }, best_checkpoint_path)
+            }
+            torch.save(ckpt_payload, best_checkpoint_path)
+            if drive_save_dir:
+                try:
+                    drive_ckpt_path = os.path.join(drive_save_dir, "best_cgan_generator.pth")
+                    torch.save(ckpt_payload, drive_ckpt_path)
+                except Exception as e:
+                    print(f"  >> [WARNING] Failed to write checkpoint directly to Drive ({e})")
         else:
             epochs_without_improvement += 1
 
@@ -295,6 +311,12 @@ def train_cgan_full(
         if epoch % 5 == 0 or is_best or epoch == epochs:
             sample_path = os.path.join(samples_dir, f"epoch_{epoch:03d}.png")
             save_sample_grid(net_g, fixed_val_batch, sample_path, device)
+            if drive_save_dir:
+                try:
+                    drive_samples_dir = os.path.join(drive_save_dir, "samples")
+                    shutil.copy2(sample_path, os.path.join(drive_samples_dir, f"epoch_{epoch:03d}.png"))
+                except Exception:
+                    pass
 
         # Discriminator dominance diagnostic check
         if train_m['d_acc_total'] >= 0.85:
@@ -341,9 +363,15 @@ def train_cgan_full(
             break
 
     # Restore peak weights into generator and discriminator
+    restored_from = None
     if os.path.exists(best_checkpoint_path):
-        print(f"\n[RESTORING BEST CHECKPOINT] Loading peak weights from Epoch {best_epoch} into Generator...")
-        ckpt = torch.load(best_checkpoint_path, map_location=device)
+        restored_from = best_checkpoint_path
+    elif drive_save_dir and os.path.exists(os.path.join(drive_save_dir, "best_cgan_generator.pth")):
+        restored_from = os.path.join(drive_save_dir, "best_cgan_generator.pth")
+
+    if restored_from:
+        print(f"\n[RESTORING BEST CHECKPOINT] Loading peak weights from Epoch {best_epoch} ({restored_from}) into Generator...")
+        ckpt = torch.load(restored_from, map_location=device)
         net_g.load_state_dict(ckpt['generator_state_dict'])
         net_d.load_state_dict(ckpt['discriminator_state_dict'])
 
