@@ -251,11 +251,21 @@ def run_cgan_benchmark(
             baseline_by_style[st_id]['grayscale_photo']['ssim'].append(ssim_g)
             baseline_by_style[st_id]['grayscale_photo']['l1'].append(l1_g)
 
-    # Compute Model Aggregate Metrics
+    # Compute Model & Baseline Aggregate Metrics
     avg_l1 = float(np.mean([r['l1'] for r in all_results])) if all_results else 0.0
     avg_psnr = float(np.mean([r['psnr'] for r in all_results])) if all_results else 0.0
     avg_ssim = float(np.mean([r['ssim'] for r in all_results])) if all_results else 0.0
-    pixel_fd = compute_pixel_frechet_distance(np.array(all_real_imgs), np.array(all_fake_imgs)) if all_real_imgs else 0.0
+
+    real_arr = np.array(all_real_imgs) if all_real_imgs else np.zeros((0, 128, 128, 3))
+    fake_arr = np.array(all_fake_imgs) if all_fake_imgs else np.zeros((0, 128, 128, 3))
+    photo_arr = np.array(all_photo_imgs) if all_photo_imgs else np.zeros((0, 128, 128, 3))
+    white_arr = np.ones_like(real_arr) if len(real_arr) > 0 else np.zeros((0, 128, 128, 3))
+    mean_arr = np.tile(mean_sketch_img, (len(all_real_imgs), 1, 1, 1)) if len(all_real_imgs) > 0 else np.zeros((0, 128, 128, 3))
+
+    pixel_fd = compute_pixel_frechet_distance(real_arr, fake_arr) if len(real_arr) > 0 else 0.0
+    pixel_fd_white = compute_pixel_frechet_distance(real_arr, white_arr) if len(real_arr) > 0 else 0.0
+    pixel_fd_mean = compute_pixel_frechet_distance(real_arr, mean_arr) if len(real_arr) > 0 else 0.0
+    pixel_fd_gray = compute_pixel_frechet_distance(real_arr, photo_arr) if len(real_arr) > 0 else 0.0
 
     fps = total_images / total_inference_time if total_inference_time > 0 else 0.0
     latency_ms = (total_inference_time / total_images) * 1000.0 if total_images > 0 else 0.0
@@ -266,16 +276,19 @@ def run_cgan_benchmark(
             'mean_psnr': round(float(np.mean(baseline_metrics['all_white']['psnr'])), 2) if baseline_metrics['all_white']['psnr'] else 0.0,
             'mean_ssim': round(float(np.mean(baseline_metrics['all_white']['ssim'])), 4) if baseline_metrics['all_white']['ssim'] else 0.0,
             'mean_l1': round(float(np.mean(baseline_metrics['all_white']['l1'])), 4) if baseline_metrics['all_white']['l1'] else 0.0,
+            'pixel_frechet_distance': pixel_fd_white,
         },
         'mean_sketch': {
             'mean_psnr': round(float(np.mean(baseline_metrics['mean_sketch']['psnr'])), 2) if baseline_metrics['mean_sketch']['psnr'] else 0.0,
             'mean_ssim': round(float(np.mean(baseline_metrics['mean_sketch']['ssim'])), 4) if baseline_metrics['mean_sketch']['ssim'] else 0.0,
             'mean_l1': round(float(np.mean(baseline_metrics['mean_sketch']['l1'])), 4) if baseline_metrics['mean_sketch']['l1'] else 0.0,
+            'pixel_frechet_distance': pixel_fd_mean,
         },
         'grayscale_photo': {
             'mean_psnr': round(float(np.mean(baseline_metrics['grayscale_photo']['psnr'])), 2) if baseline_metrics['grayscale_photo']['psnr'] else 0.0,
             'mean_ssim': round(float(np.mean(baseline_metrics['grayscale_photo']['ssim'])), 4) if baseline_metrics['grayscale_photo']['ssim'] else 0.0,
             'mean_l1': round(float(np.mean(baseline_metrics['grayscale_photo']['l1'])), 4) if baseline_metrics['grayscale_photo']['l1'] else 0.0,
+            'pixel_frechet_distance': pixel_fd_gray,
         }
     }
 
@@ -453,19 +466,24 @@ def run_cgan_benchmark(
     with open(report_path, 'w', encoding='utf-8') as f:
         json.dump(structured_results, f, indent=2)
 
-    print("\n" + "=" * 68)
+    print("\n" + "=" * 76)
     print("TASK 4 CONDITIONAL GAN (FS2K) BENCHMARK SUMMARY & BASELINES")
-    print("=" * 68)
-    print(f"cGAN Generator Model:     PSNR = {structured_results['summary']['mean_psnr']} dB | SSIM = {structured_results['summary']['mean_ssim']} | L1 = {structured_results['summary']['mean_l1']}")
-    print(f"Baseline (All-White):     PSNR = {baseline_summary['all_white']['mean_psnr']} dB | SSIM = {baseline_summary['all_white']['mean_ssim']} | L1 = {baseline_summary['all_white']['mean_l1']}")
-    print(f"Baseline (Mean Sketch):   PSNR = {baseline_summary['mean_sketch']['mean_psnr']} dB | SSIM = {baseline_summary['mean_sketch']['mean_ssim']} | L1 = {baseline_summary['mean_sketch']['mean_l1']}")
-    print(f"Baseline (Gray Photo):    PSNR = {baseline_summary['grayscale_photo']['mean_psnr']} dB | SSIM = {baseline_summary['grayscale_photo']['mean_ssim']} | L1 = {baseline_summary['grayscale_photo']['mean_l1']}")
-    print(f"Pixel-Space Fréchet Dist: {structured_results['summary']['pixel_frechet_distance']}")
+    print("=" * 76)
+    print(f"cGAN Generator Model:     PSNR = {structured_results['summary']['mean_psnr']} dB | SSIM = {structured_results['summary']['mean_ssim']} | L1 = {structured_results['summary']['mean_l1']} | Pixel-FD = {structured_results['summary']['pixel_frechet_distance']}")
+    print(f"Baseline (All-White):     PSNR = {baseline_summary['all_white']['mean_psnr']} dB | SSIM = {baseline_summary['all_white']['mean_ssim']} | L1 = {baseline_summary['all_white']['mean_l1']} | Pixel-FD = {baseline_summary['all_white']['pixel_frechet_distance']}")
+    print(f"Baseline (Mean Sketch):   PSNR = {baseline_summary['mean_sketch']['mean_psnr']} dB | SSIM = {baseline_summary['mean_sketch']['mean_ssim']} | L1 = {baseline_summary['mean_sketch']['mean_l1']} | Pixel-FD = {baseline_summary['mean_sketch']['pixel_frechet_distance']}")
+    print(f"Baseline (Gray Photo):    PSNR = {baseline_summary['grayscale_photo']['mean_psnr']} dB | SSIM = {baseline_summary['grayscale_photo']['mean_ssim']} | L1 = {baseline_summary['grayscale_photo']['mean_l1']} | Pixel-FD = {baseline_summary['grayscale_photo']['pixel_frechet_distance']}")
     print(f"Inference Latency:        {structured_results['summary']['latency_ms_per_image']} ms/image ({structured_results['summary']['throughput_fps']} FPS)")
-    print("-" * 68)
+    print("-" * 76)
+    print("STYLE-STRATIFIED BREAKDOWN & BASELINES (Styles 0, 1, 2):")
     for st_k, st_v in by_style_summary.items():
         warn = f" [LOW-SAMPLE N={st_v['count']} < 100]" if st_v['low_sample_warning'] else ""
-        print(f"  {st_k.upper()} (N={st_v['count']}){warn}: PSNR = {st_v['psnr']} dB | SSIM = {st_v['ssim']} | L1 = {st_v['l1']}")
-    print("=" * 68)
+        b_w = st_v['baselines']['all_white']['psnr'] if 'all_white' in st_v.get('baselines', {}) else 'N/A'
+        b_m = st_v['baselines']['mean_sketch']['psnr'] if 'mean_sketch' in st_v.get('baselines', {}) else 'N/A'
+        b_g = st_v['baselines']['grayscale_photo']['psnr'] if 'grayscale_photo' in st_v.get('baselines', {}) else 'N/A'
+        print(f"  {st_k.upper()} (N={st_v['count']}){warn}:")
+        print(f"    - cGAN Generator: PSNR = {st_v['psnr']} dB | SSIM = {st_v['ssim']} | L1 = {st_v['l1']}")
+        print(f"    - Baselines:      All-White: {b_w} dB | Mean Sketch: {b_m} dB | Gray Photo: {b_g} dB")
+    print("=" * 76)
 
     return structured_results

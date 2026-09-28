@@ -262,34 +262,38 @@ This log records every architectural and design decision made during the project
   - **Adversarial Loss:** Binary Cross-Entropy with logits (`nn.BCEWithLogitsLoss`) for real vs. fake patch discrimination.
   - **Reconstruction Loss & $\lambda_{\text{L1}}$ Handling:** Paired L1 pixel distance. The assignment specifies initial $\lambda_{\text{L1}} = 100$, and explicitly mandates investigating the optimal value through Optuna (search range $[50.0, 150.0]$ with step 10.0).
   - **Paired Data Augmentation:** `PairedTransform` enforces strict spatial synchronization (e.g. random horizontal flips applied identically to both photograph and sketch) to prevent pixel misalignment.
-- **First Valid Task 4 Training Run & Empirical Results:**
-  - **Dataset Verification:** Executed on 100% authentic manifests (898 train / 160 val / 1,046 test) with zero load errors and zero flat placeholder images.
-  - **Training Outcome:** 40-epoch schedule with early stopping triggered at **Epoch 36**. Peak validation performance achieved at **Epoch 28**:
-    - Validation PSNR: **16.84 dB**
-    - Validation SSIM: **0.5387**
-    - Validation L1: **0.1065**
-    - Selected checkpoint criterion: $\min(\text{val\_L1} + (1 - \text{val\_SSIM}))$.
-  - **All Earlier Task 4 Numbers Voided:** All prior metrics (including 27.05 dB from corrupted synthetic manifests and 24.61 dB) are officially discarded.
+- **Final Training Runs (Run 1 vs Run 2) & Model Selection:**
+  - **Dataset Verification:** Executed on 100% authentic manifests (898 train / 160 val / 1,046 test) with 0 load errors and 0 flat placeholder images.
+  - **Run 1 (Baseline Optuna 1 Params):** `lr_g=1.92e-4`, `lr_d=3.84e-5`, `lambda_l1=150.0`, `emb_dim=32`, `dropout=0.2`. Peak validation achieved at **Epoch 28**:
+    - Val PSNR: **16.84 dB**, Val SSIM: **0.5387**, Val L1: **0.1065**, Validation Score ($\text{val\_L1} + (1 - \text{val\_SSIM})$): **0.5493**.
+    - Preserved as backup at `checkpoints/task4_run1_backup/`.
+  - **Run 2 (Optuna 2 Winning Params):** `lr_g=3.53e-4`, `lr_d=7.06e-5` ($0.2\times$ manual ratio), `batch_size=8`, `lambda_l1=275.0`, `base_channels_g=64`, `emb_dim=64`, `dropout_rate=0.0`. Peak validation achieved at **Epoch 21**:
+    - Val PSNR: **17.17 dB**, Val SSIM: **0.5522**, Val L1: **0.0853**, Validation Score: **0.5331**.
+  - **Model Selection:** Selected **Run 2 (Epoch 21)** based on validation score ($0.5331$ vs $0.5493$). The difference between runs is small (+0.33 dB PSNR, +0.0135 SSIM).
 - **Discriminator Dominance Dynamics (Measured Outcome):**
-  - **Empirical Observation:** On 100% authentic, clean FS2K pairs with zero missing or flat placeholder samples, Discriminator accuracy rapidly reached **~90% by Epoch 3** and remained elevated throughout training despite active accuracy throttling ($85\%$ ceiling) and $0.2\times$ learning rate scaling.
+  - **Empirical Observation:** Across both runs on clean, authentic FS2K data, Discriminator accuracy reached **91-94% by Epoch 2-3** and remained elevated throughout training. Under active accuracy throttling ($85\%$ ceiling), the Discriminator was updated on only **~0-5% of batches** after Epoch 3.
   - **Cause Status:** The exact cause of this early and sustained Discriminator dominance is unconfirmed and remains an open empirical question.
-- **Optuna Hyperparameter Search & Noise Findings:**
-  - **Winning Parameters:** `lr_g = 1.92e-4`, `lr_d = 3.93e-5` (training script enforced $0.2 \times \text{lr}_g = 3.84\times 10^{-5}$), `batch_size = 8`, `lambda_l1 = 150.0`, `base_channels_g = 64`, `emb_dim = 32`, `dropout_rate = 0.2`.
-  - **Pruning & Stochastic Noise Finding:** 12 of 15 trials were pruned early by MedianPruner because validation PSNR across trials clustered tightly in a narrow band between 16.36 dB and 16.80 dB. In this regime, variations below ~0.3 dB represent stochastic noise rather than significant architecture divergence. For future retrains, `n_startup_trials` is raised to 8 (or pruning disabled) and the objective is aligned with the checkpoint composite score.
-  - **$\lambda_{\text{L1}}$ Boundary Expansion:** The winning $\lambda_{\text{L1}}$ (150.0) saturated the upper edge of $[50.0, 150.0]$. The search space for future studies is widened to $[50.0, 300.0]$ with step 25.0 to explore stronger pixel-level fidelity.
-- **Metric Range Audit & Rigorous Normalization:**
-  - All generator outputs $[-1.0, 1.0]$ (from `nn.Tanh`) and target sketches $[-1.0, 1.0]$ are strictly mapped to $[0.0, 1.0]$ via `unnormalize_to_0_1` before entering `compute_psnr`, `compute_ssim`, and `compute_l1`.
-  - `evaluation/metrics.py` enforces a standard `data_range=1.0` (with identical images returning $100.0\text{ dB}$ PSNR and $1.0$ SSIM). Unit tests in `tests/test_metrics.py` verify identical mathematical outputs whether inputs originate in $[-1, 1]$ or $[0, 1]$.
-- **Comparative Reference Baselines in Benchmark:**
-  - To contextualize the ~16.8 dB model score, `evaluation/benchmark_cgan.py` computes 3 standardized baselines across all test pairs and broken down per style:
-    1. **All-White Canvas (1.0):** Evaluates the trivial constant white prediction.
-    2. **Mean Training Sketch:** Evaluates dataset-average sketch distribution.
-    3. **Grayscale Input Photo:** Evaluates direct intensity conversion without synthesis.
-- **Direct-to-Drive Checkpointing & Reset Resilience:**
-  - `train_cgan_full` saves `best_cgan_generator.pth`, `training_history.json`, and `training_history.csv` directly to Google Drive (`/content/drive/MyDrive/GenAI-A1/checkpoints/task4/`) and local disk.
-  - Steps 7, 8, 9 re-establish environment paths, rebuild model architecture from `optuna_best_params.json`, and strictly load the checkpoint from Drive.
-- **Spec Deliverables:** Absolute error maps ($|y_{\text{fake}} - y_{\text{real}}|$), generated sample grids across styles, per-style breakdown tables (with Style 2 flagged as low-sample: $N=46$), and training loss curve plotting from `training_history.json`.
-- **Evidence:** 42 passing unit tests across the full repository test suite (`pytest -q`), including `test_metrics.py` and authentic on-disk multi-folder smoke test (`smoke_test_task4_notebook.py`).
+- **Optuna Hyperparameter Searches (Search 1 vs Search 2):**
+  - **Study 1 (Range [50, 150]):** Hit the upper boundary $\lambda_{\text{L1}} = 150.0$.
+  - **Study 2 (Range [50, 300]):** 15 trials x 10 epochs, objective $\min(\text{val\_L1} + (1 - \text{val\_SSIM}))$, 3 pruned. Winner: `lr_g=3.53e-4`, `lr_d=1.69e-4` (final training used manual ratio `lr_d = 0.2 * lr_g = 7.06e-5`), `batch_size=8`, `lambda_l1=275.0` (near the upper edge), `base_channels_g=64`, `emb_dim=64`, `dropout_rate=0.0`.
+- **Test Set Benchmark Results & Baselines (1,046 Pairs):**
+  - **cGAN Generator Model:** PSNR = **16.24 dB** | SSIM = **0.5210** | L1 = **0.0993**
+  - **Baseline 1 (All-White Canvas):** PSNR = **11.95 dB** | SSIM = **0.4310** | L1 = **0.1880**
+  - **Baseline 2 (Mean Training Sketch):** PSNR = **14.08 dB** | SSIM = **0.3920** | L1 = **0.1590**
+  - **Baseline 3 (Grayscale Input Photo):** PSNR = **6.93 dB** | SSIM = **0.2760** | L1 = **0.4060**
+  - **Style Breakdown:**
+    - Style 0 (Pencil/Classic, $N=619$): PSNR = **18.06 dB**
+    - Style 1 (Sketch/Artistic, $N=381$): PSNR = **12.89 dB**
+    - Style 2 (Caricature/Graphic, $N=46$ [LOW-SAMPLE]): PSNR = **19.60 dB**
+  - **Pixel-Space Fréchet Distance (Pixel-FD):** **359.86** (pixel-space Fréchet-style distance on raw pixel distribution statistics, not Inception-based FID).
+  - **Metric Observations:** SSIM is partially inflated by the large uniform white background present in FS2K sketch images.
+- **Style Embedding Verification (Multi-Style Matrix):**
+  - Feeding the same input photograph conditioned on Style 0, Style 1, and Style 2 generates visibly different tone, line weight, and darkness, confirming the categorical style embedding is effectively utilized by the U-Net generator (Style 1 output is the darkest).
+- **ONNX Export & Parity Verification:**
+  - `models/cgan_generator.onnx`: **63.63 MB** on disk, 31 weight initializers embedded.
+  - Maximum absolute numerical difference: **2.97e-6** (well below tolerance $\text{atol}=10^{-4}$).
+  - PyTorch InstanceNorm warning (`train=True` export) noted as expected behavior for InstanceNorm without tracking running stats.
+- **Milestone 4 marked as COMPLETE.**
 
 
 
