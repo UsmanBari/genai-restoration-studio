@@ -29,6 +29,7 @@ models/*.pth
 models/*.pt
 models/*.onnx
 models/*.bin
+models_onnx/
 checkpoints/
 *.pth
 *.pt

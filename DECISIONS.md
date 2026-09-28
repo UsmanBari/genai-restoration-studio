@@ -264,17 +264,17 @@ This log records every architectural and design decision made during the project
   - **Paired Data Augmentation:** `PairedTransform` enforces strict spatial synchronization (e.g. random horizontal flips applied identically to both photograph and sketch) to prevent pixel misalignment.
 - **Final Training Runs (Run 1 vs Run 2) & Model Selection:**
   - **Dataset Verification:** Executed on 100% authentic manifests (898 train / 160 val / 1,046 test) with 0 load errors and 0 flat placeholder images.
-  - **Run 1 (Optuna Study 1 Winner):** `lr_g=1.92e-4`, `lr_d=3.84e-5`, `lambda_l1=150.0`, `emb_dim=32`, `dropout=0.2`. Peak validation achieved at **Epoch 28**:
+  - **Run 1 (Optuna Study 1 Winner):** `lr_g=1.92e-4`, Optuna selected `lr_d=3.93e-5`, Training used `lr_d=3.84e-5` ($0.2\times$ manual ratio), `lambda_l1=150.0`, `emb_dim=32`, `dropout=0.2`. Peak validation achieved at **Epoch 28**:
     - Val PSNR: **16.84 dB**, Val SSIM: **0.5387**, Val L1: **0.1065**, Validation Score ($\text{val\_L1} + (1 - \text{val\_SSIM})$): **0.5493**.
     - Preserved as backup at `checkpoints/task4_run1_backup/`.
-  - **Run 2 (Optuna Study 2 Winner):** `lr_g=3.53e-4`, `lr_d=7.06e-5` ($0.2\times$ manual ratio), `batch_size=8`, `lambda_l1=275.0`, `base_channels_g=64`, `emb_dim=64`, `dropout_rate=0.0`. Peak validation achieved at **Epoch 21**:
+  - **Run 2 (Optuna Study 2 Winner):** `lr_g=3.53e-4`, Optuna selected `lr_d=1.69e-4`, Training used `lr_d=7.06e-5` ($0.2\times$ manual ratio), `batch_size=8`, `lambda_l1=275.0`, `base_channels_g=64`, `emb_dim=64`, `dropout_rate=0.0`. Peak validation achieved at **Epoch 21**:
     - Val PSNR: **17.17 dB**, Val SSIM: **0.5522**, Val L1: **0.0853**, Validation Score: **0.5331**.
   - **Model Selection:** Selected **Run 2 (Epoch 21)** based on validation score ($0.5331$ vs $0.5493$). The difference between runs is small (+0.33 dB PSNR, +0.0135 SSIM).
 - **Discriminator Dominance Dynamics (Measured Outcome):**
   - **Empirical Observation:** Across both runs on clean, authentic FS2K data, Discriminator accuracy reached **91-94% by Epoch 2-3** and remained elevated throughout training. Under active accuracy throttling ($85\%$ ceiling), the Discriminator was updated on only **~0-5% of batches** after Epoch 3.
   - **Cause Status:** The exact cause of this early and sustained Discriminator dominance is unconfirmed and remains an open empirical question.
 - **Optuna Hyperparameter Searches (Search 1 vs Search 2):**
-  - **Study 1 (Range [50, 150]):** Hit the upper boundary $\lambda_{\text{L1}} = 150.0$.
+  - **Study 1 (Range [50, 150]):** 15 trials x 5 epochs. Winner: `lr_g=1.92e-4`, `lr_d=3.93e-5` (final training used `lr_d = 0.2 * lr_g = 3.84e-5`), `lambda_l1=150.0` (hit the upper boundary [50, 150]).
   - **Study 2 (Range [50, 300]):** 15 trials x 10 epochs, objective $\min(\text{val\_L1} + (1 - \text{val\_SSIM}))$, 3 pruned. Winner: `lr_g=3.53e-4`, `lr_d=1.69e-4` (final training used manual ratio `lr_d = 0.2 * lr_g = 7.06e-5`), `batch_size=8`, `lambda_l1=275.0` (near the upper edge), `base_channels_g=64`, `emb_dim=64`, `dropout_rate=0.0`.
 - **Test Set Benchmark Results & Baselines (1,046 Pairs):**
   - **cGAN Generator Model:** PSNR = **16.24 dB** | SSIM = **0.5210** | L1 = **0.0993**
