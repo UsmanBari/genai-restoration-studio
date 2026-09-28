@@ -11,10 +11,26 @@ Integrates Optuna MedianPruner and logs every trial to MLflow SQLite database.
 """
 
 from typing import Dict, Any, Optional
-import os
-import optuna
-from optuna.pruners import MedianPruner
-import mlflow
+
+try:
+    import optuna
+    from optuna.pruners import MedianPruner
+    HAS_OPTUNA = True
+except ImportError:
+    class _MockOptuna:
+        Trial = Any
+        Study = Any
+        class exceptions:
+            TrialPruned = Exception
+        TrialPruned = Exception
+    optuna = _MockOptuna()
+    MedianPruner = None
+    HAS_OPTUNA = False
+
+try:
+    import mlflow
+except ImportError:
+    mlflow = None
 
 try:
     import torch
@@ -26,7 +42,7 @@ except ImportError:
     DataLoader = None
 
 from models.autoencoders import UniversalAutoencoder
-from data.oxford_pet import get_oxford_dataloaders, OxfordPetDataset
+from data.oxford_pet import get_oxford_dataloaders
 from training.losses import RestorationLoss
 from training.trainer_universal import train_one_epoch, evaluate
 

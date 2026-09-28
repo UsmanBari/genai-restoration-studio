@@ -5,7 +5,7 @@ Handles loading paired photos and sketches with style awareness (styles 0, 1, 2)
 
 import os
 import json
-from typing import Optional, Callable, Dict, Any, Tuple
+from typing import Optional, Callable, Dict, Any, Tuple, List
 import numpy as np
 from PIL import Image
 

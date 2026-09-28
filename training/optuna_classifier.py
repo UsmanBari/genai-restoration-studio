@@ -9,11 +9,27 @@ Tunes:
 Evaluates on validation accuracy / macro F1 with MedianPruner and MLflow tracking.
 """
 
-from typing import Dict, Any, Optional
-import os
-import optuna
-from optuna.pruners import MedianPruner
-import mlflow
+from typing import Optional, Dict, Any
+
+try:
+    import optuna
+    from optuna.pruners import MedianPruner
+    HAS_OPTUNA = True
+except ImportError:
+    class _MockOptuna:
+        Trial = Any
+        Study = Any
+        class exceptions:
+            TrialPruned = Exception
+        TrialPruned = Exception
+    optuna = _MockOptuna()
+    MedianPruner = None
+    HAS_OPTUNA = False
+
+try:
+    import mlflow
+except ImportError:
+    mlflow = None
 
 try:
     import torch

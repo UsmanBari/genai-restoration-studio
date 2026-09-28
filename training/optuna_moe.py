@@ -20,7 +20,13 @@ try:
     from optuna.pruners import MedianPruner
     HAS_OPTUNA = True
 except ImportError:
-    optuna = None
+    class _MockOptuna:
+        Trial = Any
+        Study = Any
+        class exceptions:
+            TrialPruned = Exception
+        TrialPruned = Exception
+    optuna = _MockOptuna()
     MedianPruner = None
     HAS_OPTUNA = False
 
