@@ -295,6 +295,38 @@ This log records every architectural and design decision made during the project
   - PyTorch InstanceNorm warning (`train=True` export) noted as expected behavior for InstanceNorm without tracking running stats.
 - **Milestone 4 marked as COMPLETE.**
 
+---
+
+## 7. Milestone 5 — Interactive Studio Application, ONNX Runtime Backend & Multi-Container Docker Deployment
+
+- **Context:**
+  Milestone 5 builds the production interactive multi-model generative studio web application serving all 4 tasks under the exact specification names and required outputs:
+  1. `Universal Restoration`
+  2. `Hard-Routed Restoration`
+  3. `Soft Mixture-of-Experts Restoration`
+  4. `Face-to-Sketch Generator`
+- **Architecture & Technical Decisions:**
+  1. **Decoupled Lightweight Backend (`requirements-backend.txt`):**
+     - Runs exclusively on CPU using `onnxruntime`, `fastapi`, `pydantic`, `pillow`, `numpy`, and `opencv-python-headless`.
+     - Zero PyTorch dependency in production image layer, reducing container image footprint from ~4.5 GB to ~220 MB.
+  2. **Precise Server-Side Inference Timing (`inference_time_ms`):**
+     - Measured directly using high-resolution `time.perf_counter()` around the active `ort.InferenceSession.run()` call, isolating model execution time from HTTP request parsing and image decode overhead.
+  3. **Input Validation & Safety Constraints:**
+     - Enforces a 10 MB maximum file upload limit (HTTP 413) and content-type whitelist (`image/png`, `image/jpeg`, `image/webp`, `image/bmp`) with clear HTTP 400/415 error handling.
+  4. **Sample Gallery Preset Endpoint (`GET /api/samples`):**
+     - Serves clean sample image assets via static URLs (`/static/samples/`) mounted with `FastAPI.staticfiles`.
+  5. **Style ID Mapping for FS2K cGAN Generator:**
+     - Style 1 $\to$ Internal ID `0` (Classic / Fine Pencil Sketch)
+     - Style 2 $\to$ Internal ID `1` (Artistic / Shaded Sketch)
+     - Style 3 $\to$ Internal ID `2` (Caricature / Graphic Sketch)
+     - Documented in UI badges, API schema, and README.md.
+  6. **Model Binaries Delivery Strategy:**
+     - Standalone helper script [`scripts/fetch_models.py`](file:///c:/Users/usmanbari/Desktop/Gen-Ai-A1/scripts/fetch_models.py) to download/verify all 7 ONNX models (194.15 MB total) into `models_onnx/` without exceeding Git LFS bandwidth quotas.
+  7. **Docker Architecture (`docker-compose.yml`):**
+     - Pinned `python:3.11-slim` backend with `models_onnx/` mounted read-only (`:ro`).
+     - Multi-stage Node.js + Nginx Alpine frontend container proxying `/api/` and `/static/` requests to the backend service.
+
+
 
 
 

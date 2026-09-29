@@ -57,21 +57,21 @@ class UniversalRestorationONNXRunner:
 
     def restore(self, image: Image.Image) -> Tuple[Image.Image, float]:
         """
-        Runs full end-to-end restoration on input PIL image.
-        Returns (restored_pil_image, latency_ms).
+        Runs full restoration on input PIL image.
+        Returns (restored_pil_image, inference_time_ms).
         """
-        t0 = time.time()
         input_tensor = self.preprocess_image(image)
+        t0 = time.perf_counter()
         output_tensor = self.session.run([self.output_name], {self.input_name: input_tensor})[0]
+        inference_time_ms = (time.perf_counter() - t0) * 1000.0
         restored_img = self.postprocess_array(output_tensor)
-        latency_ms = (time.time() - t0) * 1000.0
-        return restored_img, latency_ms
+        return restored_img, inference_time_ms
 
 
 class SoftMoEONNXRunner:
     """
     Inference Runner for Soft Mixture-of-Experts (Task 3) using ONNX Runtime.
-    Returns: (restored_pil_image, routing_weights_list, latency_ms)
+    Returns: (restored_pil_image, routing_weights_list, inference_time_ms)
     """
 
     def __init__(self, onnx_model_path: str):
@@ -112,21 +112,21 @@ class SoftMoEONNXRunner:
         """
         Runs Soft MoE inference on input PIL image.
         Returns:
-          (restored_image, routing_weights [4], latency_ms)
+          (restored_image, routing_weights [4], inference_time_ms)
         """
-        t0 = time.time()
         input_tensor = self.preprocess_image(image)
+        t0 = time.perf_counter()
         outputs = self.session.run(None, {self.input_name: input_tensor})
+        inference_time_ms = (time.perf_counter() - t0) * 1000.0
         restored_img = self.postprocess_array(outputs[0])
         routing_weights = outputs[1][0].tolist() if len(outputs) > 1 else [0.25, 0.25, 0.25, 0.25]
-        latency_ms = (time.time() - t0) * 1000.0
-        return restored_img, routing_weights, latency_ms
+        return restored_img, routing_weights, inference_time_ms
 
 
 class StyleConditionedCGANONNXRunner:
     """
     Inference Runner for Task 4 Style-Conditioned Face-to-Sketch cGAN using ONNX Runtime.
-    Returns: (generated_sketch_image, latency_ms)
+    Returns: (generated_sketch_image, inference_time_ms)
     """
 
     def __init__(self, onnx_model_path: str):
@@ -172,9 +172,8 @@ class StyleConditionedCGANONNXRunner:
             style_id: Categorical sketch style index (0, 1, or 2).
             
         Returns:
-            (generated_sketch, latency_ms)
+            (generated_sketch, inference_time_ms)
         """
-        t0 = time.time()
         photo_arr = self.preprocess_image(image)
         style_arr = np.array([int(style_id)], dtype=np.int64)
 
@@ -182,10 +181,13 @@ class StyleConditionedCGANONNXRunner:
             'photo': photo_arr,
             'style_id': style_arr
         }
+        t0 = time.perf_counter()
         outputs = self.session.run(None, ort_inputs)
+        inference_time_ms = (time.perf_counter() - t0) * 1000.0
         sketch_img = self.postprocess_array(outputs[0])
-        latency_ms = (time.time() - t0) * 1000.0
-        return sketch_img, latency_ms
+        return sketch_img, inference_time_ms
+
+
 class CorruptionClassifierONNXRunner:
     """
     Inference Runner for Task 2 Corruption Classifier using ONNX Runtime.
@@ -227,11 +229,12 @@ class CorruptionClassifierONNXRunner:
         """
         Runs corruption classification on input PIL image.
         Returns:
-            (predicted_class_id, predicted_class_name, confidence, probabilities_dict, latency_ms)
+            (predicted_class_id, predicted_class_name, confidence, probabilities_dict, inference_time_ms)
         """
-        t0 = time.time()
         input_tensor = self.preprocess_image(image)
+        t0 = time.perf_counter()
         outputs = self.session.run(None, {self.input_name: input_tensor})
+        inference_time_ms = (time.perf_counter() - t0) * 1000.0
         logits = outputs[0][0]  # Shape (4,)
 
         # Softmax probabilities
@@ -243,8 +246,7 @@ class CorruptionClassifierONNXRunner:
         confidence = float(probs[pred_id])
         prob_dict = {name: float(probs[i]) for i, name in enumerate(self.CLASS_NAMES)}
 
-        latency_ms = (time.time() - t0) * 1000.0
-        return pred_id, pred_name, confidence, prob_dict, latency_ms
+        return pred_id, pred_name, confidence, prob_dict, inference_time_ms
 
 
 class HardRoutingONNXRunner:
@@ -280,12 +282,10 @@ class HardRoutingONNXRunner:
             oracle_class: If provided, bypasses classifier prediction and uses oracle class.
             
         Returns:
-            (restored_image, predicted_class_name, probabilities_dict, selected_expert_name, latency_ms)
+            (restored_image, predicted_class_name, probabilities_dict, selected_expert_name, inference_time_ms)
         """
-        t0 = time.time()
-
         # Step 1: Classification
-        pred_id, pred_name, conf, prob_dict, class_lat = self.classifier.predict(image)
+        pred_id, pred_name, conf, prob_dict, class_inf_time = self.classifier.predict(image)
         routing_class = oracle_class if oracle_class is not None else pred_id
 
         # Step 2: Specialist routing or identity bypass
@@ -296,12 +296,14 @@ class HardRoutingONNXRunner:
                 image = image.resize((128, 128), Image.Resampling.BILINEAR)
             restored_img = image
             selected_expert = "identity_bypass (clean)"
+            total_inf_time_ms = class_inf_time
         else:
             specialist = self.specialists.get(routing_class)
             if specialist is None:
                 raise ValueError(f"Unknown routing class: {routing_class}")
-            restored_img, _ = specialist.restore(image)
+            restored_img, spec_inf_time = specialist.restore(image)
             selected_expert = f"specialist_{CorruptionClassifierONNXRunner.CLASS_NAMES[routing_class]}"
+            total_inf_time_ms = class_inf_time + spec_inf_time
 
-        total_latency_ms = (time.time() - t0) * 1000.0
-        return restored_img, pred_name, prob_dict, selected_expert, total_latency_ms
+        return restored_img, pred_name, prob_dict, selected_expert, total_inf_time_ms
+

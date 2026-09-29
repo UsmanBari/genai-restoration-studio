@@ -129,17 +129,42 @@ def image_to_base64(img: Image.Image, format: str = "PNG") -> str:
     return base64.b64encode(buffered.getvalue()).decode("utf-8")
 
 
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB limit
+ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/webp", "image/bmp", "application/octet-stream"}
+
+
 def base64_to_image(b64_str: str) -> Image.Image:
     if "," in b64_str:
         b64_str = b64_str.split(",", 1)[1]
-    img_data = base64.b64decode(b64_str)
-    return Image.open(io.BytesIO(img_data)).convert("RGB")
+    try:
+        img_data = base64.b64decode(b64_str)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid base64 image data: {str(e)}")
+    
+    if len(img_data) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=413, detail="Base64 image exceeds 10 MB size limit.")
+    try:
+        return Image.open(io.BytesIO(img_data)).convert("RGB")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Cannot decode base64 image: {str(e)}")
 
 
 async def extract_image_from_request(file: Optional[UploadFile] = None, image_base64: Optional[str] = None) -> Image.Image:
     if file is not None:
+        if file.content_type and file.content_type not in ALLOWED_CONTENT_TYPES:
+            raise HTTPException(
+                status_code=415,
+                detail=f"Unsupported file type '{file.content_type}'. Allowed types: PNG, JPEG, WEBP, BMP."
+            )
         contents = await file.read()
-        return Image.open(io.BytesIO(contents)).convert("RGB")
+        if len(contents) > MAX_FILE_SIZE:
+            raise HTTPException(status_code=413, detail="Uploaded file exceeds 10 MB size limit.")
+        if len(contents) == 0:
+            raise HTTPException(status_code=400, detail="Uploaded file is empty (0 bytes).")
+        try:
+            return Image.open(io.BytesIO(contents)).convert("RGB")
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Corrupt or invalid image file: {str(e)}")
     elif image_base64:
         return base64_to_image(image_base64)
     else:
@@ -191,12 +216,13 @@ async def universal_restoration(
     if runner is None:
         raise HTTPException(status_code=503, detail="Task 1 Universal Autoencoder ONNX model not loaded.")
 
-    restored_img, latency_ms = runner.restore(image)
+    restored_img, inf_time_ms = runner.restore(image)
     return UniversalRestorationResponse(
         task="universal_restoration",
         status="success",
         output_image_base64=image_to_base64(restored_img),
-        latency_ms=round(latency_ms, 2)
+        inference_time_ms=round(inf_time_ms, 2),
+        latency_ms=round(inf_time_ms, 2)
     )
 
 
@@ -216,7 +242,7 @@ async def hard_routing(
     if router is None:
         raise HTTPException(status_code=503, detail="Task 2 Hard Routing ONNX models not loaded.")
 
-    restored_img, pred_name, probs, selected_expert, latency_ms = router.restore(image, oracle_class=oracle_class)
+    restored_img, pred_name, probs, selected_expert, inf_time_ms = router.restore(image, oracle_class=oracle_class)
     conf = float(probs.get(pred_name, 0.0))
 
     return HardRoutingResponse(
@@ -228,7 +254,8 @@ async def hard_routing(
         probabilities={k: round(v, 4) for k, v in probs.items()},
         selected_expert=selected_expert,
         oracle_used=oracle_class is not None,
-        latency_ms=round(latency_ms, 2)
+        inference_time_ms=round(inf_time_ms, 2),
+        latency_ms=round(inf_time_ms, 2)
     )
 
 
@@ -247,7 +274,7 @@ async def soft_mixture(
     if runner is None:
         raise HTTPException(status_code=503, detail="Task 3 Soft MoE ONNX model not loaded.")
 
-    restored_img, raw_weights, latency_ms = runner.restore(image)
+    restored_img, raw_weights, inf_time_ms = runner.restore(image)
     expert_names = ["clean_identity", "salt_and_pepper_specialist", "gaussian_blur_specialist", "rectangular_occlusion_specialist"]
     routing_dict = {name: round(float(w), 4) for name, w in zip(expert_names, raw_weights)}
 
@@ -260,7 +287,8 @@ async def soft_mixture(
         output_image_base64=image_to_base64(restored_img),
         routing_weights=routing_dict,
         dominant_expert=dominant_expert,
-        latency_ms=round(latency_ms, 2)
+        inference_time_ms=round(inf_time_ms, 2),
+        latency_ms=round(inf_time_ms, 2)
     )
 
 
@@ -284,15 +312,17 @@ async def face_to_sketch(
     style_idx = max(0, min(2, int(style_id)))
     style_names = {0: "Style 1 (Pencil / Classic)", 1: "Style 2 (Sketch / Artistic)", 2: "Style 3 (Caricature / Graphic)"}
 
-    sketch_img, latency_ms = runner.generate(image, style_id=style_idx)
+    sketch_img, inf_time_ms = runner.generate(image, style_id=style_idx)
     return FaceToSketchResponse(
         task="face_to_sketch",
         status="success",
         sketch_image_base64=image_to_base64(sketch_img),
         style_id=style_idx,
         style_name=style_names[style_idx],
-        latency_ms=round(latency_ms, 2)
+        inference_time_ms=round(inf_time_ms, 2),
+        latency_ms=round(inf_time_ms, 2)
     )
+
 
 
 @app.post("/corrupt", response_model=CorruptionResponse)

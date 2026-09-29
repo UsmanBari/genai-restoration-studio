@@ -28,6 +28,7 @@ class UniversalRestorationResponse(BaseModel):
     task: str = "universal_restoration"
     status: str = "success"
     output_image_base64: str
+    inference_time_ms: float
     latency_ms: float
 
 
@@ -40,6 +41,7 @@ class HardRoutingResponse(BaseModel):
     probabilities: Dict[str, float]
     selected_expert: str
     oracle_used: bool = False
+    inference_time_ms: float
     latency_ms: float
 
 
@@ -49,6 +51,7 @@ class SoftMoEResponse(BaseModel):
     output_image_base64: str
     routing_weights: Dict[str, float]
     dominant_expert: str
+    inference_time_ms: float
     latency_ms: float
 
 
@@ -58,6 +61,7 @@ class FaceToSketchResponse(BaseModel):
     sketch_image_base64: str
     style_id: int
     style_name: str
+    inference_time_ms: float
     latency_ms: float
 
 
@@ -67,3 +71,4 @@ class CorruptionResponse(BaseModel):
     corruption_type: str
     severity_tier: Optional[str] = None
     params: Dict[str, Any]
+

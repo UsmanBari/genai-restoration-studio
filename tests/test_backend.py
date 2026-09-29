@@ -208,4 +208,25 @@ def test_sample_gallery_endpoint():
         assert len(static_resp.content) > 1000
 
 
+def test_upload_validation_errors():
+    """Assert that non-images, empty files, and invalid requests return clear 4xx errors."""
+    # 1. Missing input
+    resp = client.post("/api/universal-restoration")
+    assert resp.status_code == 400
+    assert "Either 'file' upload or 'image_base64'" in resp.json()["detail"]
+
+    # 2. Unsupported content type
+    files = {"file": ("script.py", b"print('hello')", "text/x-python")}
+    resp = client.post("/api/universal-restoration", files=files)
+    assert resp.status_code == 415
+    assert "Unsupported file type" in resp.json()["detail"]
+
+    # 3. Empty file
+    files = {"file": ("empty.png", b"", "image/png")}
+    resp = client.post("/api/universal-restoration", files=files)
+    assert resp.status_code == 400
+    assert "empty" in resp.json()["detail"]
+
+
+
 
