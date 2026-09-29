@@ -8,17 +8,18 @@ A modular generative AI project implementing image restoration (Universal Autoen
 
 ```
 ├── .gitignore                   # Ignores data, checkpoints, venvs, node_modules
-├── requirements.txt             # Local CPU inference & tooling dependencies
+├── requirements.txt             # Local CPU inference & full workspace dependencies
+├── requirements-backend.txt     # Torchless lightweight production backend dependencies
 ├── requirements-colab.txt       # Colab T4 GPU training dependencies
 ├── AI_USE_LOG.md                # Tool usage and output verification log
 ├── EXPERIMENT_LOG.md            # Hyperparameters, runs, loss curves, metrics
 ├── DECISIONS.md                 # Design & architecture decisions
+├── DEMO_VIDEO_SCRIPT.md         # 5-7 minute demonstration video script
 ├── README.md                    # Project documentation & execution guide
-├── split_train_test.py          # Reference official FS2K split script
+├── docker-compose.yml           # Single-command orchestration for backend & frontend
 │
 ├── configs/                     # Central YAML configurations & manifests
-│   ├── config.yaml              # Global project hyperparameters and dataset paths
-│   └── manifests/               # Precomputed deterministic split & corruption manifests
+│   └── config.yaml              # Global project hyperparameters and dataset paths
 │
 ├── data/                        # Dataset loaders, manifest generators, corruption pipelines
 │   ├── __init__.py
@@ -28,60 +29,68 @@ A modular generative AI project implementing image restoration (Universal Autoen
 │   └── manifest_generator.py    # Manifest generator (80/20 train/val for Pet, 15% stratified for FS2K)
 │
 ├── models/                      # Neural network architecture definitions & ONNX wrappers
-│   ├── __init__.py
+│   ├── __init__.py              # PEP 562 lazy exports for torchless production import
 │   ├── autoencoders.py          # Universal / Hard-routed restoration autoencoders
 │   ├── moe.py                   # Soft Mixture-of-Experts (Gating network + Experts)
 │   ├── classifier.py            # Corruption classifier for hard-routing
-│   ├── gan.py                   # pix2pix UNet Generator & PatchGAN Discriminator
-│   └── onnx_runner.py           # Unified ONNX Runtime inference engine
+│   ├── gan.py                   # Style-conditioned UNet Generator & PatchGAN Discriminator
+│   ├── onnx_runner.py           # Unified ONNX Runtime inference engine
+│   ├── onnx_export.py           # Tasks 1-3 ONNX exporter
+│   └── onnx_export_cgan.py      # Task 4 ONNX exporter
 │
 ├── training/                    # Modular training routines & loss definitions
 │   ├── __init__.py
-│   ├── losses.py                # Reconstruction (L1, MSE, SSIM, Perceptual) & GAN losses
+│   ├── losses.py                # Reconstruction (L1, MSE, SSIM, Perceptual) & MoE losses
+│   ├── losses_cgan.py           # Adversarial & L1 style-conditioned losses
 │   ├── trainer_universal.py     # Task 1 trainer
-│   ├── trainer_routing.py       # Task 2 classifier & specialized autoencoders trainer
+│   ├── trainer_classifier.py    # Task 2 classifier trainer
+│   ├── trainer_specialist.py    # Task 2 specialist autoencoders trainer
 │   ├── trainer_moe.py           # Task 3 gating network & MoE trainer
-│   └── trainer_gan.py           # Task 4 pix2pix GAN trainer
+│   └── trainer_cgan.py          # Task 4 style-conditioned GAN trainer
 │
 ├── evaluation/                  # Evaluation benchmarks, metrics calculation & visualization
 │   ├── __init__.py
-│   ├── metrics.py               # PSNR, SSIM, LPIPS, FID computation
-│   └── benchmark.py             # Deterministic test evaluation across corruption tiers
+│   ├── metrics.py               # PSNR, SSIM, LPIPS, Pixel-FD computation
+│   ├── benchmark_universal.py   # Task 1 evaluation benchmark
+│   ├── benchmark_hard_routing.py# Task 2 evaluation benchmark
+│   ├── benchmark_moe.py         # Task 3 evaluation benchmark
+│   └── benchmark_cgan.py        # Task 4 evaluation benchmark
 │
 ├── backend/                     # FastAPI REST API serving ONNX models
 │   ├── main.py                  # FastAPI application with REST endpoints
-│   ├── schemas.py               # Request/response Pydantic models
-│   └── routes/                  # API routers (/health, /universal, /routing, /moe, /sketch)
+│   └── schemas.py               # Request/response Pydantic models
 │
-├── frontend/                    # Modern React + Vite + Tailwind CSS Studio
+├── frontend/                    # Modern React + Vite Studio (Google Stitch Dark Theme)
 │   ├── index.html
 │   ├── package.json
 │   ├── vite.config.js
-│   ├── tailwind.config.js
-│   ├── postcss.config.js
 │   └── src/
 │       ├── App.jsx              # Main dashboard with 4 workspace tabs
 │       ├── main.jsx
-│       ├── index.css            # Tailwind & sleek dark glassmorphic styling
-│       └── components/          # Interactive image upload & comparison components
+│       └── index.css            # Custom CSS and dark theme styling
 │
 ├── docker/                      # Containerization files
-│   ├── backend.Dockerfile       # Backend container definition
-│   ├── frontend.Dockerfile      # Frontend container definition
+│   ├── backend.Dockerfile       # Python 3.11 slim backend container definition
+│   ├── frontend.Dockerfile      # Multi-stage Node 20 / NGINX Alpine container
 │   └── nginx.conf               # Frontend reverse proxy config
-├── docker-compose.yml           # Single-command orchestration for backend & frontend
 │
 ├── scripts/                     # Standalone CLI utilities
+│   ├── fetch_models.py          # Remote GitHub Release download & SHA256 verifier
 │   ├── prepare_oxford_pet.py    # Download & resize Oxford-IIIT Pet (Colab/Drive)
 │   ├── prepare_fs2k.py          # Unpack & verify FS2K raw pairs (Colab/Drive)
 │   └── verify_pipeline.py       # Local pipeline & manifest sanity checker
 │
+├── report/                      # IEEE Research Paper Source & Assets
+│   ├── main.tex                 # Complete IEEE paper source with AI-Use Appendix
+│   ├── references.bib           # Verified 9-item bibliography
+│   └── figures/                 # Google Stitch UI design evidence figures
+│
 └── notebooks/                   # Google Colab T4 Training Notebooks
     ├── colab_bootstrap.ipynb    # Bootstrap notebook (Drive mount, repo sync, deps)
-    ├── task1_universal.ipynb    # Task 1: Universal Autoencoder Training
-    ├── task2_hard_routing.ipynb # Task 2: Classifier & Hard-Routed Restoration
-    ├── task3_soft_moe.ipynb     # Task 3: Soft Mixture-of-Experts Training
-    └── task4_fs2k_gan.ipynb     # Task 4: FS2K pix2pix GAN Training
+    ├── 02_task1_universal_autoencoder.ipynb # Task 1 Training Notebook
+    ├── 03_task2_hard_routing.ipynb          # Task 2 Training Notebook
+    ├── 04_task3_soft_moe.ipynb              # Task 3 Training Notebook
+    └── 05_task4_cgan_sketch.ipynb           # Task 4 Training Notebook
 ```
 
 ---

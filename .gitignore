@@ -55,3 +55,15 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+# LaTeX build artifacts
+report/*.aux
+report/*.log
+report/*.out
+report/*.bbl
+report/*.blg
+report/*.synctex.gz
+report/*.toc
+report/*.fls
+report/*.fdb_latexmk
+
