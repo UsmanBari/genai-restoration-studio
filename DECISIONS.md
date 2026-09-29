@@ -309,12 +309,13 @@ This log records every architectural and design decision made during the project
   1. **Decoupled Lightweight Backend (`requirements-backend.txt`):**
      - Runs exclusively on CPU using `onnxruntime`, `fastapi`, `pydantic`, `pillow`, `numpy`, and `opencv-python-headless`.
      - Zero PyTorch dependency in production image layer, reducing container image footprint from ~4.5 GB to ~220 MB.
+     - **Bug Fix (PyTorch Import Leaks):** Resolved build-time `AttributeError: 'NoneType' object has no attribute 'Tensor'` caused by top-level imports in `models/__init__.py` and `data/__init__.py`. Implemented PEP 562 lazy `__getattr__` exports so production backend loads only ONNX runners and NumPy corruptions with zero PyTorch footprint. Verified in a clean, torchless virtual environment.
   2. **Precise Server-Side Inference Timing (`inference_time_ms`):**
      - Measured directly using high-resolution `time.perf_counter()` around the active `ort.InferenceSession.run()` call, isolating model execution time from HTTP request parsing and image decode overhead.
   3. **Input Validation & Safety Constraints:**
      - Enforces a 10 MB maximum file upload limit (HTTP 413) and content-type whitelist (`image/png`, `image/jpeg`, `image/webp`, `image/bmp`) with clear HTTP 400/415 error handling.
   4. **Sample Gallery Preset Endpoint (`GET /api/samples`):**
-     - Serves clean sample image assets via static URLs (`/static/samples/`) mounted with `FastAPI.staticfiles`.
+     - Serves clean sample image assets via static URLs (`/static/samples/`) mounted with `FastAPI.staticfiles` with no base64 duplication.
   5. **Style ID Mapping for FS2K cGAN Generator:**
      - Style 1 $\to$ Internal ID `0` (Classic / Fine Pencil Sketch)
      - Style 2 $\to$ Internal ID `1` (Artistic / Shaded Sketch)
@@ -322,9 +323,22 @@ This log records every architectural and design decision made during the project
      - Documented in UI badges, API schema, and README.md.
   6. **Model Binaries Delivery Strategy:**
      - Standalone helper script [`scripts/fetch_models.py`](file:///c:/Users/usmanbari/Desktop/Gen-Ai-A1/scripts/fetch_models.py) to download/verify all 7 ONNX models (194.15 MB total) into `models_onnx/` without exceeding Git LFS bandwidth quotas.
-  7. **Docker Architecture (`docker-compose.yml`):**
-     - Pinned `python:3.11-slim` backend with `models_onnx/` mounted read-only (`:ro`).
-     - Multi-stage Node.js + Nginx Alpine frontend container proxying `/api/` and `/static/` requests to the backend service.
+  7. **Containerized Deployment (WSL2 Ubuntu):**
+     - Deployed via `docker compose up --build` on WSL2 Ubuntu hosting dual containers:
+       - Backend (`genai_restoration_backend` on `0.0.0.0:8000`, `python:3.11-slim`, `./models_onnx` mounted `:ro`).
+       - Frontend (`genai_restoration_frontend` on `0.0.0.0:3000`, Node 20 build $\to$ Nginx Alpine reverse proxying `/api/` and `/static/`).
+     - Both containers verified stable for 1+ hour uptime under live traffic.
+- **Empirical Findings & Qualitative Observations:**
+  1. **Domain Shift & Out-of-Distribution (OOD) Generalization:**
+     - *Observation:* When processing in-distribution Oxford Pet images, Tasks 1–3 autoencoders produce crisp, highly accurate restorations (+8.44 dB PSNR gain). However, when out-of-distribution human portraits (e.g. astronaut face) are fed through the pet-trained models under identical corruption settings, restorations are noticeably blurry and degraded.
+     - *Conclusion:* This highlights a genuine domain-adaptation boundary of single-domain autoencoders, providing authentic empirical evidence for the report.
+  2. **Task 4 Sketch Quality & Discriminator Dominance:**
+     - *Observation:* Live cGAN outputs across all 3 styles exhibit soft, shaded, slightly grainy textures rather than razor-sharp vector line art.
+     - *Diagnosis:* This behavior directly reflects the discriminator dominance documented in Milestone 4 training (Discriminator accuracy saturated at 91–94% by Epoch 3, restricting generator adversarial gradient updates to ~0–5% of batches).
+  3. **Deliberate Scope Decision (No Third Retrain):**
+     - *Evaluation:* A third retraining attempt for Task 4 was evaluated and explicitly declined. Two prior extensive rebalancing iterations (Optuna study expansion, $\lambda_{\text{L1}}$ scaling up to 300, and discriminator throttling) established that architectural/adversarial rebalancing within the current framework yields diminishing returns. Remaining project bandwidth is reserved for Milestone 6 (technical report and demo video).
+- **Milestone 5 marked as COMPLETE.**
+
 
 
 

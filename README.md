@@ -98,17 +98,21 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-### 2. ONNX Model Binaries Placement
-The 7 exported ONNX models must sit under `models_onnx/` (mounted read-only into Docker):
+### 2. Fetch / Verify ONNX Model Binaries
+The 7 exported ONNX models (194.15 MB total) must sit under `models_onnx/` (mounted read-only into Docker). Run the verify/fetch script:
+```powershell
+python scripts/fetch_models.py
+```
+Expected layout:
 ```
 models_onnx/
-├── task1_universal.onnx
-├── task2_classifier.onnx
-├── task2_specialist_salt_and_pepper.onnx
-├── task2_specialist_gaussian_blur.onnx
-├── task2_specialist_rectangular_occlusion.onnx
-├── task3_soft_moe.onnx
-└── cgan_generator.onnx
+├── task1_universal.onnx                            (17.36 MB)
+├── task2_classifier.onnx                           ( 4.48 MB)
+├── task2_specialist_salt_and_pepper.onnx          (17.36 MB)
+├── task2_specialist_gaussian_blur.onnx            (17.36 MB)
+├── task2_specialist_rectangular_occlusion.onnx    (17.36 MB)
+├── task3_soft_moe.onnx                            (56.58 MB)
+└── cgan_generator.onnx                            (63.63 MB)
 ```
 
 ### 3. Face-to-Sketch Style ID Mapping
@@ -119,11 +123,13 @@ The FS2K Face-to-Sketch generator supports 3 distinct styles:
 
 ### 4. Run Backend (Lightweight CPU ONNX Runtime)
 ```powershell
+# In production / torchless environment:
+pip install -r requirements-backend.txt
 uvicorn backend.main:app --reload --port 8000
 ```
 API Documentation is available at `http://localhost:8000/docs`.
 
-### 5. Run Frontend
+### 5. Run Frontend (Vite Dev Server)
 ```powershell
 cd frontend
 npm install
@@ -131,12 +137,15 @@ npm run dev
 ```
 Frontend will be live at `http://localhost:5173`.
 
-### 6. Docker Deployment
-Run both backend (lightweight Python 3.11 + onnxruntime) and frontend (Nginx) with:
-```powershell
+### 6. Containerized Deployment (Docker Compose / WSL2 Ubuntu)
+Run both backend (lightweight Python 3.11 + onnxruntime) and frontend (Nginx reverse proxy) with:
+```bash
 docker compose up --build
 ```
-The Docker backend container mounts `models_onnx/` as read-only at runtime without requiring PyTorch.
+- **Frontend**: `http://localhost:3000`
+- **Backend API**: `http://localhost:8000` (docs at `http://localhost:8000/docs`)
+- **Models Volume**: `models_onnx/` is mounted read-only (`:ro`) at runtime without baking binary weights into the container image.
+
 
 ---
 
