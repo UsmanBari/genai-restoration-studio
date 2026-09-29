@@ -141,19 +141,21 @@ export default function App() {
   };
 
   const handleSelectSample = (sample) => {
-    const b64DataUrl = `data:image/png;base64,${sample.image_base64}`;
-    setPreviewUrl(b64DataUrl);
+    const sampleUrl = sample.url.startsWith('http') ? sample.url : `${API_BASE}${sample.url}`;
+    setPreviewUrl(sampleUrl);
     setOutputImage(null);
     setResultMeta(null);
     
-    // Convert base64 to File object
-    fetch(b64DataUrl)
+    // Convert static image URL to File object for backend endpoints
+    fetch(sampleUrl)
       .then(res => res.blob())
       .then(blob => {
         const file = new File([blob], sample.id, { type: 'image/png' });
         setSelectedFile(file);
-      });
+      })
+      .catch(err => console.error('Failed to load sample blob:', err));
   };
+
 
   const handleApplyCorruption = async () => {
     if (!selectedFile) return;
@@ -371,10 +373,11 @@ export default function App() {
                         className="group flex flex-col items-center p-1.5 rounded-lg border border-slate-800 bg-slate-950/60 hover:border-cyan-500/50 hover:bg-slate-850 transition-all text-center"
                       >
                         <img 
-                          src={`data:image/png;base64,${s.image_base64}`} 
+                          src={s.url.startsWith('http') ? s.url : `${API_BASE}${s.url}`} 
                           alt={s.name}
                           className="w-12 h-12 object-cover rounded mb-1 border border-slate-800 group-hover:border-cyan-500/40"
                         />
+
                         <span className="text-[10px] text-slate-300 font-medium truncate w-full">{s.name}</span>
                       </button>
                     ))}

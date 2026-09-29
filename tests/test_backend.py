@@ -164,13 +164,14 @@ def test_face_to_sketch_styles_differ_and_bounded(clean_face_image):
         assert sk_np.min() >= 0.0 and sk_np.max() <= 1.0
         sketches[style_id] = sk_np
 
-    diff_0_1 = float(np.mean(np.abs(sketches[0] - sketches[1])))
-    diff_1_2 = float(np.mean(np.abs(sketches[1] - sketches[2])))
-    diff_0_2 = float(np.mean(np.abs(sketches[0] - sketches[2])))
+    diff_id0_vs_id1 = float(np.mean(np.abs(sketches[0] - sketches[1])))
+    diff_id1_vs_id2 = float(np.mean(np.abs(sketches[1] - sketches[2])))
+    diff_id0_vs_id2 = float(np.mean(np.abs(sketches[0] - sketches[2])))
 
-    print(f"\n[Task 4 Face-to-Sketch Multi-Style Discrepancy] Diff(Style1, Style2): {diff_0_1:.4f}, Diff(Style2, Style3): {diff_1_2:.4f}, Diff(Style1, Style3): {diff_0_2:.4f}")
-    assert diff_0_1 > 0.01, f"Style 1 and Style 2 outputs are too similar (diff: {diff_0_1})"
-    assert diff_1_2 > 0.01, f"Style 2 and Style 3 outputs are too similar (diff: {diff_1_2})"
+    print(f"\n[Task 4 Face-to-Sketch Multi-Style Discrepancy] id0_vs_id1: {diff_id0_vs_id1:.4f}, id1_vs_id2: {diff_id1_vs_id2:.4f}, id0_vs_id2: {diff_id0_vs_id2:.4f}")
+    assert diff_id0_vs_id1 > 0.01, f"Style id 0 and Style id 1 outputs are too similar (diff: {diff_id0_vs_id1})"
+    assert diff_id1_vs_id2 > 0.01, f"Style id 1 and Style id 2 outputs are too similar (diff: {diff_id1_vs_id2})"
+    assert diff_id0_vs_id2 > 0.01, f"Style id 0 and Style id 2 outputs are too similar (diff: {diff_id0_vs_id2})"
 
 
 def test_corrupt_endpoint_reproducibility(clean_pet_image):
@@ -189,7 +190,7 @@ def test_corrupt_endpoint_reproducibility(clean_pet_image):
 
 
 def test_sample_gallery_endpoint():
-    """Assert that /api/samples returns sample presets."""
+    """Assert that /api/samples returns sample presets and static URLs work."""
     response = client.get("/api/samples")
     assert response.status_code == 200
     data = response.json()
@@ -199,6 +200,12 @@ def test_sample_gallery_endpoint():
         assert "id" in s
         assert "name" in s
         assert "category" in s
-        assert len(s["image_base64"]) > 50
+        assert "url" in s
+        # Verify static URL returns valid image bytes
+        static_resp = client.get(s["url"])
+        assert static_resp.status_code == 200
+        assert "image" in static_resp.headers.get("content-type", "")
+        assert len(static_resp.content) > 1000
+
 
 

@@ -15,6 +15,7 @@ from typing import Optional, Dict, Any, List
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from PIL import Image
 import numpy as np
 
@@ -56,6 +57,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Mount static files directory for sample images and static assets
+static_dir = os.path.join(os.path.dirname(__file__), "static")
+if not os.path.exists(static_dir):
+    os.makedirs(os.path.join(static_dir, "samples"), exist_ok=True)
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
 
 # Model directories to search
 MODEL_DIRS = [
@@ -375,7 +383,7 @@ async def corrupt_image(
 async def list_sample_gallery():
     """
     Returns curated sample presets (clean pets and clean face portraits)
-    for evaluator one-click testing across all 4 workspaces.
+    for evaluator one-click testing across all 4 workspaces via static URLs.
     """
     samples_dir = os.path.join(os.path.dirname(__file__), "static", "samples")
     if not os.path.exists(samples_dir):
@@ -385,22 +393,17 @@ async def list_sample_gallery():
     if os.path.exists(samples_dir):
         for fname in sorted(os.listdir(samples_dir)):
             if fname.lower().endswith((".png", ".jpg", ".jpeg")):
-                fpath = os.path.join(samples_dir, fname)
-                try:
-                    img = Image.open(fpath).convert("RGB")
-                    b64 = image_to_base64(img)
-                    category = "face" if "face" in fname.lower() else "pet"
-                    display_name = fname.rsplit(".", 1)[0].replace("_", " ").title()
-                    samples.append({
-                        "id": fname,
-                        "name": display_name,
-                        "category": category,
-                        "image_base64": b64
-                    })
-                except Exception as e:
-                    print(f"Error reading sample image {fpath}: {e}")
+                category = "faces" if "face" in fname.lower() else "pets"
+                display_name = fname.rsplit(".", 1)[0].replace("_", " ").title()
+                samples.append({
+                    "id": fname,
+                    "name": display_name,
+                    "category": category,
+                    "url": f"/static/samples/{fname}"
+                })
 
     return {"status": "success", "samples": samples}
+
 
 
 if __name__ == "__main__":
