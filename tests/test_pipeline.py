@@ -102,22 +102,22 @@ def test_backend_endpoints():
     # Universal restoration stub
     resp = client.post("/universal-restoration", files={"file": ("test.png", buf, "image/png")})
     assert resp.status_code == 200
-    assert resp.json()["task"] == "universal-restoration"
+    assert resp.json()["task"] in ("universal-restoration", "universal_restoration")
 
     buf.seek(0)
     # Hard-routing stub
     resp = client.post("/hard-routing", files={"file": ("test.png", buf, "image/png")})
     assert resp.status_code == 200
-    assert resp.json()["task"] == "hard-routing"
+    assert resp.json()["task"] in ("hard-routing", "hard_routing")
 
     buf.seek(0)
     # Soft mixture stub
     resp = client.post("/soft-mixture", files={"file": ("test.png", buf, "image/png")})
     assert resp.status_code == 200
-    assert resp.json()["task"] == "soft-mixture"
+    assert resp.json()["task"] in ("soft-mixture", "soft_mixture_of_experts")
 
     buf.seek(0)
     # Face to sketch stub
     resp = client.post("/face-to-sketch", files={"file": ("test.png", buf, "image/png")}, data={"style": "1"})
     assert resp.status_code == 200
-    assert resp.json()["task"] == "face-to-sketch"
+    assert resp.json()["task"] in ("face-to-sketch", "face_to_sketch")

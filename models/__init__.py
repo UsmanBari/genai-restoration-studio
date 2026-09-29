@@ -41,10 +41,18 @@ except ImportError:
     verify_cgan_onnx_numerical_equivalence = None
 
 try:
-    from models.onnx_runner import UniversalRestorationONNXRunner, SoftMoERestorationNetwork, StyleConditionedCGANONNXRunner
+    from models.onnx_runner import (
+        UniversalRestorationONNXRunner,
+        CorruptionClassifierONNXRunner,
+        HardRoutingONNXRunner,
+        SoftMoEONNXRunner,
+        StyleConditionedCGANONNXRunner
+    )
 except ImportError:
     UniversalRestorationONNXRunner = None
-    SoftMoERestorationNetwork = None
+    CorruptionClassifierONNXRunner = None
+    HardRoutingONNXRunner = None
+    SoftMoEONNXRunner = None
     StyleConditionedCGANONNXRunner = None
 
 __all__ = [
@@ -59,6 +67,9 @@ __all__ = [
     'export_cgan_generator_to_onnx',
     'verify_cgan_onnx_numerical_equivalence',
     'UniversalRestorationONNXRunner',
+    'CorruptionClassifierONNXRunner',
+    'HardRoutingONNXRunner',
+    'SoftMoEONNXRunner',
     'StyleConditionedCGANONNXRunner'
 ]
 

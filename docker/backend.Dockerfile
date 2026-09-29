@@ -17,6 +17,11 @@ COPY backend/ ./backend/
 COPY models/ ./models/
 COPY configs/ ./configs/
 COPY data/ ./data/
+COPY evaluation/ ./evaluation/
+COPY tests/test_clean_module_imports.py ./tests/test_clean_module_imports.py
+
+# Verify clean module imports during container build
+RUN python -m pytest tests/test_clean_module_imports.py -q
 
 EXPOSE 8000
 

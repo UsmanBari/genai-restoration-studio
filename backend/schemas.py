@@ -1,5 +1,5 @@
 """
-Pydantic schema definitions for FastAPI backend endpoints.
+Pydantic schema definitions for FastAPI backend endpoints supporting all 4 workspaces.
 """
 
 from typing import Optional, Dict, Any, List
@@ -12,29 +12,58 @@ class HealthResponse(BaseModel):
     device: str = "cpu"
     models_loaded: Dict[str, bool] = Field(
         default_factory=lambda: {
-            "universal_autoencoder": False,
-            "hard_routing_classifier": False,
-            "hard_routing_experts": False,
-            "soft_moe": False,
-            "fs2k_pix2pix": False
+            "task1_universal": False,
+            "task2_classifier": False,
+            "task2_specialist_sp": False,
+            "task2_specialist_blur": False,
+            "task2_specialist_occ": False,
+            "task2_hard_routing": False,
+            "task3_soft_moe": False,
+            "task4_cgan_generator": False,
         }
     )
 
 
-class RestorationResponse(BaseModel):
-    task: str
-    status: str
+class UniversalRestorationResponse(BaseModel):
+    task: str = "universal_restoration"
+    status: str = "success"
     output_image_base64: str
-    detected_corruption: Optional[str] = None
-    confidence: Optional[float] = None
-    expert_weights: Optional[Dict[str, float]] = None
     latency_ms: float
-    metrics: Optional[Dict[str, float]] = None
 
 
-class SketchResponse(BaseModel):
-    task: str = "face-to-sketch"
-    status: str
+class HardRoutingResponse(BaseModel):
+    task: str = "hard_routing"
+    status: str = "success"
+    output_image_base64: str
+    predicted_corruption: str
+    confidence: float
+    probabilities: Dict[str, float]
+    selected_expert: str
+    oracle_used: bool = False
+    latency_ms: float
+
+
+class SoftMoEResponse(BaseModel):
+    task: str = "soft_mixture_of_experts"
+    status: str = "success"
+    output_image_base64: str
+    routing_weights: Dict[str, float]
+    dominant_expert: str
+    latency_ms: float
+
+
+class FaceToSketchResponse(BaseModel):
+    task: str = "face_to_sketch"
+    status: str = "success"
     sketch_image_base64: str
-    style_applied: Optional[int] = None
+    style_id: int
+    style_name: str
     latency_ms: float
+
+
+class CorruptionResponse(BaseModel):
+    status: str = "success"
+    corrupted_image_base64: str
+    corruption_type: str
+    severity_tier: Optional[str] = None
+    params: Dict[str, Any]
