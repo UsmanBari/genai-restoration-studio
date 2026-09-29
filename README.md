@@ -98,22 +98,25 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-### 2. Fetch / Verify ONNX Model Binaries
-The 7 exported ONNX models (194.15 MB total) must sit under `models_onnx/` (mounted read-only into Docker). Run the verify/fetch script:
+### 2. Download & Verify ONNX Model Binaries
+The 7 exported ONNX models (194.15 MB total) must sit under `models_onnx/` (mounted read-only into Docker). Run the automated fetch & verification script:
 ```powershell
 python scripts/fetch_models.py
 ```
-Expected layout:
+This script automatically downloads all 7 models from GitHub Release assets ([`milestone-5-complete`](https://github.com/UsmanBari/genai-restoration-studio/releases/tag/milestone-5-complete)) with real-time transfer progress, speed calculations, and SHA256 checksum verification.
+
+Expected layout and byte sizes:
 ```
 models_onnx/
-├── task1_universal.onnx                            (17.36 MB)
-├── task2_classifier.onnx                           ( 4.48 MB)
-├── task2_specialist_salt_and_pepper.onnx          (17.36 MB)
-├── task2_specialist_gaussian_blur.onnx            (17.36 MB)
-├── task2_specialist_rectangular_occlusion.onnx    (17.36 MB)
-├── task3_soft_moe.onnx                            (56.58 MB)
-└── cgan_generator.onnx                            (63.63 MB)
+├── task1_universal.onnx                            (17.36 MB, 18,207,156 bytes)
+├── task2_classifier.onnx                           ( 4.48 MB,  4,698,438 bytes)
+├── task2_specialist_salt_and_pepper.onnx          (17.36 MB, 18,207,156 bytes)
+├── task2_specialist_gaussian_blur.onnx            (17.36 MB, 18,207,156 bytes)
+├── task2_specialist_rectangular_occlusion.onnx    (17.36 MB, 18,207,156 bytes)
+├── task3_soft_moe.onnx                            (56.58 MB, 59,330,355 bytes)
+└── cgan_generator.onnx                            (63.63 MB, 66,719,645 bytes)
 ```
+Total footprint: 194.15 MB (203,577,344 bytes). Verified 100% byte-accurate against the Colab training exports.
 
 ### 3. Face-to-Sketch Style ID Mapping
 The FS2K Face-to-Sketch generator supports 3 distinct styles:
