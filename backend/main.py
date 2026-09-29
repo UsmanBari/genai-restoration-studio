@@ -370,6 +370,39 @@ async def corrupt_image(
     )
 
 
+@app.get("/api/samples")
+@app.get("/samples")
+async def list_sample_gallery():
+    """
+    Returns curated sample presets (clean pets and clean face portraits)
+    for evaluator one-click testing across all 4 workspaces.
+    """
+    samples_dir = os.path.join(os.path.dirname(__file__), "static", "samples")
+    if not os.path.exists(samples_dir):
+        samples_dir = os.path.join("backend", "static", "samples")
+
+    samples = []
+    if os.path.exists(samples_dir):
+        for fname in sorted(os.listdir(samples_dir)):
+            if fname.lower().endswith((".png", ".jpg", ".jpeg")):
+                fpath = os.path.join(samples_dir, fname)
+                try:
+                    img = Image.open(fpath).convert("RGB")
+                    b64 = image_to_base64(img)
+                    category = "face" if "face" in fname.lower() else "pet"
+                    display_name = fname.rsplit(".", 1)[0].replace("_", " ").title()
+                    samples.append({
+                        "id": fname,
+                        "name": display_name,
+                        "category": category,
+                        "image_base64": b64
+                    })
+                except Exception as e:
+                    print(f"Error reading sample image {fpath}: {e}")
+
+    return {"status": "success", "samples": samples}
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

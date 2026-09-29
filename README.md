@@ -98,13 +98,32 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-### 2. Run Backend
+### 2. ONNX Model Binaries Placement
+The 7 exported ONNX models must sit under `models_onnx/` (mounted read-only into Docker):
+```
+models_onnx/
+├── task1_universal.onnx
+├── task2_classifier.onnx
+├── task2_specialist_salt_and_pepper.onnx
+├── task2_specialist_gaussian_blur.onnx
+├── task2_specialist_rectangular_occlusion.onnx
+├── task3_soft_moe.onnx
+└── cgan_generator.onnx
+```
+
+### 3. Face-to-Sketch Style ID Mapping
+The FS2K Face-to-Sketch generator supports 3 distinct styles:
+- **Style 1**: ID `0` (Classic / Fine Pencil Sketch)
+- **Style 2**: ID `1` (Artistic / Shaded Sketch)
+- **Style 3**: ID `2` (Caricature / Graphic Sketch)
+
+### 4. Run Backend (Lightweight CPU ONNX Runtime)
 ```powershell
 uvicorn backend.main:app --reload --port 8000
 ```
-API Documentation will be available at `http://localhost:8000/docs`.
+API Documentation is available at `http://localhost:8000/docs`.
 
-### 3. Run Frontend
+### 5. Run Frontend
 ```powershell
 cd frontend
 npm install
@@ -112,20 +131,22 @@ npm run dev
 ```
 Frontend will be live at `http://localhost:5173`.
 
-### 4. Docker Compose
-Run both backend and frontend simultaneously with a single command:
+### 6. Docker Deployment
+Run both backend (lightweight Python 3.11 + onnxruntime) and frontend (Nginx) with:
 ```powershell
 docker compose up --build
 ```
+The Docker backend container mounts `models_onnx/` as read-only at runtime without requiring PyTorch.
 
 ---
 
 ## ☁️ Google Colab Training Workflow
 
 All heavy training runs on Google Colab (Free T4 GPU) using Google Drive for persistent storage:
-1. Open `notebooks/colab_bootstrap.ipynb` in Colab.
+1. Open `notebooks/00_bootstrap.ipynb` in Colab.
 2. Mount Google Drive (`/content/drive/MyDrive/GenAI-A1/`).
 3. Prepare datasets using `scripts/prepare_oxford_pet.py` and `scripts/prepare_fs2k.py`.
 4. Train models and log metrics automatically to MLflow at `/content/drive/MyDrive/GenAI-A1/mlruns/`.
 5. Checkpoints (`.pth`) and ONNX models (`.onnx`) are automatically saved to Google Drive.
-6. Copy the `.onnx` models locally into `models/` for local FastAPI serving.
+6. Copy the `.onnx` models locally into `models_onnx/` for local serving.
+

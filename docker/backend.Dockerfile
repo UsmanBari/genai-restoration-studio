@@ -10,18 +10,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements-backend.txt .
+RUN pip install --no-cache-dir -r requirements-backend.txt
 
 COPY backend/ ./backend/
 COPY models/ ./models/
 COPY configs/ ./configs/
 COPY data/ ./data/
-COPY evaluation/ ./evaluation/
-COPY tests/test_clean_module_imports.py ./tests/test_clean_module_imports.py
 
-# Verify clean module imports during container build
-RUN python -m pytest tests/test_clean_module_imports.py -q
+# Verify clean backend import without torch runtime dependency
+RUN python -c "import backend.main; print('Backend loaded cleanly using ONNX Runtime!')"
 
 EXPOSE 8000
 
