@@ -2,6 +2,8 @@
 
 A modular generative AI project implementing image restoration (Universal Autoencoder, Hard-Routed Autoencoders, Soft Mixture-of-Experts) and Paired Face-to-Sketch Synthesis (FS2K pix2pix GAN) with a FastAPI backend and React + Tailwind CSS interactive studio.
 
+**Demonstration Video:** [https://youtu.be/AfU6j4_NIp0](https://youtu.be/AfU6j4_NIp0)
+
 ---
 
 ## 📁 Repository Structure

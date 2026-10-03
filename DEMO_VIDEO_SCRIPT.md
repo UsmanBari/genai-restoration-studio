@@ -1,7 +1,7 @@
 # Generative AI Assignment 1: Demonstration Video Script
 **Student:** Muhammad Usman Bari (23i-0680, Section A)  
 **Target Duration:** 5:30 – 6:30 minutes (Strictly within the 5–7 minute specification)  
-**Deliverable URL:** YouTube link included in `report/main.tex` and `README.md`
+**Deliverable URL:** [https://youtu.be/AfU6j4_NIp0](https://youtu.be/AfU6j4_NIp0)
 
 ---
 
