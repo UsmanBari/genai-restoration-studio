@@ -6,7 +6,8 @@
 \usepackage{textcomp}
 \usepackage{xcolor}
 \usepackage{booktabs}
-\usepackage{subcaption}
+\usepackage[caption=false,font=footnotesize]{subfig}
+\usepackage{dblfloatfix}
 \usepackage{hyperref}
 
 \graphicspath{{figures/}{./}{artifacts/stitch_design/}}
@@ -294,23 +295,11 @@ Rectangular Occlusion & 1,100 & 15.10 & 0.6955 \\ \midrule
 
 \begin{figure*}[!t]
 \centering
-\begin{subfigure}[b]{0.32\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{task1_comparison_a.png}
-    \caption{Samples 1--4 (Clean and S\&P).}
-\end{subfigure}
+\subfloat[Samples 1--4 (Clean and S\&P).]{\includegraphics[width=0.32\textwidth]{task1_comparison_a.png}}
 \hfill
-\begin{subfigure}[b]{0.32\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{task1_comparison_b.png}
-    \caption{Samples 5--8 (Gaussian Blur).}
-\end{subfigure}
+\subfloat[Samples 5--8 (Gaussian Blur).]{\includegraphics[width=0.32\textwidth]{task1_comparison_b.png}}
 \hfill
-\begin{subfigure}[b]{0.32\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{task1_comparison_c.png}
-    \caption{Samples 9--12 (Occlusion).}
-\end{subfigure}
+\subfloat[Samples 9--12 (Occlusion).]{\includegraphics[width=0.32\textwidth]{task1_comparison_c.png}}
 \caption{Task 1 Universal Autoencoder qualitative restorations across clean, salt-and-pepper, Gaussian blur, and rectangular occlusion test inputs. The learned Gated Skip Connection dynamically routes high frequencies on uncorrupted regions while selectively suppressing corrupted patches, forcing generative bottleneck inpainting on missing spatial pixels.}
 \label{fig:task1_comparison}
 \end{figure*}
@@ -471,23 +460,11 @@ Style 3 (Internal ID 2: Caricature) & 46$^*$ & 19.60 & 0.6517 & 0.0594 \\ \midru
 
 \begin{figure*}[!t]
 \centering
-\begin{subfigure}[b]{0.32\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{task4_error_map_a.png}
-    \caption{Samples 1--4 (Style 1: Pencil).}
-\end{subfigure}
+\subfloat[Samples 1--4 (Style 1: Pencil).]{\includegraphics[width=0.32\textwidth]{task4_error_map_a.png}}
 \hfill
-\begin{subfigure}[b]{0.32\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{task4_error_map_b.png}
-    \caption{Samples 5--8 (Style 2: Shaded).}
-\end{subfigure}
+\subfloat[Samples 5--8 (Style 2: Shaded).]{\includegraphics[width=0.32\textwidth]{task4_error_map_b.png}}
 \hfill
-\begin{subfigure}[b]{0.32\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{task4_error_map_c.png}
-    \caption{Samples 9--12 (Style 3: Caricature).}
-\end{subfigure}
+\subfloat[Samples 9--12 (Style 3: Caricature).]{\includegraphics[width=0.32\textwidth]{task4_error_map_c.png}}
 \caption{Pixel-wise absolute error maps across synthesized sketches. Deviation is minimal across uniform white backgrounds and concentrated along dense hair and shadow regions where the generator produces smooth tonal shading rather than exact pixel-level line matches.}
 \label{fig:task4_error_maps}
 \end{figure*}
@@ -554,29 +531,13 @@ The visual layout, component hierarchy, interactive cards, and responsive contro
 
 \begin{figure*}[!t]
 \centering
-\begin{subfigure}[b]{0.24\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{stitch_universal_restoration.png}
-    \caption{Universal Workspace.}
-\end{subfigure}
+\subfloat[Universal Workspace.]{\includegraphics[width=0.24\textwidth]{stitch_universal_restoration.png}}
 \hfill
-\begin{subfigure}[b]{0.24\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{stitch_hard_routed_restoration.png}
-    \caption{Hard-Routing Workspace.}
-\end{subfigure}
+\subfloat[Hard-Routing Workspace.]{\includegraphics[width=0.24\textwidth]{stitch_hard_routed_restoration.png}}
 \hfill
-\begin{subfigure}[b]{0.24\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{stitch_soft_moe_restoration.png}
-    \caption{Soft MoE Workspace.}
-\end{subfigure}
+\subfloat[Soft MoE Workspace.]{\includegraphics[width=0.24\textwidth]{stitch_soft_moe_restoration.png}}
 \hfill
-\begin{subfigure}[b]{0.24\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{stitch_face_to_sketch.png}
-    \caption{Face-to-Sketch Studio.}
-\end{subfigure}
+\subfloat[Face-to-Sketch Studio.]{\includegraphics[width=0.24\textwidth]{stitch_face_to_sketch.png}}
 \caption{Interactive Google Stitch interface and production generative studio deployed via Docker Compose, illustrating real-time single-model restoration, corruption classification confidence meters, differentiable soft gating weights, and style-conditioned sketch synthesis with client-side PNG export.}
 \label{fig:stitch_design}
 \end{figure*}
