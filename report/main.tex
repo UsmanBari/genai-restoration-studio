@@ -295,7 +295,14 @@ Rectangular Occlusion & 1,100 & 15.10 & 0.6955 \\ \midrule
 \label{fig:task1_comparison}
 \end{figure}
 
-\textbf{Analysis:} On clean images, the model achieves $29.20\text{ dB}$ PSNR and $0.8879$ SSIM, demonstrating that the learned gated skip connection effectively preserves fine fur and edge structures. Denoising on Gaussian blur ($26.24\text{ dB}$) and salt-and-pepper noise ($23.96\text{ dB}$) is robust. However, under severe rectangular occlusions covering up to $35\%$ of the image area, performance drops to $15.10\text{ dB}$, as the network is forced into pure generative inpainting without local structural hints.
+\begin{figure}[h]
+\centering
+\includegraphics[width=\columnwidth]{task1_failure_cases.png}
+\caption{Task 1 Universal Autoencoder severe corruption failure cases. Under large rectangular occlusions covering salient facial features, the model inpaints smooth, low-contrast fills that lack fine geometric boundaries, while under extreme noise levels, residual high-frequency artifacts remain visible.}
+\label{fig:task1_failure_cases}
+\end{figure}
+
+\textbf{Analysis:} On clean images, the model achieves $29.20\text{ dB}$ PSNR and $0.8879$ SSIM (Fig.~\ref{fig:task1_comparison}), demonstrating that the learned gated skip connection effectively preserves fine fur and edge structures. Denoising on Gaussian blur ($26.24\text{ dB}$) and salt-and-pepper noise ($23.96\text{ dB}$) is robust. However, under severe rectangular occlusions covering up to $35\%$ of the image area, performance drops to $15.10\text{ dB}$, as the network is forced into pure generative inpainting without local structural hints (as illustrated in Fig.~\ref{fig:task1_failure_cases}).
 
 \subsection{Task 2: Corruption Classifier and Hard Routing}
 \subsubsection{Corruption Classification Performance}
@@ -403,7 +410,7 @@ Baseline: Grayscale Photo & 6.93 & 0.2761 & 0.4062 & --- \\ \bottomrule
 \begin{figure}[h]
 \centering
 \includegraphics[width=\columnwidth]{task4_training_curves.png}
-\caption{Task 4 Conditional GAN 40-epoch training dynamics on FS2K. Discriminator accuracy surged to $91$--$94\%$ by Epoch 3, triggering update throttling ($0$--$5\%$ active update batches) while generator L1 and adversarial losses steadily stabilized.}
+\caption{Task 4 Conditional GAN 40-epoch training dynamics on FS2K. Discriminator accuracy surged to $91$--$94\%$ by Epoch 3, triggering update throttling ($0$--$5\%$ active update batches) while generator L1 loss decreased steadily while the discriminator remained dominant.}
 \label{fig:task4_training_curves}
 \end{figure}
 
@@ -441,10 +448,11 @@ Style 3 (Internal ID 2: Caricature) & 46$^*$ & 19.60 & 0.6517 & 0.0594 \\ \midru
 
 \textbf{Empirical Analysis:}
 \begin{itemize}
-    \item \textbf{Style 1 (Pencil, $N=619$):} High structural fidelity ($18.06\text{ dB}$, $0.5600$ SSIM) due to clean contrast against white backgrounds.
-    \item \textbf{Style 2 (Artistic Shaded, $N=381$):} Lowest PSNR ($12.89\text{ dB}$) and highest L1 error ($0.1451$). Ground-truth sketches in Style 2 feature heavy dark shading across hair and facial contours; pixel-wise L1 penalizes subtle tone mismatches heavily in heavily shaded regions.
+    \item \textbf{Style 1 (Pencil, $N=619$):} High structural fidelity ($18.06\text{ dB}$, $0.5600$ SSIM) due to clean contrast against white backgrounds (see Style 1 column in Fig.~\ref{fig:task4_style_matrix}).
+    \item \textbf{Style 2 (Artistic Shaded, $N=381$):} Lowest PSNR ($12.89\text{ dB}$) and highest L1 error ($0.1451$). Ground-truth sketches in Style 2 feature heavy dark shading across hair and facial contours; as revealed in the error maps (Fig.~\ref{fig:task4_error_maps}), pixel-wise L1 penalizes subtle tone mismatches heavily in heavily shaded regions.
     \item \textbf{Style 3 (Caricature, $N=46$):} Achieves $19.60\text{ dB}$ PSNR and $0.6517$ SSIM. However, because $N=46$ represents only $4.4\%$ of the test set, these metrics reflect a small sample size and should not be interpreted as superior model generalization over Style 1.
     \item \textbf{SSIM Background Inflation:} Baseline analysis confirms that SSIM values are partially elevated by the large, uniform white background present in FS2K sketch targets (All-White canvas achieves $0.4308$ SSIM).
+    \item \textbf{Training Stabilization:} As tracked in Fig.~\ref{fig:task4_training_curves}, the dynamic throttle successfully prevented catastrophic generator collapse despite persistent discriminator dominance.
 \end{itemize}
 
 \section{Interactive Studio Application and Containerized Deployment}
@@ -496,7 +504,7 @@ Note: Reflects bare \texttt{session.run()} execution; deployed end-to-end API ro
 \end{table}
 
 \subsection{Multi-Container Orchestration and Google Stitch UI Evidence}
-The visual layout, component hierarchy, interactive cards, and responsive controls were designed using Google Stitch wireframes (shown in Fig. \ref{fig:stitch_design}) prior to React frontend implementation.
+The initial visual layout, component hierarchy, interactive cards, and responsive controls were designed using Google Stitch wireframes (shown in Fig.~\ref{fig:stitch_design}) prior to React frontend implementation. Fig.~\ref{fig:app_screenshots} illustrates the live containerized studio operating across all four specialized workspaces in production.
 
 \begin{figure*}[t]
 \centering
@@ -525,6 +533,35 @@ The visual layout, component hierarchy, interactive cards, and responsive contro
 \end{subfigure}
 \caption{Original Google Stitch UI/UX design mockups establishing the dark-mode layout, glassmorphic panels, and interactive parameter controls implemented in the final React application.}
 \label{fig:stitch_design}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+\begin{subfigure}[b]{0.24\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{app_universal.png}
+    \caption{Universal Restoration.}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.24\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{app_hard.png}
+    \caption{Hard-Routing Restoration.}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.24\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{app_moe.png}
+    \caption{Soft MoE Restoration.}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.24\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{app_sketch.png}
+    \caption{Face-to-Sketch Studio.}
+\end{subfigure}
+\caption{Live interactive interface screenshots of the containerized production system deployed via Docker Compose, illustrating real-time single-model restoration, corruption classification confidence meters, differentiable soft gating weights, and style-conditioned sketch synthesis with client-side PNG export.}
+\label{fig:app_screenshots}
 \end{figure*}
 
 The production stack is containerized into two isolated services managed by \texttt{docker-compose.yml}:
