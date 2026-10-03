@@ -86,17 +86,19 @@ To prevent disk storage bloat and avoid overfitting to static noise patterns, co
     \item \textbf{Rectangular Occlusion ($y=3$):} Between $1$ and $3$ mutually disjoint black rectangular masks are randomly placed, jointly covering between $10\%$ and $35\%$ of the total spatial image area.
 \end{itemize}
 
-\begin{table}[t]
+\begin{table}[!t]
 \centering
 \caption{Deterministic Benchmark Corruption Tiers (Test Set: $N=3,669$).}
 \label{tab:corruption_tiers}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{@{}llll@{}}
 \toprule
 \textbf{Corruption} & \textbf{Tier 1 (Mild)} & \textbf{Tier 2 (Moderate)} & \textbf{Tier 3 (Severe)} \\ \midrule
 Salt-and-Pepper & $p = 0.03$ & $p = 0.08$ & $p = 0.15$ \\
 Gaussian Blur & $k=3, \sigma=0.7$ & $k=5, \sigma=1.5$ & $k=7, \sigma=2.5$ \\
 Occlusion & 1 mask ($\approx 10\%$) & 2 masks ($\approx 20\%$) & 3 masks ($\approx 35\%$) \\ \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
 While training relies on stochastic runtime corruption, validation and final testing are strictly deterministic. We precompute static manifests (\texttt{oxford\_val\_manifest.json} and \texttt{oxford\_test\_manifest.json}) storing fixed corruption labels, seeds, mask coordinates, and blur parameters. As detailed in Table \ref{tab:corruption_tiers}, the test benchmark evaluates three fixed severity levels for every corruption type, ensuring identical comparative conditions across Tasks 1, 2, and 3.
@@ -273,10 +275,11 @@ We present quantitative benchmarks, comparative ablation analyses, and visual fa
 \subsection{Task 1: Universal Autoencoder Evaluation}
 The Universal Autoencoder was evaluated across all $3,669$ test instances in \texttt{oxford\_test\_manifest.json} comprising $367$ Clean instances alongside $3,302$ corrupted instances ($1,101$ Salt-and-Pepper, $1,101$ Gaussian Blur, and $1,100$ Rectangular Occlusion across three fixed severity tiers). Table \ref{tab:task1_results} presents the quantitative test metrics.
 
-\begin{table}[h]
+\begin{table}[!t]
 \centering
 \caption{Task 1 Universal Autoencoder Test Benchmark ($N=3,669$).}
 \label{tab:task1_results}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{@{}lccc@{}}
 \toprule
 \textbf{Condition} & \textbf{Count ($N$)} & \textbf{PSNR (dB)} & \textbf{SSIM} \\ \midrule
@@ -285,17 +288,34 @@ Salt-and-Pepper Noise & 1,101 & 23.96 & 0.6541 \\
 Gaussian Blur & 1,101 & 26.24 & 0.7764 \\
 Rectangular Occlusion & 1,100 & 15.10 & 0.6955 \\ \midrule
 \textbf{Overall Test Set Mean} & \textbf{3,669} & \textbf{22.51} & \textbf{0.7266} \\ \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
-\begin{figure}[h]
+\begin{figure*}[!t]
 \centering
-\includegraphics[width=\columnwidth]{task1_comparison.png}
+\begin{subfigure}[b]{0.32\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{task1_comparison_a.png}
+    \caption{Samples 1--4 (Clean and S\&P).}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.32\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{task1_comparison_b.png}
+    \caption{Samples 5--8 (Gaussian Blur).}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.32\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{task1_comparison_c.png}
+    \caption{Samples 9--12 (Occlusion).}
+\end{subfigure}
 \caption{Task 1 Universal Autoencoder qualitative restorations across clean, salt-and-pepper, Gaussian blur, and rectangular occlusion test inputs. The learned Gated Skip Connection dynamically routes high frequencies on uncorrupted regions while selectively suppressing corrupted patches, forcing generative bottleneck inpainting on missing spatial pixels.}
 \label{fig:task1_comparison}
-\end{figure}
+\end{figure*}
 
-\begin{figure}[h]
+\begin{figure}[!t]
 \centering
 \includegraphics[width=\columnwidth]{task1_failure_cases.png}
 \caption{Task 1 Universal Autoencoder severe corruption failure cases. Under large rectangular occlusions covering salient facial features, the model inpaints smooth, low-contrast fills that lack fine geometric boundaries, while under extreme noise levels, residual high-frequency artifacts remain visible.}
@@ -308,10 +328,11 @@ Rectangular Occlusion & 1,100 & 15.10 & 0.6955 \\ \midrule
 \subsubsection{Corruption Classification Performance}
 The 4-class classifier was evaluated on all $3,669$ test instances. As recorded in the authentic confusion matrix in Table \ref{tab:confusion_matrix}, the model achieved a \textbf{test accuracy of 99.95\%} ($3,667 / 3,669$), with \textbf{macro precision of 0.9991}, \textbf{macro recall of 0.9991}, and \textbf{macro F1-score of 0.9991}.
 
-\begin{table}[h]
+\begin{table}[!t]
 \centering
 \caption{Task 2 Normalized Confusion Matrix ($N=3,669$).}
 \label{tab:confusion_matrix}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{@{}lcccc@{}}
 \toprule
 \textbf{True Class $\downarrow$ / Pred $\rightarrow$} & \textbf{Clean} & \textbf{S\&P} & \textbf{Blur} & \textbf{Occlusion} \\ \midrule
@@ -319,7 +340,8 @@ The 4-class classifier was evaluated on all $3,669$ test instances. As recorded 
 \textbf{S\&P} ($N=1,101$) & 0 & \textbf{1,101 (100.0\%)} & 0 & 0 \\
 \textbf{Blur} ($N=1,101$) & 1 (0.09\%) & 0 & \textbf{1,100 (99.91\%)} & 0 \\
 \textbf{Occlusion} ($N=1,100$) & 1 (0.09\%) & 0 & 0 & \textbf{1,099 (99.91\%)} \\ \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
 Only two misclassifications occurred across the entire test set: one mild Gaussian blur instance ($k=3, \sigma=0.7$) and one minimal single-rectangle occlusion instance ($\approx 10\%$) were predicted as clean due to subtle spatial degradation.
@@ -331,9 +353,9 @@ Table \ref{tab:4way_comparison} compares the standalone specialist autoencoders 
     \item Gaussian Blur specialist: $26.91\text{ dB}$ ($+0.67\text{ dB}$ gain over Universal).
     \item Occlusion specialist: $21.69\text{ dB}$ ($+6.59\text{ dB}$ gain over Universal).
 \end{itemize}
-When combined with the exact lossless clean bypass ($100.00\text{ dB} / 1.0000$), Predicted Hard Routing achieves an overall test set mean of \textbf{32.85 dB PSNR / 0.8396 SSIM}, matching Oracle Routing within $0.01\text{ dB}$ and outperforming Universal Autoencoding by \textbf{+10.34 dB}.
+When combined with the exact lossless clean bypass ($100.00\text{ dB} / 1.0000$), Predicted Hard Routing achieves an overall test set mean of \textbf{32.85 dB PSNR / 0.8396 SSIM}, matching Oracle Routing within $0.01\text{ dB}$ and outperforming Universal Autoencoding by \textbf{+10.34 dB} (visualized qualitatively in Fig.~\ref{fig:task2_comparison}).
 
-\begin{figure}[h]
+\begin{figure}[!t]
 \centering
 \includegraphics[width=\columnwidth]{task2_comparison.png}
 \caption{Task 2 Hard Routing vs. Universal restoration. Dedicated specialist autoencoders prevent negative cross-task gradient interference, restoring sharp high-contrast textures on impulse noise and structural fills under occlusion while preserving lossless mathematical fidelity on clean bypass inputs.}
@@ -343,10 +365,11 @@ When combined with the exact lossless clean bypass ($100.00\text{ dB} / 1.0000$)
 \subsection{Task 3: 4-Way Comparative Benchmark and MoE Routing Analysis}
 Table \ref{tab:4way_comparison} presents the unified 4-way comparative benchmark evaluating Universal (Task 1), Oracle Hard Routing, Predicted Hard Routing (Task 2), and Soft MoE (Task 3) on identical test images ($29.60\text{ ms/image}$).
 
-\begin{table*}[t]
+\begin{table*}[!t]
 \centering
 \caption{Comprehensive 4-Way Comparative Benchmark on Oxford-IIIT Pet Test Set ($N=3,669$).}
 \label{tab:4way_comparison}
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}lcccc@{}}
 \toprule
 \textbf{Corruption Category} & \textbf{Universal (Task 1)} & \textbf{Oracle Hard Routing} & \textbf{Predicted Hard (Task 2)} & \textbf{Soft MoE (Task 3)} \\ \midrule
@@ -356,16 +379,18 @@ Gaussian Blur ($N=1,101$) & 26.24 dB / 0.7764 & 26.91 dB / 0.8263 & 26.91 dB / 0
 Rectangular Occlusion ($N=1,100$) & 15.10 dB / 0.6955 & 21.69 dB / 0.7827 & 21.69 dB / 0.7827 & \textbf{22.40 dB / 0.8030} \\ \midrule
 \textbf{Overall Composite Mean} & \textbf{22.51 dB / 0.7266} & \textbf{32.85 dB / 0.8395} & \textbf{32.85 dB / 0.8396} & \textbf{40.53 dB / 0.8580}$^*$ \\ \bottomrule
 \multicolumn{5}{l}{\footnotesize $^*$Reflects near-lossless floating-point identity routing ($<10^{-16}$ MSE) on the clean partition; per-corruption gains are $+1.13, +1.27, +0.71\text{ dB}$.}
-\end{tabular}
+\end{tabular}%
+}
 \end{table*}
 
 \subsubsection{Gating Network Weight Distribution Analysis}
 Table \ref{tab:moe_gating_matrix} reports the empirical mean gating weights assigned by the soft routing network across all test subsets extracted directly from benchmark execution.
 
-\begin{table}[h]
+\begin{table}[!t]
 \centering
 \caption{Soft MoE Gating Weight Distribution Matrix (Mean Weight per True Class).}
 \label{tab:moe_gating_matrix}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{@{}lcccc@{}}
 \toprule
 \textbf{True Class $\downarrow$} & $w_0$ \textbf{(Clean)} & $w_1$ \textbf{(S\&P)} & $w_2$ \textbf{(Blur)} & $w_3$ \textbf{(Occ.)} \\ \midrule
@@ -373,10 +398,11 @@ Table \ref{tab:moe_gating_matrix} reports the empirical mean gating weights assi
 \textbf{Salt-and-Pepper} ($N=1,101$) & 0.0000 & \textbf{1.0000} & 0.0000 & 0.0000 \\
 \textbf{Gaussian Blur} ($N=1,101$) & 0.0000 & 0.0000 & \textbf{1.0000} & 0.0000 \\
 \textbf{Occlusion} ($N=1,100$) & 0.0049 & 0.0000 & 0.0000 & \textbf{0.9951} \\ \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
-\begin{figure}[h]
+\begin{figure}[!t]
 \centering
 \includegraphics[width=\columnwidth]{moe_gating_heatmap.png}
 \caption{Empirical Soft MoE Gating Weight Heatmap across all $3,669$ test instances. Temperature-scaled softmax gating ($\tau = 0.50$) achieves sharp diagonal routing ($w_k > 0.995$) while allowing differentiable convex expert blending across boundary cases.}
@@ -385,7 +411,7 @@ Table \ref{tab:moe_gating_matrix} reports the empirical mean gating weights assi
 
 \textbf{Key Observations:}
 \begin{enumerate}
-    \item \textbf{Strict Specialization:} The gating matrix is virtually purely diagonal ($w_k > 0.995$), confirming that temperature scaling ($\tau = 0.50$) produces confident, noise-free routing without expert collapse.
+    \item \textbf{Strict Specialization:} The gating matrix is virtually purely diagonal ($w_k > 0.995$), confirming that temperature scaling ($\tau = 0.50$) produces confident, noise-free routing without expert collapse (visualized in Fig.~\ref{fig:moe_gating_heatmap}).
     \item \textbf{Superior Joint Fine-Tuning:} Soft MoE strictly outperforms Hard Routing across every real corruption category: \textbf{+1.13 dB on S\&P}, \textbf{+1.27 dB on Blur}, and \textbf{+0.71 dB on Occlusion}. End-to-end joint fine-tuning allowed specialists to adapt their boundary representations synergistically with the gating network.
     \item \textbf{Clean Routing Nuance:} On clean images, the gating network assigns $w_0 = 0.9965$ with minor residual weight on the blur expert ($w_2 = 0.0034$), yielding near-zero floating-point MSE ($<10^{-16}$) and an apparent $167.47\text{ dB}$ PSNR, representing mathematically lossless identity transmission.
 \end{enumerate}
@@ -393,10 +419,11 @@ Table \ref{tab:moe_gating_matrix} reports the empirical mean gating weights assi
 \subsection{Task 4: Style-Conditioned Face-to-Sketch GAN Benchmark}
 The style-conditioned generator was benchmarked against three classical reference baselines across all $1,046$ pairs of the official FS2K test set. Results are detailed in Table \ref{tab:cgan_benchmark}.
 
-\begin{table}[h]
+\begin{table}[!t]
 \centering
 \caption{Task 4 Conditional GAN Test Benchmark and Baselines ($N=1,046$).}
 \label{tab:cgan_benchmark}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{@{}lcccc@{}}
 \toprule
 \textbf{Model / Baseline} & \textbf{PSNR (dB)} & \textbf{SSIM} & \textbf{L1 Error} & \textbf{Pixel-FD} \\ \midrule
@@ -404,10 +431,11 @@ The style-conditioned generator was benchmarked against three classical referenc
 Baseline: All-White Canvas & 11.95 & 0.4308 & 0.1882 & --- \\
 Baseline: Mean Training Sketch & 14.08 & 0.3916 & 0.1587 & --- \\
 Baseline: Grayscale Photo & 6.93 & 0.2761 & 0.4062 & --- \\ \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
-\begin{figure}[h]
+\begin{figure}[!t]
 \centering
 \includegraphics[width=\columnwidth]{task4_training_curves.png}
 \caption{Task 4 Conditional GAN 40-epoch training dynamics on FS2K. Discriminator accuracy surged to $91$--$94\%$ by Epoch 3, triggering update throttling ($0$--$5\%$ active update batches) while generator L1 loss decreased steadily while the discriminator remained dominant.}
@@ -417,10 +445,11 @@ Baseline: Grayscale Photo & 6.93 & 0.2761 & 0.4062 & --- \\ \bottomrule
 \subsubsection{Per-Style Breakdown and Sample Distribution}
 Table \ref{tab:style_breakdown} presents the per-style performance breakdown, mapped to user-facing style designations and internal IDs.
 
-\begin{table}[h]
+\begin{table}[!t]
 \centering
 \caption{Per-Style Performance Breakdown (FS2K Test Set).}
 \label{tab:style_breakdown}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{@{}lcccc@{}}
 \toprule
 \textbf{Style Category} & \textbf{Count ($N$)} & \textbf{PSNR (dB)} & \textbf{SSIM} & \textbf{L1 Error} \\ \midrule
@@ -429,22 +458,39 @@ Style 2 (Internal ID 1: Shaded) & 381 & 12.89 & 0.4419 & 0.1451 \\
 Style 3 (Internal ID 2: Caricature) & 46$^*$ & 19.60 & 0.6517 & 0.0594 \\ \midrule
 \textbf{Overall Test Set} & \textbf{1,046} & \textbf{16.24} & \textbf{0.5210} & \textbf{0.0993} \\ \bottomrule
 \multicolumn{5}{l}{\footnotesize $^*$Low-sample count ($N=46 < 100$); interpret with variance caution.}
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
-\begin{figure*}[t]
+\begin{figure*}[!t]
 \centering
 \includegraphics[width=\textwidth]{task4_style_matrix.png}
 \caption{Task 4 Style-Conditioned Face-to-Sketch synthesis matrix across FS2K test portraits. Columns contrast photographic input with Style 1 (Classic Pencil with crisp outlines), Style 2 (Artistic Shaded with dense cross-hatching), and Style 3 (Graphic Caricature with exaggerated geometric features), validating distinct style conditioning.}
 \label{fig:task4_style_matrix}
 \end{figure*}
 
-\begin{figure}[h]
+\begin{figure*}[!t]
 \centering
-\includegraphics[width=\columnwidth]{task4_error_map_grid.png}
+\begin{subfigure}[b]{0.32\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{task4_error_map_a.png}
+    \caption{Samples 1--4 (Style 1: Pencil).}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.32\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{task4_error_map_b.png}
+    \caption{Samples 5--8 (Style 2: Shaded).}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.32\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{task4_error_map_c.png}
+    \caption{Samples 9--12 (Style 3: Caricature).}
+\end{subfigure}
 \caption{Pixel-wise absolute error maps across synthesized sketches. Deviation is minimal across uniform white backgrounds and concentrated along dense hair and shadow regions where the generator produces smooth tonal shading rather than exact pixel-level line matches.}
 \label{fig:task4_error_maps}
-\end{figure}
+\end{figure*}
 
 \textbf{Empirical Analysis:}
 \begin{itemize}
@@ -478,7 +524,7 @@ To eliminate the substantial container footprint and dependency overhead of full
 
 Crucially, production inference dependencies were decoupled via PEP 562 lazy dynamic imports in \texttt{models/\_\_init\_\_.py}. This architectural separation enables the backend container to execute purely on \texttt{onnxruntime} without requiring PyTorch or CUDA binaries in the production environment. As reported in Table \ref{tab:deployment_benchmarks}, model artifact sizes were verified on disk, and raw model inference times were benchmarked directly in isolated ONNX Runtime CPU sessions ($50$ iterations with $5$ warmup steps). In the deployed containerized application, full end-to-end HTTP request-response latencies observed in the frontend interface (incorporating FastAPI routing, Pydantic validation, base64/PNG image serialization, and browser rendering) range from $35$--$55\text{ ms}$ for Universal and cGAN synthesis to $144$--$214\text{ ms}$ for Soft MoE multi-expert execution.
 
-\begin{table}[htbp]
+\begin{table}[!t]
 \centering
 \caption{Production Model Artifact Sizes and Raw Single-Image CPU Latency ($128\times 128$).}
 \label{tab:deployment_benchmarks}
@@ -506,7 +552,7 @@ Note: Reflects bare \texttt{session.run()} execution; deployed end-to-end API ro
 \subsection{Multi-Container Orchestration and Google Stitch UI Evidence}
 The initial visual layout, component hierarchy, interactive cards, and responsive controls were designed using Google Stitch wireframes (shown in Fig.~\ref{fig:stitch_design}) prior to React frontend implementation. Fig.~\ref{fig:app_screenshots} illustrates the live containerized studio operating across all four specialized workspaces in production.
 
-\begin{figure*}[t]
+\begin{figure*}[!t]
 \centering
 \begin{subfigure}[b]{0.24\textwidth}
     \centering
@@ -535,7 +581,7 @@ The initial visual layout, component hierarchy, interactive cards, and responsiv
 \label{fig:stitch_design}
 \end{figure*}
 
-\begin{figure*}[t]
+\begin{figure*}[!t]
 \centering
 \begin{subfigure}[b]{0.24\textwidth}
     \centering
@@ -560,7 +606,7 @@ The initial visual layout, component hierarchy, interactive cards, and responsiv
     \includegraphics[width=\textwidth]{app_sketch.png}
     \caption{Face-to-Sketch Studio.}
 \end{subfigure}
-\caption{Live interactive interface screenshots of the containerized production system deployed via Docker Compose, illustrating real-time single-model restoration, corruption classification confidence meters, differentiable soft gating weights, and style-conditioned sketch synthesis with client-side PNG export.}
+\caption{Screenshots of the running Docker deployment across all four generative workspaces, illustrating real-time single-model restoration, corruption classification confidence meters, differentiable soft gating weights, and style-conditioned sketch synthesis with client-side PNG export.}
 \label{fig:app_screenshots}
 \end{figure*}
 
@@ -631,4 +677,3 @@ Every AI-generated code module, mathematical formulation, and experimental claim
 \end{enumerate}
 
 \end{document}
-
