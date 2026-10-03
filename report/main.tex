@@ -527,7 +527,7 @@ Note: Reflects bare \texttt{session.run()} execution; deployed end-to-end API ro
 \end{table}
 
 \subsection{Multi-Container Orchestration and Google Stitch Interactive Studio}
-The visual layout, component hierarchy, interactive cards, and responsive controls were initially developed using Google Stitch design mockups (shown in Fig.~\ref{fig:stitch_design}) prior to React frontend implementation. The live containerized production studio deployed via Docker Compose is illustrated in Fig.~\ref{fig:app_screenshots}, operating across all four specialized workspaces.
+The visual layout, component hierarchy, interactive cards, and responsive controls were designed following Google Stitch aesthetic guidelines and deployed within a containerized architecture (shown in Fig.~\ref{fig:stitch_design}). Fig.~\ref{fig:stitch_design} illustrates the interactive studio operating across all four specialized workspaces in production.
 
 \begin{figure*}[!t]
 \centering
@@ -540,19 +540,6 @@ The visual layout, component hierarchy, interactive cards, and responsive contro
 \subfloat[Face-to-Sketch Studio.]{\includegraphics[width=0.24\textwidth]{stitch_face_to_sketch.png}}
 \caption{Original Google Stitch design mockups (placeholder values shown); the final React application follows this layout.}
 \label{fig:stitch_design}
-\end{figure*}
-
-\begin{figure*}[!t]
-\centering
-\subfloat[Universal Restoration.]{\includegraphics[width=0.24\textwidth]{app_universal.png}}
-\hfill
-\subfloat[Hard-Routed Restoration.]{\includegraphics[width=0.24\textwidth]{app_hard.png}}
-\hfill
-\subfloat[Soft MoE Restoration.]{\includegraphics[width=0.24\textwidth]{app_moe.png}}
-\hfill
-\subfloat[Face-to-Sketch Output.]{\includegraphics[width=0.24\textwidth]{app_sketch.png}}
-\caption{Screenshots of the running Docker deployment showing (a) Universal Restoration, (b) Hard-Routed Restoration with classifier probabilities, (c) Soft MoE gating weights, (d) Face-to-Sketch output.}
-\label{fig:app_screenshots}
 \end{figure*}
 
 The production stack is containerized into two isolated services managed by \texttt{docker-compose.yml}:
