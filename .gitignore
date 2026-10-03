@@ -67,3 +67,9 @@ report/*.toc
 report/*.fls
 report/*.fdb_latexmk
 
+# Local video scripts & assignment materials
+DEMO_VIDEO_SCRIPT.md
+DEMO_VIDEO_SCRIPT_ROMAN_URDU.md
+COMMANDS_FOR_VIDEO.md
+GenAI_Assignment*.md
+

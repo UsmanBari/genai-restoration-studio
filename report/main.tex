@@ -263,7 +263,7 @@ Hyperparameter optimization was conducted in two Optuna rounds:
 \end{enumerate}
 
 \subsubsection{Discriminator Dominance Dynamics and Engineering Rationale}
-During full 40-epoch training on authentic FS2K manifests, discriminator classification accuracy surged to **91--94\% by Epoch 2--3** and remained elevated throughout training. To prevent complete generator gradient vanishing, two sequential rebalancing interventions were deployed: (1) one-sided label smoothing, and (2) an aggressive $0.2\times$ discriminator learning rate ratio ($\text{lr}_d = 7.06\times 10^{-5}$ vs. $\text{lr}_g = 3.53\times 10^{-4}$) coupled with dynamic update throttling (skipping discriminator updates whenever running batch accuracy exceeded $85\%$). Under this throttle, the discriminator updated on only **$\approx 0$--$5\%$ of batches** after Epoch 3.
+During full 40-epoch training on authentic FS2K manifests, discriminator classification accuracy surged to \textbf{91--94\% by Epoch 2--3} and remained elevated throughout training. To prevent complete generator gradient vanishing, two sequential rebalancing interventions were deployed: (1) one-sided label smoothing, and (2) an aggressive $0.2\times$ discriminator learning rate ratio ($\text{lr}_d = 7.06\times 10^{-5}$ vs. $\text{lr}_g = 3.53\times 10^{-4}$) coupled with dynamic update throttling (skipping discriminator updates whenever running batch accuracy exceeded $85\%$). Under this throttle, the discriminator updated on only \textbf{$\approx 0$--$5\%$ of batches} after Epoch 3.
 
 Despite these interventions, discriminator dominance persisted, suppressing adversarial gradients and forcing the generator to rely primarily on the L1 reconstruction loss. This yielded softer, shaded sketch textures rather than crisp vector lines. A third retraining attempt was explicitly evaluated and declined: two extensive rebalancing cycles demonstrated diminishing returns within the current PatchGAN framework, and remaining development time was deliberately prioritized for production deployment, container verification, and comprehensive reporting.
 
@@ -288,11 +288,18 @@ Rectangular Occlusion & 1,100 & 15.10 & 0.6955 \\ \midrule
 \end{tabular}
 \end{table}
 
+\begin{figure}[h]
+\centering
+\includegraphics[width=\columnwidth]{task1_comparison.png}
+\caption{Task 1 Universal Autoencoder qualitative restorations across clean, salt-and-pepper, Gaussian blur, and rectangular occlusion test inputs. The learned Gated Skip Connection dynamically routes high frequencies on uncorrupted regions while selectively suppressing corrupted patches, forcing generative bottleneck inpainting on missing spatial pixels.}
+\label{fig:task1_comparison}
+\end{figure}
+
 \textbf{Analysis:} On clean images, the model achieves $29.20\text{ dB}$ PSNR and $0.8879$ SSIM, demonstrating that the learned gated skip connection effectively preserves fine fur and edge structures. Denoising on Gaussian blur ($26.24\text{ dB}$) and salt-and-pepper noise ($23.96\text{ dB}$) is robust. However, under severe rectangular occlusions covering up to $35\%$ of the image area, performance drops to $15.10\text{ dB}$, as the network is forced into pure generative inpainting without local structural hints.
 
 \subsection{Task 2: Corruption Classifier and Hard Routing}
 \subsubsection{Corruption Classification Performance}
-The 4-class classifier was evaluated on all $3,669$ test instances. As recorded in the authentic confusion matrix in Table \ref{tab:confusion_matrix}, the model achieved a **test accuracy of 99.95\%** ($3,667 / 3,669$), with **macro precision of 0.9991**, **macro recall of 0.9991**, and **macro F1-score of 0.9991**.
+The 4-class classifier was evaluated on all $3,669$ test instances. As recorded in the authentic confusion matrix in Table \ref{tab:confusion_matrix}, the model achieved a \textbf{test accuracy of 99.95\%} ($3,667 / 3,669$), with \textbf{macro precision of 0.9991}, \textbf{macro recall of 0.9991}, and \textbf{macro F1-score of 0.9991}.
 
 \begin{table}[h]
 \centering
@@ -317,7 +324,14 @@ Table \ref{tab:4way_comparison} compares the standalone specialist autoencoders 
     \item Gaussian Blur specialist: $26.91\text{ dB}$ ($+0.67\text{ dB}$ gain over Universal).
     \item Occlusion specialist: $21.69\text{ dB}$ ($+6.59\text{ dB}$ gain over Universal).
 \end{itemize}
-When combined with the exact lossless clean bypass ($100.00\text{ dB} / 1.0000$), Predicted Hard Routing achieves an overall test set mean of **32.85 dB PSNR / 0.8396 SSIM**, matching Oracle Routing within $0.01\text{ dB}$ and outperforming Universal Autoencoding by **+10.34 dB**.
+When combined with the exact lossless clean bypass ($100.00\text{ dB} / 1.0000$), Predicted Hard Routing achieves an overall test set mean of \textbf{32.85 dB PSNR / 0.8396 SSIM}, matching Oracle Routing within $0.01\text{ dB}$ and outperforming Universal Autoencoding by \textbf{+10.34 dB}.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\columnwidth]{task2_comparison.png}
+\caption{Task 2 Hard Routing vs. Universal restoration. Dedicated specialist autoencoders prevent negative cross-task gradient interference, restoring sharp high-contrast textures on impulse noise and structural fills under occlusion while preserving lossless mathematical fidelity on clean bypass inputs.}
+\label{fig:task2_comparison}
+\end{figure}
 
 \subsection{Task 3: 4-Way Comparative Benchmark and MoE Routing Analysis}
 Table \ref{tab:4way_comparison} presents the unified 4-way comparative benchmark evaluating Universal (Task 1), Oracle Hard Routing, Predicted Hard Routing (Task 2), and Soft MoE (Task 3) on identical test images ($29.60\text{ ms/image}$).
@@ -355,10 +369,17 @@ Table \ref{tab:moe_gating_matrix} reports the empirical mean gating weights assi
 \end{tabular}
 \end{table}
 
+\begin{figure}[h]
+\centering
+\includegraphics[width=\columnwidth]{moe_gating_heatmap.png}
+\caption{Empirical Soft MoE Gating Weight Heatmap across all $3,669$ test instances. Temperature-scaled softmax gating ($\tau = 0.50$) achieves sharp diagonal routing ($w_k > 0.995$) while allowing differentiable convex expert blending across boundary cases.}
+\label{fig:moe_gating_heatmap}
+\end{figure}
+
 \textbf{Key Observations:}
 \begin{enumerate}
     \item \textbf{Strict Specialization:} The gating matrix is virtually purely diagonal ($w_k > 0.995$), confirming that temperature scaling ($\tau = 0.50$) produces confident, noise-free routing without expert collapse.
-    \item \textbf{Superior Joint Fine-Tuning:} Soft MoE strictly outperforms Hard Routing across every real corruption category: **+1.13 dB on S\&P**, **+1.27 dB on Blur**, and **+0.71 dB on Occlusion**. End-to-end joint fine-tuning allowed specialists to adapt their boundary representations synergistically with the gating network.
+    \item \textbf{Superior Joint Fine-Tuning:} Soft MoE strictly outperforms Hard Routing across every real corruption category: \textbf{+1.13 dB on S\&P}, \textbf{+1.27 dB on Blur}, and \textbf{+0.71 dB on Occlusion}. End-to-end joint fine-tuning allowed specialists to adapt their boundary representations synergistically with the gating network.
     \item \textbf{Clean Routing Nuance:} On clean images, the gating network assigns $w_0 = 0.9965$ with minor residual weight on the blur expert ($w_2 = 0.0034$), yielding near-zero floating-point MSE ($<10^{-16}$) and an apparent $167.47\text{ dB}$ PSNR, representing mathematically lossless identity transmission.
 \end{enumerate}
 
@@ -379,6 +400,13 @@ Baseline: Grayscale Photo & 6.93 & 0.2761 & 0.4062 & --- \\ \bottomrule
 \end{tabular}
 \end{table}
 
+\begin{figure}[h]
+\centering
+\includegraphics[width=\columnwidth]{task4_training_curves.png}
+\caption{Task 4 Conditional GAN 40-epoch training dynamics on FS2K. Discriminator accuracy surged to $91$--$94\%$ by Epoch 3, triggering update throttling ($0$--$5\%$ active update batches) while generator L1 and adversarial losses steadily stabilized.}
+\label{fig:task4_training_curves}
+\end{figure}
+
 \subsubsection{Per-Style Breakdown and Sample Distribution}
 Table \ref{tab:style_breakdown} presents the per-style performance breakdown, mapped to user-facing style designations and internal IDs.
 
@@ -396,6 +424,20 @@ Style 3 (Internal ID 2: Caricature) & 46$^*$ & 19.60 & 0.6517 & 0.0594 \\ \midru
 \multicolumn{5}{l}{\footnotesize $^*$Low-sample count ($N=46 < 100$); interpret with variance caution.}
 \end{tabular}
 \end{table}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{task4_style_matrix.png}
+\caption{Task 4 Style-Conditioned Face-to-Sketch synthesis matrix across FS2K test portraits. Columns contrast photographic input with Style 1 (Classic Pencil with crisp outlines), Style 2 (Artistic Shaded with dense cross-hatching), and Style 3 (Graphic Caricature with exaggerated geometric features), validating distinct style conditioning.}
+\label{fig:task4_style_matrix}
+\end{figure*}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\columnwidth]{task4_error_map_grid.png}
+\caption{Pixel-wise absolute error maps across synthesized sketches. Deviation is minimal across uniform white backgrounds and concentrated along dense hair and shadow regions where the generator produces smooth tonal shading rather than exact pixel-level line matches.}
+\label{fig:task4_error_maps}
+\end{figure}
 
 \textbf{Empirical Analysis:}
 \begin{itemize}
@@ -424,7 +466,7 @@ The studio provides four dedicated workspaces mapped directly to Tasks 1--4:
 \end{enumerate}
 
 \subsection{ONNX Model Export and Torchless Runtime Decoupling}
-To eliminate the substantial container footprint and dependency overhead of full deep learning frameworks in production, all trained PyTorch models were exported to standardized ONNX (Opset 17) format. Numerical parity against native PyTorch outputs was verified ($|\Delta y| < 10^{-5}$).
+To eliminate the substantial container footprint and dependency overhead of full deep learning frameworks in production, all trained PyTorch models were exported to standardized ONNX (Opset 18) format. Numerical parity against native PyTorch outputs was verified ($|\Delta y| < 10^{-5}$).
 
 Crucially, production inference dependencies were decoupled via PEP 562 lazy dynamic imports in \texttt{models/\_\_init\_\_.py}. This architectural separation enables the backend container to execute purely on \texttt{onnxruntime} without requiring PyTorch or CUDA binaries in the production environment. As reported in Table \ref{tab:deployment_benchmarks}, model artifact sizes were verified on disk, and raw model inference times were benchmarked directly in isolated ONNX Runtime CPU sessions ($50$ iterations with $5$ warmup steps). In the deployed containerized application, full end-to-end HTTP request-response latencies observed in the frontend interface (incorporating FastAPI routing, Pydantic validation, base64/PNG image serialization, and browser rendering) range from $35$--$55\text{ ms}$ for Universal and cGAN synthesis to $144$--$214\text{ ms}$ for Soft MoE multi-expert execution.
 
@@ -436,14 +478,14 @@ Crucially, production inference dependencies were decoupled via PEP 562 lazy dyn
 \begin{tabular}{@{}lccc@{}}
 \toprule
 \textbf{Pipeline Component} & \textbf{Runtime Engine} & \textbf{Artifact Size} & \textbf{Raw CPU Latency} \\ \midrule
-Task 1 Universal Model & ONNX Opset 17 & 17.36 MB & 60.56 ms ($\pm 2.64$) \\
-Task 2 Corruption Classifier & ONNX Opset 17 & 4.48 MB & 17.30 ms ($\pm 1.23$) \\
-Task 2 Specialist (S\&P) & ONNX Opset 17 & 17.36 MB & 69.66 ms ($\pm 26.19$) \\
-Task 2 Specialist (Blur) & ONNX Opset 17 & 17.36 MB & 63.65 ms ($\pm 6.38$) \\
-Task 2 Specialist (Occlusion) & ONNX Opset 17 & 17.36 MB & 59.60 ms ($\pm 2.38$) \\
-Task 2 Hard Routing (Pipeline) & ONNX Opset 17 & 56.56 MB$^\dagger$ & 81.60 ms$^*$ \\
-Task 3 Soft MoE (Joint Model) & ONNX Opset 17 & 56.58 MB & 211.40 ms ($\pm 50.84$) \\
-Task 4 Face-to-Sketch Generator & ONNX Opset 17 & 63.63 MB & 36.79 ms ($\pm 2.80$) \\ \bottomrule
+Task 1 Universal Model & ONNX Opset 18 & 17.36 MB & 60.56 ms ($\pm 2.64$) \\
+Task 2 Corruption Classifier & ONNX Opset 18 & 4.48 MB & 17.30 ms ($\pm 1.23$) \\
+Task 2 Specialist (S\&P) & ONNX Opset 18 & 17.36 MB & 69.66 ms ($\pm 26.19$) \\
+Task 2 Specialist (Blur) & ONNX Opset 18 & 17.36 MB & 63.65 ms ($\pm 6.38$) \\
+Task 2 Specialist (Occlusion) & ONNX Opset 18 & 17.36 MB & 59.60 ms ($\pm 2.38$) \\
+Task 2 Hard Routing (Pipeline) & ONNX Opset 18 & 56.56 MB$^\dagger$ & 81.60 ms$^*$ \\
+Task 3 Soft MoE (Joint Model) & ONNX Opset 18 & 56.58 MB & 211.40 ms ($\pm 50.84$) \\
+Task 4 Face-to-Sketch Generator & ONNX Opset 18 & 63.63 MB & 36.79 ms ($\pm 2.80$) \\ \bottomrule
 \end{tabular}%
 }
 \vspace{1mm}
@@ -496,8 +538,8 @@ A transparent examination of system edge cases reveals foundational tradeoffs ac
 
 \subsection{Meaningful Failure Analysis}
 \begin{enumerate}
-    \item \textbf{Failure Case 1: Extreme Spatial Occlusion (Task 1):} When rectangular masks cover $>30\%$ of the image area over salient anatomical features (e.g., both eyes and snout of a pet), the Universal Autoencoder lacks sufficient spatial context from unmasked boundaries. The gated skip connection correctly closes ($\mathbf{G} \to 0$), but the $6.0\times$ compressed bottleneck is forced into unguided hallucination, yielding flat, low-contrast color patches ($13.53\text{ dB}$ PSNR) that fail to restore underlying eye geometries.
-    \item \textbf{Failure Case 2: Natural Bokeh vs. Mild Blur Ambiguity (Task 2):} The 4-class classifier misclassified one pristine image containing natural photographic depth-of-field (sharp subject with heavily blurred foliage background) as Gaussian blur. While the blur specialist successfully sharpened background leaves, it introduced high-frequency ringing along the animal's sharp fur contours.
+    \item \textbf{Failure Case 1: Extreme Spatial Occlusion (Task 1):} When rectangular masks cover up to $35\%$ of the image area over salient anatomical features (e.g., both eyes and snout of a pet), the Universal Autoencoder lacks sufficient spatial context from unmasked boundaries. The gated skip connection correctly closes ($\mathbf{G} \to 0$), but the $6.0\times$ compressed bottleneck is forced into unguided hallucination, yielding flat, low-contrast color patches that fail to restore underlying facial geometries (dropping occlusion performance to $15.10\text{ dB}$ overall).
+    \item \textbf{Failure Case 2: Subtle Degradation Under-Detection (Task 2):} The 4-class classifier misclassified exactly two corrupted instances across the $3,669$ test images as clean: one mild Gaussian blur image ($k=3, \sigma=0.7$) and one minimal single-mask occlusion ($\approx 10\%$). Because the classifier predicted the clean class, the Hard-Routing pipeline triggered the lossless identity bypass, passing the mild blur and small occlusion through unmodified rather than dispatching them to their respective specialist restoration models.
     \item \textbf{Failure Case 3: Clean Identity Filtering Leak (Task 3):} While Hard Routing enforces a mathematically perfect identity bypass ($100.00\text{ dB}$ PSNR) on clean inputs, Soft MoE assigns a slight residual gating weight ($w_2 = 0.0034$) to the Gaussian blur specialist. On high-resolution, uncorrupted inputs with ultra-fine textures, this minor fractional blend causes subtle high-frequency attenuation compared to an absolute bypass.
     \item \textbf{Failure Case 4: Discriminator Dominance and Tonal Bias (Task 4):} As detailed in Section III.D, discriminator accuracy saturated at $91$--$94\%$ by Epoch 3. As a direct consequence, the U-Net generator relied predominantly on L1 pixel reconstruction, resulting in soft, painterly shading rather than sharp, vectorized line art. On Style 2 (Artistic Shaded), subtle tonal mismatches across heavy hair cross-hatching yielded the lowest benchmark score ($12.89\text{ dB}$).
 \end{enumerate}
@@ -525,6 +567,7 @@ In compliance with the assignment specification, this appendix provides a transp
 \subsection{Tool Identification and Scope of Use}
 \begin{itemize}
     \item \textbf{Antigravity IDE (Gemini 3.7 Flash):} Employed as an interactive pair-programming and research assistant for boilerplate code scaffolding, unit test construction, mathematical typesetting in LaTeX, and multi-container Docker Compose configuration.
+    \item \textbf{Claude (Anthropic):} Employed as an external reasoning assistant for strategic workflow planning, review, and rigorous cross-checking of experimental numbers and empirical metrics against Colab execution logs.
     \item \textbf{Optuna \& MLflow:} Utilized for automated Bayesian hyperparameter optimization and experiment tracking across Google Colab T4 GPU runs.
 \end{itemize}
 
@@ -551,3 +594,4 @@ Every AI-generated code module, mathematical formulation, and experimental claim
 \end{enumerate}
 
 \end{document}
+

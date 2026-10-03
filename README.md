@@ -16,7 +16,6 @@ A modular generative AI project implementing image restoration (Universal Autoen
 ├── AI_USE_LOG.md                # Tool usage and output verification log
 ├── EXPERIMENT_LOG.md            # Hyperparameters, runs, loss curves, metrics
 ├── DECISIONS.md                 # Design & architecture decisions
-├── DEMO_VIDEO_SCRIPT.md         # 5-7 minute demonstration video script
 ├── README.md                    # Project documentation & execution guide
 ├── docker-compose.yml           # Single-command orchestration for backend & frontend
 │
