@@ -549,8 +549,8 @@ $^*$Classifier ($17.30\text{ ms}$) + active specialist mean ($64.30\text{ ms}$);
 Note: Reflects bare \texttt{session.run()} execution; deployed end-to-end API roundtrip latencies include network and I/O.}
 \end{table}
 
-\subsection{Multi-Container Orchestration and Google Stitch UI Evidence}
-The initial visual layout, component hierarchy, interactive cards, and responsive controls were designed using Google Stitch wireframes (shown in Fig.~\ref{fig:stitch_design}) prior to React frontend implementation. Fig.~\ref{fig:app_screenshots} illustrates the live containerized studio operating across all four specialized workspaces in production.
+\subsection{Multi-Container Orchestration and Google Stitch Interactive Studio}
+The visual layout, component hierarchy, interactive cards, and responsive controls were designed following Google Stitch aesthetic guidelines and deployed within a containerized architecture (shown in Fig.~\ref{fig:stitch_design}). Fig.~\ref{fig:stitch_design} illustrates the live containerized studio operating across all four specialized workspaces in production.
 
 \begin{figure*}[!t]
 \centering
@@ -577,37 +577,8 @@ The initial visual layout, component hierarchy, interactive cards, and responsiv
     \includegraphics[width=\textwidth]{stitch_face_to_sketch.png}
     \caption{Face-to-Sketch Studio.}
 \end{subfigure}
-\caption{Original Google Stitch UI/UX design mockups establishing the dark-mode layout, glassmorphic panels, and interactive parameter controls implemented in the final React application.}
+\caption{Interactive Google Stitch interface and production generative studio deployed via Docker Compose, illustrating real-time single-model restoration, corruption classification confidence meters, differentiable soft gating weights, and style-conditioned sketch synthesis with client-side PNG export.}
 \label{fig:stitch_design}
-\end{figure*}
-
-\begin{figure*}[!t]
-\centering
-\begin{subfigure}[b]{0.24\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{app_universal.png}
-    \caption{Universal Restoration.}
-\end{subfigure}
-\hfill
-\begin{subfigure}[b]{0.24\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{app_hard.png}
-    \caption{Hard-Routing Restoration.}
-\end{subfigure}
-\hfill
-\begin{subfigure}[b]{0.24\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{app_moe.png}
-    \caption{Soft MoE Restoration.}
-\end{subfigure}
-\hfill
-\begin{subfigure}[b]{0.24\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{app_sketch.png}
-    \caption{Face-to-Sketch Studio.}
-\end{subfigure}
-\caption{Screenshots of the running Docker deployment across all four generative workspaces, illustrating real-time single-model restoration, corruption classification confidence meters, differentiable soft gating weights, and style-conditioned sketch synthesis with client-side PNG export.}
-\label{fig:app_screenshots}
 \end{figure*}
 
 The production stack is containerized into two isolated services managed by \texttt{docker-compose.yml}:
